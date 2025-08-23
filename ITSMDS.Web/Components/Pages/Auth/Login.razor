@@ -1,0 +1,53 @@
+﻿@page "/login"
+@layout LoginLayout
+
+<h3>ورود به سیستم</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label for="username">نام کاربری</label>
+        <InputText id="username" @bind-Value="loginModel.Username" class="form-control" placeholder="نام کاربری خود را وارد کنید" />
+        <ValidationMessage For="@(() => loginModel.Username)" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">رمز عبور</label>
+        <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="رمز عبور خود را وارد کنید" />
+        <ValidationMessage For="@(() => loginModel.Password)" />
+    </div>
+
+    <div class="form-check">
+        <InputCheckbox @bind-Value="loginModel.RememberMe" class="form-check-input" />
+        <label class="form-check-label" for="rememberMe">مرا به خاطر بسپار</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mt-3">ورود</button>
+</EditForm>
+
+<div class="text-center mt-3">
+    <a href="#">رمز عبور را فراموش کرده‌اید؟</a>
+</div>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private void HandleLogin()
+    {
+        // منطق ورود به سیستم را اینجا پیاده‌سازی کنید
+        Console.WriteLine($"ورود با نام کاربری: {loginModel.Username}");
+
+        // پس از ورود موفق، کاربر را به صفحه اصلی هدایت کنید
+        NavigationManager.NavigateTo("/");
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+
+        public bool RememberMe { get; set; }
+    }
+}
