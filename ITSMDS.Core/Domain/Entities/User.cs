@@ -31,14 +31,14 @@ public class User : Entity<long>, IAggregateRoot
     private User() { }
 
     public User(
-        string firstName,
-        string lastName,
-        string email,
+        string? firstName,
+        string? lastName,
+        string? email,
         int personalCode,
-        int phoneNumber,
+        int? phoneNumber,
         string userName,
         string password,
-        string teamName)
+        string? teamName)
     {
         Validate(firstName, lastName, email, personalCode, phoneNumber, userName, password);
 
@@ -46,7 +46,7 @@ public class User : Entity<long>, IAggregateRoot
         LastName = lastName;
         Email = email;
         PersonalCode = personalCode;
-        PhoneNumber = phoneNumber;
+        PhoneNumber = phoneNumber.Value;
         UserName = userName;
         Password = password; // Note: In real application, password should be hashed
         TeamName = teamName;
@@ -57,8 +57,8 @@ public class User : Entity<long>, IAggregateRoot
         LoginAttempt = 0;
     }
 
-    private static void Validate(string firstName, string lastName, string email, int personalCode,
-        int phoneNumber, string userName, string password)
+    private static void Validate(string? firstName, string? lastName, string? email, int personalCode,
+        int? phoneNumber, string userName, string password)
     {
         if (string.IsNullOrWhiteSpace(firstName))
             throw new DomainException("First name cannot be empty");

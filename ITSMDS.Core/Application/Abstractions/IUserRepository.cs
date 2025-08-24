@@ -13,7 +13,7 @@ namespace ITSMDS.Core.Application.Abstractions
         ValueTask<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default);
         ValueTask AddUserAsync(User user, CancellationToken cancellationToken = default);
         ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default);
-        ValueTask<>
+        ValueTask<bool> CheckUserExsitAsync(string? userName = null, int? personalCode = null, CancellationToken ct = default);
         #endregion
 
         #region Auth

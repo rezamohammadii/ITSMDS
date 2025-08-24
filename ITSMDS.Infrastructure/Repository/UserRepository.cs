@@ -16,6 +16,22 @@ public class UserRepository : IUserRepository
     public async ValueTask AddUserAsync(User user, CancellationToken cancellationToken = default)
         => await _db.Users.AddAsync(user, cancellationToken);
 
+    public async ValueTask<bool> CheckUserExsitAsync(string? userName = null, int? personalCode = null, CancellationToken ct = default)
+    {
+        if (userName != null)
+        {
+          return  await _db.Users.NoLockAnyAsync(x => x.UserName == userName, ct);
+        }
+        if (personalCode != null)
+        {
+            return await _db.Users.NoLockAnyAsync(x => x.PersonalCode == personalCode, ct);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public async ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
         => await _db.Users.AsNoTracking().OrderByDescending(x => x.Id).NoLockToListAsync(cancellationToken);
 
