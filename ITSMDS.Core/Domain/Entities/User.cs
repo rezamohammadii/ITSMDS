@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace ITSMDS.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using ITSMDS.Core.Domain.Common;
 
 public class User : Entity<long>, IAggregateRoot
 {
+    public string HashId { get; private set; }
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
     public string Email { get; private set; }
@@ -22,6 +24,7 @@ public class User : Entity<long>, IAggregateRoot
     public string UserName { get; private set; }
     public string Password { get; private set; }
     public string TeamName { get; private set; }
+    public string IpAddress { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsDeleted { get; private set; }
 
@@ -38,9 +41,10 @@ public class User : Entity<long>, IAggregateRoot
         int? phoneNumber,
         string userName,
         string password,
-        string? teamName)
+        string? teamName,
+        string ipAddress)
     {
-        Validate(firstName, lastName, email, personalCode, phoneNumber, userName, password);
+        Validate(firstName, lastName, email, personalCode, phoneNumber, userName, password, ipAddress);
 
         FirstName = firstName;
         LastName = lastName;
@@ -55,10 +59,11 @@ public class User : Entity<long>, IAggregateRoot
         IsActive = true;
         IsDeleted = false;
         LoginAttempt = 0;
+        IpAddress = ipAddress;
     }
 
     private static void Validate(string? firstName, string? lastName, string? email, int personalCode,
-        int? phoneNumber, string userName, string password)
+        int? phoneNumber, string userName, string password, string ipAddress)
     {
         if (string.IsNullOrWhiteSpace(firstName))
             throw new DomainException("First name cannot be empty");
@@ -68,6 +73,9 @@ public class User : Entity<long>, IAggregateRoot
 
         if (string.IsNullOrWhiteSpace(email) || !IsValidEmail(email))
             throw new DomainException("Valid email is required");
+        
+        if (string.IsNullOrWhiteSpace(ipAddress) || !IsValidateIp(ipAddress))
+            throw new DomainException("Ip Address is not valid");
 
         if (personalCode <= 0)
             throw new DomainException("Personal code must be valid");
@@ -90,6 +98,19 @@ public class User : Entity<long>, IAggregateRoot
             return mailAddress.Address == email;
         }
         catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidateIp(string ip)
+    {
+        try
+        {
+            var ipAddress = IPAddress.Parse(ip);
+            return true;
+        }
+        catch (Exception)
         {
             return false;
         }

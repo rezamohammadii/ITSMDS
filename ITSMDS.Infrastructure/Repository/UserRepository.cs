@@ -32,8 +32,8 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
-        => await _db.Users.AsNoTracking().OrderByDescending(x => x.Id).NoLockToListAsync(cancellationToken);
+    public async ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken)
+        => await _db.Users.AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
 
     public async ValueTask<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _db.Users.AsNoTracking().NoLockFirstOrDefaultAsync(x => x.Id == id, cancellationToken);

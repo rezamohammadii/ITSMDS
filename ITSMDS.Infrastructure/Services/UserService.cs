@@ -3,7 +3,9 @@
 using ITSMDS.Core.Application.Abstractions;
 using ITSMDS.Core.Application.DTOs;
 using ITSMDS.Core.Application.Services;
+using ITSMDS.Core.Tools;
 using ITSMDS.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace ITSMDS.Infrastructure.Services;
 
@@ -11,27 +13,41 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _repo;
     private readonly IUnitOfWork _unitOfWork;
-    public UserService(IUnitOfWork unitOfWork, IUserRepository repo)
+    private readonly ILogger<UserService> _logger;
+    public UserService(IUnitOfWork unitOfWork, IUserRepository repo, ILogger<UserService> logger)
     {
         _unitOfWork = unitOfWork;
         _repo = repo;
+        _logger = logger;
     }
     public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken ct = default)
     {
-        if (await _repo.CheckUserExsitAsync(request.userName, request.personalCode, ct))
+        if (await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
             throw new InvalidOperationException("Email already exsist");
 
-        var user = new User(null, null, null, request.personalCode ?? 0, null, request
-            .userName ?? "", request.password, null);
+        string hashPass = HashGenerator.HashPassword(request.password);
+        var user = new User(null, null, null, int.Parse(request.personalCode), 0, request
+            .userName ?? "", hashPass, null, "");
         await _repo.AddUserAsync(user, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return new UserResponse(user.Id, user.Email, user.FirstName, user.LastName, user.CreateDate, user.PhoneNumber, user.PersonalCode);
+        return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName, user.CreateDate, user.PhoneNumber, user.IpAddress, user.UserName,  user.PersonalCode);
        
     }
 
-    public Task<List<UserResponse>> GetAllAsync(CancellationToken ct = default)
+    public async Task<List<UserResponse>> GetAllAsync(CancellationToken ct)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var items = await _repo.GetAllUsersAsync(ct);
+            return items.Select(x => new UserResponse(x.HashId, x.Email, x.FirstName, x.LastName, x.CreateDate,
+            x.PhoneNumber, x.IpAddress, x.UserName, x.PersonalCode)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Database Error {MSG}", ex.Message);
+            throw new InvalidOperationException(ex.Message);
+        }
+       
     }
 }
