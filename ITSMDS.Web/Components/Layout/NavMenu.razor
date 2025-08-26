@@ -1,29 +1,79 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<style>
+  
+
+.sidebar .nav-link,
+.sidebar .dropdown-item {
+    color: white !important;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.3s;
+}
+
+    .sidebar .nav-link:hover,
+    .sidebar .dropdown-item:hover {
+        background-color: rgba(255,255,255,0.2);
+    }
+
+    .collapse .dropdown-item {
+        padding-right: 30px;
+    }
+
+    .logout {
+        color : white;
+        text-align: center;
+        padding: 12px;
+        cursor: pointer;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+        .logout:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+</style>
+
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="/" style="font-size: 11px">سامانه پایش و مستند سازی فناوری اطلاعات</a>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<div class="sidebar">
+    <div>
+        <h4 class="text-center mb-4">پنل مدیریت</h4>
+        <ul class="nav flex-column">
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+            <!-- مدیریت کاربران با Collapse -->
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#userMenu" role="button" aria-expanded="false" aria-controls="userMenu">
+                    <i class="fas fa-users-cog"></i> مدیریت کاربران
+                </a>
+                <div class="collapse" id="userMenu">
+                    <ul class="nav flex-column ms-3">
+                        <li><a class="dropdown-item" href="/user_list"><i class="fas fa-list"></i> لیست کاربران</a></li>
+                        <li><a class="dropdown-item" href="/user/create"><i class="fas fa-user-plus"></i> افزودن کاربر</a></li>
+                    </ul>
+                </div>
+            </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+            <!-- مدیریت سرور -->
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-server"></i> مدیریت سرور</a>
+            </li>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
+            <!-- مدیریت سرویس‌ها -->
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-cogs"></i> مدیریت سرویس‌ها</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- خروج -->
+    <div class="logout">
+        <i class="fas fa-sign-out-alt"></i> خروج
+    </div>
 </div>
+

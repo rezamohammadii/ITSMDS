@@ -40,7 +40,8 @@ public static class DataSeederDb
                     phoneNumber: 833254300,
                     userName: "super-admin",
                     password: "22eswsssr42@!#3", // ⚠️ Hash it in real projects!
-                    teamName: "IT Management"
+                    teamName: "IT Management",
+                    ipAddress: "127.0.0.1"
                 );
 
                 newUser.AssignRole(getRoleAdmin);

@@ -1,0 +1,65 @@
+﻿@page "/user/edit/{PersonalCode}"
+@using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.ViewModel
+@inject UserApiClient userApi
+@inject NavigationManager NavigationManager
+
+<h4 class="mb-4">ویرایش کاربر</h4>
+
+@if (user == null)
+{
+    <p>در حال بارگذاری اطلاعات...</p>
+}
+else
+{
+    <EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>نام</label>
+            <InputText class="form-control" @bind-Value="user.FirstName" />
+        </div>
+
+        <div class="mb-3">
+            <label>نام خانوادگی</label>
+            <InputText class="form-control" @bind-Value="user.LastName" />
+        </div>
+
+        <div class="mb-3">
+            <label>نام کاربری</label>
+            <InputText class="form-control" @bind-Value="user.UserName" />
+        </div>
+
+        <div class="mb-3">
+            <label>کد پرسنلی</label>
+            <InputNumber class="form-control" @bind-Value="user.PersonalCode" />
+        </div>
+
+        <button type="submit" class="btn btn-success">ذخیره تغییرات</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string? PersonalCode { get; set; }
+
+    private UserModel? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(PersonalCode))
+        {
+            user = await userApi.GetUserByHashIdAsync(PersonalCode);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await userApi.UpdateUserAsync(user!);
+        if (result)
+        {
+            NavigationManager.NavigateTo("/user");
+        }
+    }
+}

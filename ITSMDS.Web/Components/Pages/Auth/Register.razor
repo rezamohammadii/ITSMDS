@@ -1,0 +1,55 @@
+﻿@* @page "/signup"
+@inject HttpClient Http
+@using System.Net.Http.Json
+@using ITSMDS.Web.ViewModel
+
+<h3 class="text-center mb-4">Sign Up</h3>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg rounded-3">
+                <div class="card-body p-4">
+                    <EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+
+                        <div class="mb-3">
+                            <label class="form-label">کد پرسنلی</label>
+                            <InputNumber class="form-control" @bind-Value="user.PersonalCode" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">رمز عبور</label>
+                            <InputText type="password"  class="form-control" @bind-Value="user.Password" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">تکرار رمز عبور</label>
+                                <InputText type="password" class="form-control" @bind-Value="user.ConfirmPassword" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">ثبت نام</button>
+                    </EditForm>
+
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                        <div class="alert alert-info mt-3">@message</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private UserModel user = new();
+    private string? message;
+    private async Task HandleValidSubmit()
+    {
+        var res = await Http.PostAsJsonAsync("")
+    }
+  
+}
+ *@

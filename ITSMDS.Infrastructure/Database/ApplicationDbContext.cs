@@ -70,8 +70,12 @@ public class ApplicationDbContext : DbContext
             entity.Property(x => x.TeamName).HasMaxLength(155).HasColumnName("team_name");
             entity.Property(x => x.Password).HasMaxLength(255).HasColumnName("password");
             entity.Property(x => x.UserName).HasMaxLength(255).HasColumnName("user_name");
+            entity.Property(x => x.HashId).HasMaxLength(255).HasDefaultValue(Guid.NewGuid().ToString()).HasColumnName("hash_Id");
             entity.Property(x => x.PhoneNumber).HasMaxLength(10).HasColumnName("phone_number");
             entity.Property(x => x.CreateDate).HasDefaultValue(DateTimeOffset.UtcNow).HasColumnName("create_date");
+            entity.HasIndex(x => new { x.IsActive, x.IsDeleted }).HasDatabaseName("IX_User_ActiveDeleted");
+            entity.HasIndex(x => x.HashId).IsUnique().HasDatabaseName("IX_User_HashId");
+
         });
 
         modelBuilder.Entity<ServiceEntity>(entity =>

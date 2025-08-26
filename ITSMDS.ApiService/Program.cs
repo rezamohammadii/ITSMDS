@@ -1,10 +1,11 @@
 using ITSMDS.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
-
+builder.Services.AddControllers();
 // Add services Infrastructure 
 builder.AddServiceInfrastructure(builder.Configuration);
 
@@ -13,7 +14,19 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+var origin = builder.Configuration.GetSection("AllowedOrigin").Get<string[]>()!;
+builder.Services
+    .AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend",
+            policy =>
+            {
+                policy.WithOrigins(origin) // Allow frontend URL
+                      .AllowAnyMethod() // Allow all HTTP methods (GET, POST, etc.)
+                      .AllowAnyHeader() // Allow all headers
+                      .AllowCredentials(); // Allow cookies/auth headers
+            });
+    });
 
 var app = builder.Build();
 
@@ -39,10 +52,14 @@ app.MapGet("/weatherforecast", () =>
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
-        .ToArray();
+    .ToArray();
     return forecast;
 });
 
+
+app.UseCors("AllowFrontend");
+
+app.MapControllers();
 app.MapDefaultEndpoints();
 
 app.Run();

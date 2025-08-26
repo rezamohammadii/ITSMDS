@@ -1,5 +1,6 @@
 using ITSMDS.Web;
 using ITSMDS.Web.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,13 +14,14 @@ builder.Services.AddBlazorBootstrap();
 
 
 builder.Services.AddOutputCache();
+var mvcBuilder = builder.Services.AddRazorPages();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-        client.BaseAddress = new("https+http://apiservice");
-    });
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
+
+builder.Services.AddCustomHttpClient(builder.Configuration);
 
 var app = builder.Build();
 

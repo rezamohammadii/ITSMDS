@@ -1,4 +1,7 @@
+using Aspire.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
+
 
 var sql = builder.AddSqlServer("sql")
     .WithDataVolume()
