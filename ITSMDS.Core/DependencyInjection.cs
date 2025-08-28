@@ -7,9 +7,11 @@ namespace ITSMDS.Core;
 
 public static class DependencyInjection
 {
+ 
 
-    public static void AddCoreServices(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddCoreServices(this IHostApplicationBuilder builder)
     {
-        
+      
+        return builder; 
     }
 }

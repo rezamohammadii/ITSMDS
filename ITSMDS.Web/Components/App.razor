@@ -13,11 +13,12 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="ITSMDS.Web.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="/js/api.js"></script>
     <script type="module" src="/js/customVariable.js"></script>
@@ -26,7 +27,6 @@
     <script src="/js/chartjs-plugin-datalabels.min.js"></script>
     <script src="/js/Sortable.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
-    <script src="_framework/blazor.web.js"></script>
 </body>
 
 </html>

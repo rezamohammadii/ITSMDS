@@ -1,6 +1,7 @@
 ﻿
 
 using ITSMDS.Core.Application.Abstractions;
+using ITSMDS.Core.Application.DTOs;
 using ITSMDS.Domain.Entities;
 using ITSMDS.Infrastructure.Database;
 using ITSMDS.Infrastructure.Extensions;
@@ -20,11 +21,11 @@ public class UserRepository : IUserRepository
     {
         if (userName != null)
         {
-          return  await _db.Users.NoLockAnyAsync(x => x.UserName == userName, ct);
+          return  await _db.Users.AnyAsync(x => x.UserName == userName, ct);
         }
         if (personalCode != null)
         {
-            return await _db.Users.NoLockAnyAsync(x => x.PersonalCode == personalCode, ct);
+            return await _db.Users.AnyAsync(x => x.PersonalCode == personalCode, ct);
         }
         else
         {
@@ -33,8 +34,31 @@ public class UserRepository : IUserRepository
     }
 
     public async ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken)
-        => await _db.Users.AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
+        => await _db.Users.Where(x => !x.IsDeleted).AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
 
-    public async ValueTask<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
-        => await _db.Users.AsNoTracking().NoLockFirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    public async ValueTask<User?> GetUserByPersonalCodeAsync(int code, CancellationToken cancellationToken = default)
+        => await _db.Users.FirstOrDefaultAsync(x => x.PersonalCode == code, cancellationToken);
+
+    public  async ValueTask<User?> UpdateUserAsync(User request, CancellationToken cancellationToken = default)
+    {
+        var user = await _db.Users.Where(x => x.PersonalCode == request.PersonalCode)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (user != null)
+        {
+            try
+            {
+                user.UpdatePersonalInfo(request.FirstName, request.LastName, request.Email, request.PhoneNumber,
+                    request.IpAddress, request.UserName, request.PersonalCode);
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+           
+
+        }
+        return default;
+    }
 }

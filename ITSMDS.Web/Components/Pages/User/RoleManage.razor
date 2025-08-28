@@ -1,0 +1,249 @@
+﻿@page "/roles"
+@inject NavigationManager NavigationManager
+
+<h1 class="h4 fw-bold text-dark mb-2">مدیریت نقش‌ها</h1>
+<p class="text-muted mb-4">مدیریت نقش‌های کاربران و سطح دسترسی آن‌ها</p>
+
+<!-- دکمه افزودن نقش -->
+<button class="btn btn-primary mb-4" @onclick="OpenDialog">
+    ➕ افزودن نقش جدید
+</button>
+
+<!-- دیالوگ افزودن/ویرایش نقش -->
+@if (isDialogOpen)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((editingRole != null) ? "ویرایش نقش" : "افزودن نقش جدید")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@roleForm" OnValidSubmit="HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label class="form-label">نام نقش</label>
+                            <InputText class="form-control text-end" @bind-Value="roleForm.Name" placeholder="نام نقش را وارد کنید" />
+                            <ValidationMessage For="@(() => roleForm.Name)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">توضیحات</label>
+                            <InputTextArea class="form-control text-end" @bind-Value="roleForm.Description" placeholder="توضیحات نقش را وارد کنید" />
+                            <ValidationMessage For="@(() => roleForm.Description)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">دسترسی‌ها</label>
+                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                @foreach (var module in permissionsByModule)
+                                {
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold">@module.Key</h6>
+                                        @foreach (var permission in module.Value)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="@permission.Id"
+                                                       checked="@roleForm.Permissions.Contains(permission.Id)"
+                                                       @onchange="(e) => TogglePermission(permission.Id, e.Value)">
+                                                <label class="form-check-label" for="@permission.Id">@permission.Name</label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-secondary" @onclick="CloseDialog">انصراف</button>
+                            <button type="submit" class="btn btn-primary">@((editingRole != null) ? "ویرایش" : "افزودن")</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- جستجو -->
+<div class="mb-4">
+    <input class="form-control w-50 text-end" placeholder="جستجو در نقش‌ها..." @bind="searchTerm" />
+</div>
+
+<!-- آمار -->
+<div class="row mb-4">
+    <!-- نقش فعال -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 text-center py-4">
+            <i class="bi bi-shield-lock text-primary fs-2 mb-2"></i>
+            <h4 class="fw-bold text-primary">56</h4>
+            <p class="text-muted">نقش فعال</p>
+        </div>
+    </div>
+
+    <!-- کاربران دارای نقش -->
+    @* <div class="col-md-4"> *@
+    @*     <div class="card shadow-sm border-0 rounded-4 text-center py-4"> *@
+    @*         <i class="bi bi-people-fill text-success fs-2 mb-2"></i> *@
+    @*         <h4 class="fw-bold text-success">@Roles.Sum(r => r.UsersCount)</h4> *@
+    @*         <p class="text-muted">کاربر دارای نقش</p> *@
+    @*     </div> *@
+    @* </div>  *@
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 text-center py-4">
+            <i class="bi bi-people-fill text-success fs-2 mb-2"></i>
+            <h4 class="fw-bold text-success">11</h4>
+            <p class="text-muted">کاربر دارای نقش</p>
+        </div>
+    </div>
+
+    <!-- تعداد دسترسی‌ها -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 text-center py-4">
+            <i class="bi bi-key-fill text-warning fs-2 mb-2"></i>
+            <h4 class="fw-bold text-warning">23</h4>
+            <p class="text-muted">دسترسی موجود</p>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- لیست نقش‌ها -->
+@if (loading)
+{
+    <p class="text-muted text-center py-5">در حال بارگذاری...</p>
+}
+else
+{
+    @foreach (var role in filteredRoles)
+    {
+        <div class="border rounded p-3 mb-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold">@role.Name</h5>
+                <span class="badge bg-secondary">@role.PermissionsCount دسترسی</span>
+                <p class="text-muted mt-2">@role.Description</p>
+                <small class="text-muted">تاریخ ایجاد: @role.CreatedAt.ToShortDateString()</small>
+                <span class="ms-3"><i class="bi bi-people"></i> @role.UsersCount کاربر</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" @onclick="() => EditRole(role)">✏️</button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRole(role.Id)">🗑️</button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<RoleModel> roles = new();
+    private List<RoleModel> filteredRoles => string.IsNullOrWhiteSpace(searchTerm)
+        ? roles
+        : roles.Where(r => r.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private Dictionary<string, List<PermissionModel>> permissionsByModule = new();
+    private List<PermissionModel> permissions = new();
+
+    private RoleModel? editingRole;
+    private RoleFormModel roleForm = new();
+    private bool isDialogOpen = false;
+    private bool loading = true;
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // بارگذاری داده‌ها از API
+        // roles = await RoleService.GetRolesAsync();
+        // permissions = await RoleService.GetPermissionsAsync();
+        // permissionsByModule = permissions.GroupBy(p => p.Module)
+        //                                  .ToDictionary(g => g.Key, g => g.ToList());
+        // loading = false;
+    }
+
+    private void OpenDialog()
+    {
+        editingRole = null;
+        roleForm = new();
+        isDialogOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        isDialogOpen = false;
+    }
+
+    private void EditRole(RoleModel role)
+    {
+        editingRole = role;
+        roleForm = new RoleFormModel
+        {
+            Name = role.Name,
+            Description = role.Description,
+            Permissions = role.PermissionIds.ToList()
+        };
+        isDialogOpen = true;
+    }
+
+    private async Task HandleSubmit()
+    {
+        // if (editingRole != null)
+        // {
+        //     await RoleService.UpdateRoleAsync(editingRole.Id, roleForm);
+        // }
+        // else
+        // {
+        //     await RoleService.CreateRoleAsync(roleForm);
+        // }
+
+        // roles = await RoleService.GetRolesAsync();
+        // CloseDialog();
+    }
+
+    private async Task DeleteRole(Guid roleId)
+    {
+        // await RoleService.DeleteRoleAsync(roleId);
+        // roles = await RoleService.GetRolesAsync();
+    }
+
+    private void TogglePermission(string permissionId, object? isChecked)
+    {
+        if (isChecked is bool checkedValue)
+        {
+            if (checkedValue)
+                roleForm.Permissions.Add(permissionId);
+            else
+                roleForm.Permissions.Remove(permissionId);
+        }
+    }
+
+    public class RoleFormModel
+    {
+        [Required(ErrorMessage = "نام نقش الزامی است")]
+        public string Name { get; set; } = "";
+
+        public string Description { get; set; } = "";
+
+        public List<string> Permissions { get; set; } = new();
+    }
+
+    public class RoleModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int PermissionsCount { get; set; }
+        public int UsersCount { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<string> PermissionIds { get; set; } = new();
+    }
+
+    public class PermissionModel
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Module { get; set; } = "";
+    }
+}

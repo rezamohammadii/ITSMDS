@@ -1,4 +1,6 @@
-﻿using ITSMDS.Core.Application.DTOs;
+﻿using System.Text.Json;
+using Azure.Core;
+using ITSMDS.Core.Application.DTOs;
 using ITSMDS.Core.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,7 @@ namespace ITSMDS.ApiService.Controllers
         {
             try
             {
+                Console.WriteLine(JsonSerializer.Serialize(userRequest));
                 var user = await _userService.CreateAsync(userRequest, ct);
                 if (user is not null)
                 {
@@ -51,6 +54,84 @@ namespace ITSMDS.ApiService.Controllers
         {
             var userList = await _userService.GetAllAsync(ct);
             return Ok(userList);
+        }
+
+        [HttpGet("{personalCode}")]
+        public async Task<IActionResult> GetUserAsunc(int personalCode, CancellationToken ct)
+        {
+
+            try
+            {
+                var user = await _userService.GetUserAsync(personalCode, ct);
+                if (user is not null)
+                {
+                    return Ok(user);
+                }
+                else
+                {
+                    return BadRequest("Failed update user");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed update user {MSG}", ex.Message);
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPut("edit")]
+        public async Task<IActionResult> EditUserAsync(UpdateUserRequest request, CancellationToken ct)
+        {
+            try
+            {
+                var user = await _userService.UpdateAsync(request, ct);
+                if (user is not null)
+                {
+                    return Ok(new
+                    {
+                        response = user.id,
+                        message = "User update successful"
+                    });
+                }
+                else
+                {
+                    return BadRequest("Failed update user");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed update user {MSG}", ex.Message);
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("delete/{pCode}")]
+        public async Task<IActionResult> DeleteUserAsync(int pCode, CancellationToken ct)
+        {
+            try
+            {
+                var res = await _userService.DeleteUserAsync(pCode, ct);
+                if (res)
+                {
+                    return Ok(new
+                    {
+                        response = res,
+                        message = "User deleted successful"
+                    });
+                }
+                else
+                {
+                    return BadRequest("Failed deleted user");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed deleted user {MSG}", ex.Message);
+                return StatusCode(500);
+            }
         }
     }
 }

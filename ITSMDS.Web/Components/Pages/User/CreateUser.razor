@@ -1,86 +1,127 @@
 ﻿@page "/user/create"
-@using System.ComponentModel.DataAnnotations
 @using ITSMDS.Web.ViewModel
 @inject IConfiguration Configuration
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
-<h4 class="text-center mb-4">👤 ساخت کاربر جدید</h4>
+<EditForm Model="@user" OnValidSubmit="HandleValidSubmit" class="space-y-6" @ref="myform">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-<div class="container mt-5">
-    <div class="card shadow-sm border-0 rounded-4">
-        <div class="card-header bg-primary text-white rounded-top-4">
-            <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> ساخت کاربر جدید</h5>
-        </div>
-
-        <div class="card-body">
-            <form id="userForm">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">نام</label>
-                        <input name="FirstName" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">نام خانوادگی</label>
-                        <input name="LastName" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">نام کاربری</label>
-                        <input name="UserName" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">IP</label>
-                        <input name="ipAddress" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">ایمیل</label>
-                        <input name="Email" type="email" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">رمز عبور</label>
-                        <input name="Password" type="password" class="form-control rounded-3" />
-                    </div>
-
-
-                    <div class="col-md-6">
-                        <label class="form-label">کد پرسنلی</label>
-                        <input name="PersonalCode" type="number" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">شماره تماس</label>
-                        <input name="PhoneNumber" type="number" class="form-control rounded-3" />
-                    </div>
-
-                    <div class="col-12 mt-3">
-                        <button type="submit" class="btn btn-success w-100 rounded-pill">
-                            <i class="fas fa-check-circle me-2"></i> ثبت اطلاعات
-                        </button>
-                    </div>
-                </div>
-            </form>
-            
-            <div id="result" class="alert alert-success mt-3 text-center rounded-3 d-none"></div>
+    <div class="d-flex align-items-center gap-4">
+        <button type="button" class="btn btn-outline-secondary" @onclick="NavigateToUsers">
+            🡐 بازگشت
+        </button>
+        <div>
+            <h1 class="h4 fw-bold text-dark">افزودن کاربر جدید</h1>
+            <p class="text-muted mt-1">ایجاد حساب کاربری جدید در سیستم</p>
         </div>
     </div>
-</div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">نام *</label>
+            <InputText class="form-control" @bind-Value="user.FirstName" placeholder="نام را وارد کنید" />
+            <ValidationMessage For="@(() => user.FirstName)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">نام خانوادگی *</label>
+            <InputText class="form-control" @bind-Value="user.LastName" placeholder="نام خانوادگی را وارد کنید" />
+            <ValidationMessage For="@(() => user.LastName)" />
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">کد پرسنلی *</label>
+            <InputText class="form-control" @bind-Value="user.PersonalCodeString" placeholder="EMP001" />
+            <ValidationMessage For="@(() => user.PersonalCodeString)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">نام کاربری *</label>
+            <InputText class="form-control" @bind-Value="user.UserName" placeholder="user.name" />
+            <ValidationMessage For="@(() => user.UserName)" />
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">ایمیل سازمانی *</label>
+            <InputText class="form-control text-start" @bind-Value="user.Email" placeholder="user@company.com" />
+            <ValidationMessage For="@(() => user.Email)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">تلفن دفتر *</label>
+            <InputText class="form-control text-start" @bind-Value="user.PhoneNumber" placeholder="+9821-12345678" />
+            <ValidationMessage For="@(() => user.PhoneNumber)" />
+        </div>
+    </div>
+
+    <!-- اطلاعات سیستم -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">آی‌پی سیستم *</label>
+            <InputText class="form-control text-start" @bind-Value="user.IpAddress" placeholder="192.168.1.100" />
+            <ValidationMessage For="@(() => user.IpAddress)" />
+        </div>
+    </div>
+
+    <!-- دکمه‌های فرم -->
+    <div class="d-flex gap-3 pt-4 border-top">
+        <button type="submit" class="btn btn-success" disabled="@isSubmitting">
+            💾 @(isSubmitting ? "در حال ذخیره..." : "ذخیره کاربر")
+        </button>
+
+        <button type="button" class="btn btn-outline-secondary" @onclick="HandleReset" disabled="@isSubmitting">
+            🔄 بازنشانی
+        </button>
+
+        <button type="button" class="btn btn-light" @onclick="HandleCancel" disabled="@isSubmitting">
+            ❌ انصراف
+        </button>
+    </div>
+</EditForm>
+
 
 
 @code {
-    private string? apiUrl;
+    EditForm myform;
+    EditForm myform2;
 
-    protected override void OnInitialized()
+    Alert aaa;
+
+
+
+    private UserModel user = new();
+    private bool isSubmitting = false;
+
+    private void HandleValidSubmit()
     {
 
-        apiUrl = Configuration.GetSection("BaseAddress").Value!;
+        var fff = myform.Model as UserModel;
+        isSubmitting = true;
+        // ذخیره‌سازی اطلاعات کاربر
+        // ...
+        isSubmitting = false;
     }
 
-    private async Task SubmitWithJs()
+    private void HandleReset()
     {
-        await JS.InvokeVoidAsync("submitForm", apiUrl);
+        user = new();
     }
+
+    private void HandleCancel()
+    {
+        // بازگشت یا بستن فرم
+    }
+
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+
+
 }

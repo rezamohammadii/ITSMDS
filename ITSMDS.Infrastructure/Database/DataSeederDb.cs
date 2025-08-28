@@ -37,7 +37,7 @@ public static class DataSeederDb
                     lastName: "system",
                     email: "super-admin@domain.com",
                     personalCode: 88378,
-                    phoneNumber: 833254300,
+                    phoneNumber: "833254300",
                     userName: "super-admin",
                     password: "22eswsssr42@!#3", // ⚠️ Hash it in real projects!
                     teamName: "IT Management",

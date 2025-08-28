@@ -59,19 +59,20 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<User>()
             .HasKey(x => x.Id);
+        modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
         modelBuilder.Entity<User>(entity =>
         {
-            entity.Property(x => x.PersonalCode).HasMaxLength(7).HasColumnName("personali_code");
+            entity.Property(x => x.PersonalCode).HasColumnName("personali_code");
             entity.Property(x => x.IsDeleted).HasDefaultValue(false).HasColumnName("is_deleted");
             entity.Property(x => x.IsActive).HasDefaultValue(true).HasColumnName("is_active");
             entity.Property(x => x.Email).HasMaxLength(255).HasColumnName("email_address");
             entity.Property(x => x.FirstName).HasMaxLength(155).HasColumnName("first_name");
             entity.Property(x => x.LastName).HasMaxLength(155).HasColumnName("last_name");
             entity.Property(x => x.TeamName).HasMaxLength(155).HasColumnName("team_name");
-            entity.Property(x => x.Password).HasMaxLength(255).HasColumnName("password");
+            entity.Property(x => x.Password).HasMaxLength(-1).HasColumnName("password");
             entity.Property(x => x.UserName).HasMaxLength(255).HasColumnName("user_name");
             entity.Property(x => x.HashId).HasMaxLength(255).HasDefaultValue(Guid.NewGuid().ToString()).HasColumnName("hash_Id");
-            entity.Property(x => x.PhoneNumber).HasMaxLength(10).HasColumnName("phone_number");
+            entity.Property(x => x.PhoneNumber).HasColumnName("phone_number");
             entity.Property(x => x.CreateDate).HasDefaultValue(DateTimeOffset.UtcNow).HasColumnName("create_date");
             entity.HasIndex(x => new { x.IsActive, x.IsDeleted }).HasDatabaseName("IX_User_ActiveDeleted");
             entity.HasIndex(x => x.HashId).IsUnique().HasDatabaseName("IX_User_HashId");

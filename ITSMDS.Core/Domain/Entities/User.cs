@@ -18,7 +18,7 @@ public class User : Entity<long>, IAggregateRoot
     public string Email { get; private set; }
     public int LoginAttempt { get; private set; }
     public int PersonalCode { get; private set; }
-    public int PhoneNumber { get; private set; }
+    public string PhoneNumber { get; private set; }
     public DateTimeOffset CreateDate { get; private set; }
     public DateTimeOffset ModifiedTime { get; private set; }
     public string UserName { get; private set; }
@@ -38,7 +38,7 @@ public class User : Entity<long>, IAggregateRoot
         string? lastName,
         string? email,
         int personalCode,
-        int? phoneNumber,
+        string? phoneNumber,
         string userName,
         string password,
         string? teamName,
@@ -50,11 +50,11 @@ public class User : Entity<long>, IAggregateRoot
         LastName = lastName;
         Email = email;
         PersonalCode = personalCode;
-        PhoneNumber = phoneNumber.Value;
+        PhoneNumber = phoneNumber;
         UserName = userName;
         Password = password; // Note: In real application, password should be hashed
         TeamName = teamName;
-        CreateDate = DateTimeOffset.UtcNow;
+        CreateDate =  DateTimeOffset.UtcNow;
         ModifiedTime = DateTimeOffset.UtcNow;
         IsActive = true;
         IsDeleted = false;
@@ -63,7 +63,7 @@ public class User : Entity<long>, IAggregateRoot
     }
 
     private static void Validate(string? firstName, string? lastName, string? email, int personalCode,
-        int? phoneNumber, string userName, string password, string ipAddress)
+        string? phoneNumber, string userName, string password, string ipAddress)
     {
         if (string.IsNullOrWhiteSpace(firstName))
             throw new DomainException("First name cannot be empty");
@@ -80,7 +80,7 @@ public class User : Entity<long>, IAggregateRoot
         if (personalCode <= 0)
             throw new DomainException("Personal code must be valid");
 
-        if (phoneNumber <= 0)
+        if (string.IsNullOrWhiteSpace(phoneNumber))
             throw new DomainException("Phone number must be valid");
 
         if (string.IsNullOrWhiteSpace(userName))
@@ -116,10 +116,17 @@ public class User : Entity<long>, IAggregateRoot
         }
     }
 
-    public void UpdatePersonalInfo(string firstName, string lastName, string email, int phoneNumber, string teamName)
+    public void UpdatePersonalInfo(string firstName, string lastName, string email, string phoneNumber, 
+        string ipAddress, string userName, int personalCode)
     {
         if (string.IsNullOrWhiteSpace(firstName))
             throw new DomainException("First name cannot be empty");
+
+        if (string.IsNullOrWhiteSpace(userName))
+            throw new DomainException("User name cannot be empty");
+        
+        if (string.IsNullOrWhiteSpace(ipAddress))
+            throw new DomainException("IP address cannot be empty");
 
         if (string.IsNullOrWhiteSpace(lastName))
             throw new DomainException("Last name cannot be empty");
@@ -131,7 +138,9 @@ public class User : Entity<long>, IAggregateRoot
         LastName = lastName;
         Email = email;
         PhoneNumber = phoneNumber;
-        TeamName = teamName;
+        PersonalCode = personalCode;
+        UserName = userName;
+        IpAddress = ipAddress;
         ModifiedTime = DateTimeOffset.UtcNow;
     }
 

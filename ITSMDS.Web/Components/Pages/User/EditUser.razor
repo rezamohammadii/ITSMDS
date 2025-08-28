@@ -3,6 +3,8 @@
 @using ITSMDS.Web.ViewModel
 @inject UserApiClient userApi
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
 
 <h4 class="mb-4">ویرایش کاربر</h4>
 
@@ -12,31 +14,48 @@
 }
 else
 {
-    <EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+    <EditForm Model="user" OnValidSubmit="HandleValidSubmit" class="row g-3" FormName="EditUser">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
-            <label>نام</label>
+        <div class="col-md-6">
+            <label class="form-label">نام</label>
             <InputText class="form-control" @bind-Value="user.FirstName" />
         </div>
 
-        <div class="mb-3">
-            <label>نام خانوادگی</label>
+        <div class="col-md-6">
+            <label class="form-label">نام خانوادگی</label>
             <InputText class="form-control" @bind-Value="user.LastName" />
         </div>
 
-        <div class="mb-3">
-            <label>نام کاربری</label>
+        <div class="col-md-6">
+            <label class="form-label">نام کاربری</label>
             <InputText class="form-control" @bind-Value="user.UserName" />
         </div>
 
-        <div class="mb-3">
-            <label>کد پرسنلی</label>
+        <div class="col-md-6">
+            <label class="form-label">کد پرسنلی</label>
             <InputNumber class="form-control" @bind-Value="user.PersonalCode" />
         </div>
 
-        <button type="submit" class="btn btn-success">ذخیره تغییرات</button>
+        <div class="col-md-6">
+            <label class="form-label">ایمیل</label>
+            <InputText class="form-control" @bind-Value="user.Email" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">شماره تماس</label>
+            <InputText class="form-control" @bind-Value="user.PhoneNumber" />
+        </div>
+
+        <div class="col-md-12">
+            <label class="form-label">آدرس IP</label>
+            <InputText class="form-control" @bind-Value="user.IpAddress" />
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-success px-4">💾 ذخیره تغییرات</button>
+        </div>
     </EditForm>
 }
 
@@ -48,18 +67,21 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrEmpty(PersonalCode))
+        if (PersonalCode is not null )
         {
-            user = await userApi.GetUserByHashIdAsync(PersonalCode);
+            user = await userApi.GetUserAsync(int.Parse(PersonalCode));
+            // apiUrl = Configuration.GetSection("BaseAddress").Value!;
+
         }
     }
 
     private async Task HandleValidSubmit()
     {
-        var result = await userApi.UpdateUserAsync(user!);
-        if (result)
+        var result = await userApi.EditUserAsync(user!);
+        if (result is not null)
         {
-            NavigationManager.NavigateTo("/user");
+            NavigationManager.NavigateTo("/user_list");
         }
     }
+
 }

@@ -18,7 +18,13 @@ public static class DependencyInjection
         builder.Services.AddDistributedMemoryCache();
         builder.AddDatabases(configuration);
             ;
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+        builder.Services.AddAutoMapper(cfg =>
+        {
+            cfg.AddMaps(assemblies);
+        }
+        );
 
         return builder;
     }

@@ -40,11 +40,14 @@ else
                 <table class="table table-bordered table-hover table-striped align-middle text-center">
                     <thead class="table-light">
                         <tr>
-                            <th>شناسه کاربری</th>
                             <th>نام</th>
                             <th>نام خانوادگی</th>
-                            <th>نام کاربری</th>
+                            <th>ایمیل سازمانی</th>
                             <th>کد پرسنلی</th>
+                            <th>نام کاربری</th>
+                            <th>تاریخ ایجاد</th>
+                            <th>شماره تلفن</th>
+                            <th>آدرس IP</th>
                             <th>عملیات</th>
 
                         </tr>
@@ -53,16 +56,19 @@ else
                         @foreach (var user in users)
                         {
                             <tr>
-                                <td>@user.HashId</td>
                                 <td>@user.FirstName</td>
                                 <td>@user.LastName</td>
-                                <td>@user.UserName</td>
+                                <td>@user.Email</td>
                                 <td>@user.PersonalCode</td>
+                                <td>@user.UserName</td>
+                                <td>@user.CreateDate</td>
+                                <td>@user.PhoneNumber</td>
+                                <td>@user.IpAddress</td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEditUser(user.PersonalCode)">
+                                    <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEditUser(user.PersonalCode.Value)">
                                         <i class="fas fa-file-edit fa-lg"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteUser(user.HashId)">
+                                    <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteUser(user.PersonalCode.Value)">
                                         <i class="fas fa-trash fa-lg"></i>
                                     </button>
                                 </td>
@@ -115,12 +121,12 @@ else
         NavigationManager.NavigateTo($"/user/edit/{personalCode}");
     }
 
-    private async Task OnDeleteUser(string hashId)
+    private async Task OnDeleteUser(int personalCode)
     {
         var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", new object[] { "آیا از حذف کاربر مطمئن هستید؟" });
         if (confirmed)
         {
-            var result = await userApi.DeleteUserAsync(hashId);
+            var result = await userApi.DeleteUserAsync(personalCode);
             if (result)
             {
                 users = await userApi.GetUserListAsync();
