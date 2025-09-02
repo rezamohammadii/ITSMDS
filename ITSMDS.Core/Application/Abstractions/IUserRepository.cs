@@ -10,7 +10,7 @@ namespace ITSMDS.Core.Application.Abstractions
 {
     public interface IUserRepository
     {
-        #region General
+        #region User
         ValueTask<User?> GetUserByPersonalCodeAsync(int code, CancellationToken cancellationToken = default);
         ValueTask<User?> UpdateUserAsync(User request, CancellationToken cancellationToken = default);
         ValueTask AddUserAsync(User user, CancellationToken cancellationToken = default);
@@ -19,7 +19,9 @@ namespace ITSMDS.Core.Application.Abstractions
 
         #endregion
 
-        #region Role
+        #region Permissions
+        ValueTask<List<Permission?>> GetPermissionListAsync(CancellationToken cancellationToken = default); 
+
 
         #endregion
     }

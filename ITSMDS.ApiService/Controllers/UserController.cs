@@ -31,7 +31,7 @@ namespace ITSMDS.ApiService.Controllers
                 {
                     return Ok(new
                     {
-                        response = user.id,
+                        response = true,
                         message = "User create successful"
                     });
                 }
@@ -133,5 +133,11 @@ namespace ITSMDS.ApiService.Controllers
                 return StatusCode(500);
             }
         }
-    }
+
+        [HttpGet("permissions")]
+        public async Task<IActionResult> GetPermissionsAsync(CancellationToken ct = default)
+        {
+
+        }
+    } 
 }

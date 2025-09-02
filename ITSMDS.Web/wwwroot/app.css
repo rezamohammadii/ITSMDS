@@ -21,7 +21,9 @@ a, .btn-link {
     background-color: #1b6ec2;
     border-color: #1861ac;
 }
-
+td{
+    text-align : center !important
+}
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
@@ -235,3 +237,68 @@ h1:focus {
 .animate__animated.animate__fadeIn {
     --animate-duration: 0.5s;
 }
+
+.permission-category {
+    border-right: 3px solid #0d6efd;
+    padding-right: 10px;
+}
+
+.capabilities .badge {
+    font-size: 0.8rem;
+    margin-left: 5px;
+    border-radius: 4px;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.border-top {
+    border-top: 1px dashed #dee2e6 !important;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #a0a0a0;
+    border-radius: 10px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #808080;
+    }
+
+.permission-option {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+    .permission-option:hover {
+        background-color: #e0f7fa;
+    }
+
+    .permission-option.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+.permission-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+

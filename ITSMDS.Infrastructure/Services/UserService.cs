@@ -5,7 +5,6 @@ using Azure.Core;
 using ITSMDS.Core.Application.Abstractions;
 using ITSMDS.Core.Application.DTOs;
 using ITSMDS.Core.Application.Services;
-using ITSMDS.Core.Domain.Mappers;
 using ITSMDS.Core.Tools;
 using ITSMDS.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -25,20 +24,22 @@ public class UserService : IUserService
         _logger = logger;
         _mapper = mapper;
     }
+
+    #region UserMethod
     public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken ct = default)
     {
         if (await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
             throw new InvalidOperationException("Email already exsist");
 
         string hashPass = HashGenerator.HashPassword(request.password);
-        var user = new User(request.firstName, request.lastName, request.email, int.Parse(request.personalCode), 
+        var user = new User(request.firstName, request.lastName, request.email, int.Parse(request.personalCode),
             request.phoneNumber!, request
-            .userName ?? "", hashPass,  "" , request.ipAddress);
+            .userName ?? "", hashPass, "", request.ipAddress);
         await _repo.AddUserAsync(user, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName, ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName,  user.PersonalCode);
-       
+        return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName, ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName, user.PersonalCode);
+
     }
 
     public async Task<bool> DeleteUserAsync(int pCode, CancellationToken ct = default)
@@ -51,7 +52,7 @@ public class UserService : IUserService
                 return false;
             }
             user.MarkAsDeleted();
-            await  _unitOfWork.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(ct);
             return true;
         }
         catch (Exception ex)
@@ -66,7 +67,7 @@ public class UserService : IUserService
         try
         {
             var items = await _repo.GetAllUsersAsync(ct);
-            return items.Select(x => new UserResponse(x.HashId, x.Email, x.FirstName, x.LastName, 
+            return items.Select(x => new UserResponse(x.HashId, x.Email, x.FirstName, x.LastName,
                 ConvertDate.ConvertToShamsi(x.CreateDate),
             x.PhoneNumber, x.IpAddress, x.UserName, x.PersonalCode)).ToList();
         }
@@ -75,8 +76,9 @@ public class UserService : IUserService
             _logger.LogError("Database Error {MSG}", ex.Message);
             throw new InvalidOperationException(ex.Message);
         }
-       
+
     }
+
 
     public async Task<UserResponse> GetUserAsync(int pCode, CancellationToken ct = default)
     {
@@ -107,6 +109,18 @@ public class UserService : IUserService
             _logger.LogError("Database Error {MSG}", ex.Message);
             throw new InvalidOperationException(ex.Message);
         }
-       
+
     }
+    #endregion
+
+    #region PermissionMethod
+
+    public async Task<List<PermissionDto>> GetPermissionList(CancellationToken ct = default)
+    {
+        var listPermissionDb = await _repo.GetPermissionListAsync(ct);
+        var resultList = new List<PermissionDto>();
+         listPermissionDb
+    }
+    #endregion
+
 }

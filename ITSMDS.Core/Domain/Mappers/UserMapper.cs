@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using ITSMDS.Core.Application.DTOs;
+using ITSMDS.Core.Tools;
 using ITSMDS.Domain.Entities;
 
 namespace ITSMDS.Core.Domain.Mappers

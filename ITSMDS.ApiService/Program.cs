@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
-builder.AddServiceDefaults();
+//builder.AddServiceDefaults();
 
 builder.Services.AddControllers();
 // Add services Infrastructure 
@@ -64,7 +64,7 @@ app.MapGet("/weatherforecast", () =>
 app.UseCors("AllowFrontend");
 
 app.MapControllers();
-app.MapDefaultEndpoints();
+//app.MapDefaultEndpoints();
 
 app.Run();
 

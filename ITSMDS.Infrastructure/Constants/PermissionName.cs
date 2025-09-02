@@ -9,10 +9,12 @@ namespace ITSMDS.Infrastructure.Constants
 {
     public static class PermissionName
     {
-        [PermissionComment("show admin list")]
-        public const string ADMIN_VIEW_LIST = "admin.view.list";
-        public const string ADMIN_NEW_CREATE = "admin.new.create";
-        public const string ADMIN_NEW_EDIT = "admin.new.edit";
-        public const string ADMIN_DELETE = "admin.new.delete";
+        [PermissionComment("show user list")]
+        public const string USER_READ = "user.list";
+        public const string USER_CREATE = "user.create";
+        public const string USER_EDIT = "user.edit";
+        public const string USER_DELETE = "user.delete";
+
+
     }
 }

@@ -1,0 +1,83 @@
+﻿@page "/role/list"
+@using ITSMDS.Core.Application.DTOs
+@using ITSMDS.Web.ApiClient
+@using Microsoft.AspNetCore.Mvc.RazorPages
+@inject NavigationManager NavigationManager
+@inject RoleApiClient roleApi
+
+<PageTitle>مدیریت نقش ها</PageTitle>
+
+<h3 class="mb-4">لیست نقش ها</h3>
+<h6 class="mb-4">مدیریت نقش ها و مجوز های سیستم</h6>
+
+<button class="btn btn-success mb-3" @onclick="OnAddUser">
+    <Icon Name="IconName.ShieldPlus" /> افزودن نقش
+</button>
+
+<Grid TItem="RoleDto"
+    Class="table table-hover table-bordered table-striped" 
+    DataProvider="RoleDataProvider"
+    AllowPaging="true"
+    PageSize="10"
+    PageSizeSelectorVisible="true"
+    ItemsPerPageText="تعداد نمایش"
+    PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+    Responsive="true">
+
+    <GridColumns>
+        <GridColumn TItem="RoleDto" HeaderText="نام نقش" HeaderTextAlignment="Alignment.Center">
+            @context.RoleName
+        </GridColumn>
+        <GridColumn TItem="RoleDto" HeaderText="مجوز ها">
+            @foreach (var item in context.AccessNames)
+            {
+                <Badge Class="m-2" Color="BadgeColor.Primary" VisuallyHiddenText="Visually hidden text for Primary">@item.Name</Badge>
+            }
+        </GridColumn>
+        <GridColumn TItem="RoleDto" HeaderText="تعداد کاربران نقش" HeaderTextAlignment="Alignment.Center">
+            @context.UserCount
+        </GridColumn>
+        <GridColumn TItem="RoleDto" HeaderText="آخرین بروزرسانی" HeaderTextAlignment="Alignment.Center">
+            @context.UpdateTime
+        </GridColumn> 
+        <GridColumn TItem="RoleDto" HeaderText="فعال" HeaderTextAlignment="Alignment.Center">
+             @if (context.IsActive)
+            {
+                <Icon Name="IconName.PersonCheck" Size="IconSize.x5" Style="color : green" />
+            }
+            else{
+            <Icon Name="IconName.PersonDash" Size="IconSize.x5" Style="color : red" />
+            }
+        </GridColumn>
+        <GridColumn TItem="RoleDto" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
+            <div class="d-flex justify-content-center gap-2">
+                <Button Color="ButtonColor.Warning"> <Icon Name="IconName.FileEarmarkMedical" /> ویرایش </Button>
+                <Button Color="ButtonColor.Danger"> <Icon Name="IconName.Trash" /> حذف </Button>
+            </div>
+        </GridColumn>
+    </GridColumns>
+
+</Grid>
+
+@code {
+    private PageResultDto<RoleDto>? roleList ;
+    private async Task<GridDataProviderResult<RoleDto>> RoleDataProvider(GridDataProviderRequest<RoleDto> request)
+    {
+
+        if (roleList is null) 
+            roleList = await roleApi.RoleListAsync(request.PageNumber, request.PageSize);
+
+        
+        return await Task.FromResult(request.ApplyTo(roleList.Items));
+    }
+    // protected override async Task OnInitializedAsync()
+    // {
+        
+    // }
+   
+
+    private void OnAddUser()
+    {
+        NavigationManager.NavigateTo("/role/create");
+    }
+}

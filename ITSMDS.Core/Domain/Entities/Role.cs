@@ -12,6 +12,10 @@ public class Role : Entity<long>, IAggregateRoot
 {
     public string Name { get; private set; }
     public string? Description { get; private set; }
+    public DateTime CreateDate { get; private set; }
+    public DateTime ModifiedTime { get; private set; }
+    public bool IsActive { get; private set; }
+    public bool IsDeleted { get; private set; }
 
     private readonly List<UserRole> _userRoles = new();
     public virtual IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
@@ -27,18 +31,37 @@ public class Role : Entity<long>, IAggregateRoot
         ValidateName(name);
 
         Name = name;
-        Description = description;
+        Description = description;        
     }
 
     public void UpdateName(string name)
     {
         ValidateName(name);
         Name = name;
+        ModifiedTime = DateTime.UtcNow;
+
+    }
+    public void Activate()
+    {
+        IsActive = true;
+        ModifiedTime = DateTime.UtcNow;
     }
 
+    public void Deactivate()
+    {
+        IsActive = false;
+        ModifiedTime = DateTime.UtcNow;
+    }
+    public void MarkAsDeleted()
+    {
+        IsDeleted = true;
+        IsActive = false;
+        ModifiedTime = DateTime.UtcNow;
+    }
     public void UpdateDescription(string? description)
     {
         Description = description;
+        ModifiedTime = DateTime.UtcNow;
     }
 
     public void AddUser(User user)

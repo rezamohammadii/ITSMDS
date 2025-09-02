@@ -93,4 +93,29 @@ public class UserApiClient(HttpClient httpClient)
         }
         return false;
     }
+
+    public async Task<bool> CreateUserAsync(UserModelIn modelIn, CancellationToken ct = default)
+    {
+        try
+        {
+            var serilaizeModel = JsonSerializer.Serialize(modelIn);
+            var content = new StringContent(serilaizeModel, Encoding.UTF8, "application/json");
+            var res = await httpClient.PostAsync("/api/user/create", content, ct);
+            if (res.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var contentResonse = await res.Content.ReadAsStringAsync();
+                using JsonDocument jsonDocument = JsonDocument.Parse(contentResonse);
+                JsonElement jsonElement = jsonDocument.RootElement;
+                bool result = jsonElement.GetProperty("response").GetBoolean();
+                return result;
+            }
+            return false;
+        }
+        catch (Exception)
+        {
+            return false ;
+            throw;
+        }
+       
+    }
 }

@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ITSMDS.Core\ITSMDS.Core.csproj" />
     <ProjectReference Include="..\ITSMDS.Infrastructure\ITSMDS.Infrastructure.csproj" />
-    <ProjectReference Include="..\ITSMDS.ServiceDefaults\ITSMDS.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

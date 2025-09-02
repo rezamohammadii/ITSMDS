@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ITSMDS.ServiceDefaults\ITSMDS.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\ITSMDS.Core\ITSMDS.Core.csproj" />
   </ItemGroup>
 
 </Project>

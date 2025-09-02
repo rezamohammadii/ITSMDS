@@ -1,0 +1,580 @@
+﻿@page "/user/permission"
+
+@using System.ComponentModel.DataAnnotations
+
+
+<PageTitle>مدیریت نقش ها</PageTitle>
+
+<h3>مدیریت نقش </h3>
+
+
+<Tabs EnableFadeEffect="true" Style="margin-bottom: 20px">
+    <Tab Title="مدیریت دسترسی" Active="true" >
+        <Content>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-lg mx-auto">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">ایجاد دسترسی جدید +</h5>
+                        </div>
+                        <div class="card-body">
+                            <EditForm Model="@NewPermission" OnValidSubmit="@HandleValidSubmit">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="form-group mb-4">
+                                    <label for="permission-name">نام دسترسی</label>
+                                    <InputText id="permission-name" class="form-control" @bind-Value="NewPermission.Name" placeholder="نام دسترسی را وارد کنید" />
+                                    <ValidationMessage For="@(() => NewPermission.Name)" />
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="permission-desc">توضیحات</label>
+                                    <InputTextArea id="permission-desc" class="form-control" @bind-Value="NewPermission.Description" placeholder="توضیحات دسترسی را وارد کنید"></InputTextArea>
+                                    <ValidationMessage For="@(() => NewPermission.Description)" />
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="permission-category">دسته بندی</label>
+                                    <InputSelect id="permission-category" class="form-control" @bind-Value="NewPermission.Category">
+                                        <option value="">دسته بندی را انتخاب کنید</option>
+                                        <option value="user-management">مدیریت کاربران</option>
+                                        <option value="role-management">مدیریت نقش‌ها</option>
+                                        <option value="server-management">مدیریت سرورها</option>
+                                        <option value="service-management">مدیریت سرویس‌ها</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => NewPermission.Category)" />
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label>قابلیت‌ها</label>
+                                    <div class="row text-center">
+                                        <div class="col-6 mb-3">
+                                            <input type="checkbox" class="permission-check" id="create" @bind="NewPermission.CanCreate" />
+                                            <label class="permission-label" for="create">
+                                                <i class="fas fa-plus permission-icon"></i>
+                                                <div>ایجاد</div>
+                                            </label>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <input type="checkbox" class="permission-check" id="read" @bind="NewPermission.CanRead" />
+                                            <label class="permission-label" for="read">
+                                                <i class="fas fa-eye permission-icon"></i>
+                                                <div>خواندن</div>
+                                            </label>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <input type="checkbox" class="permission-check" id="update" @bind="NewPermission.CanUpdate" />
+                                            <label class="permission-label" for="update">
+                                                <i class="fas fa-edit permission-icon"></i>
+                                                <div>ویرایش</div>
+                                            </label>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <input type="checkbox" class="permission-check" id="delete" @bind="NewPermission.CanDelete" />
+                                            <label class="permission-label" for="delete">
+                                                <i class="fas fa-trash permission-icon"></i>
+                                                <div>حذف</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+ 
+
+                                <button type="submit" class="btn btn-success btn-block mt-3">ایجاد دسترسی +</button>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 d-flex flex-column shadow-lg mx-auto">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">دسترسی‌های موجود</h5>
+                            <span class="badge badge-light">@ExistingPermissions.Count دسترسی</span>
+                        </div>
+                        <div class="card-body">
+                            @if (ExistingPermissions == null)
+                            {
+                                <p>در حال بارگذاری...</p>
+                            }
+                            else if (!ExistingPermissions.Any())
+                            {
+                                <p>هیچ دسترسیی تعریف نشده است.</p>
+                            }
+                            else
+                            {
+                                @foreach (var category in ExistingPermissions.GroupBy(p => p.Category))
+                                {
+                                    <div class="permission-category mb-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="text-secondary mb-0">@GetCategoryName(category.Key)</h6>
+                                            <span class="badge badge-primary">@category.Count() مورد</span>
+                                        </div>
+
+                                        @foreach (var permission in category)
+                                        {
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-dark">@permission.Name</h6>
+                                                    <p class="card-text text-muted small mb-2">@permission.Description</p>
+
+                                                    <div class="mt-3 pt-2 border-top">
+                                                        <span class="text-muted small">قابلیت ها:</span>
+                                                        <div class="capabilities ">
+                                                            @if (permission.CanCreate)
+                                                            {
+                                                                <Badge Class="m-2" Color="BadgeColor.Primary" VisuallyHiddenText="Visually hidden text for Primary">Primary</Badge>
+                                                            }
+                                                            @if (permission.CanRead)
+                                                            {
+                                                                <Badge Class="m-2"  Color="BadgeColor.Secondary" VisuallyHiddenText="Visually hidden text for Secondary">Secondary</Badge>
+                                                            }
+                                                            @if (permission.CanUpdate)
+                                                            {
+                                                                <Badge Class="m-2" Color="BadgeColor.Success" VisuallyHiddenText="Visually hidden text for Success">Success</Badge>
+                                                            }
+                                                            @if (permission.CanDelete)
+                                                            {
+                                                                <Badge Class="m-2" Color="BadgeColor.Danger" VisuallyHiddenText="Visually hidden text for Danger">Danger</Badge>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Content>
+    </Tab>
+    <Tab Title="تخصیص نقش به کاربر">
+        <Content>
+            <div class="col-md-12 mt-4">
+                <div class="card shadow-lg mx-auto">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">تخصیص نقش به کاربر</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-row align-items-end gap-3 flex-wrap">
+                            <div class="flex-grow-1">
+                                <div class="form-group mb-0">
+                                    <label for="user-select">انتخاب نام کاربر</label>
+                                    <InputSelect id="user-select" class="form-control" @bind-Value="SelectedUserId">
+                                        <option value="">کاربر را انتخاب کنید</option>
+                                        @foreach (var user in Users2)
+                                        {
+                                            <option value="@user.Id">@user.FullName - @user.UserName</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="form-group mb-0">
+                                    <label for="role-select">انتخاب نقش</label>
+                                    <InputSelect id="role-select" class="form-control" @bind-Value="SelectedRoleId">
+                                        <option value="">نقش را انتخاب کنید</option>
+                                        @foreach (var role in Roles)
+                                        {
+                                            <option value="@role.Id">@role.Name</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0" style="min-width: 120px;">
+                                <div class="form-group mb-0">
+                                    <label class="d-block invisible">دکمه</label>
+                                    <button class="btn btn-success w-100" @onclick="AssignRole" disabled="@(!IsFormValid)">
+                                        تخصیص نقش
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Content>
+    </Tab>
+    <Tab Title="نقش های کاربر">
+        <Content>
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">مدیریت نقش‌های کاربران</h5>
+                        <span class="badge bg-light text-dark">@FilteredUsers.Count کاربر</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- فرم جستجو -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="جستجو کاربر..." @bind="SearchTerm" @bind:event="oninput" />
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- بخش کاربران -->
+                        <div class="row">
+                            @if (FilteredUsers.Any())
+                            {
+                                @foreach (var user in FilteredUsers)
+                                {
+                                    <div class="col-md-6 col-lg-4 mb-4">
+                                        <div class="card h-100 user-card">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <h6 class="card-title mb-0">@user.FullName</h6>
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirm(user.Id)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="user-info mb-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-id-card text-muted me-2"></i>
+                                                        <small>شماره پرسنلی: @user.EmployeeId</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-envelope text-muted me-2"></i>
+                                                        <small>@user.Email</small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="user-roles">
+                                                    <h6 class="text-muted mb-2">نقش‌ها:</h6>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        @foreach (var role in user.Roles)
+                                                        {
+                                                            <div class="role-badge-container position-relative">
+                                                                    <Badge Color="BadgeColor.Info"><Icon Name="IconName.XLg" /> @role</Badge>
+                                                                
+                                                                
+                                                               
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="alert alert-info text-center">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        کاربری یافت نشد.
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مودال تایید حذف -->
+            @if (ShowDeleteModal)
+            {
+                <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">تایید حذف</h5>
+                                <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>آیا از حذف این کاربر اطمینان دارید؟ این عمل قابل بازگشت نیست.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">انصراف</button>
+                                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">حذف کاربر</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </Content>
+    </Tab>
+</Tabs>
+
+@code {
+    @inject IJSRuntime JSRuntime
+    private string SearchTerm { get; set; } = "";
+    private string UserToDelete { get; set; } = "";
+    private bool ShowDeleteModal { get; set; } = false;
+
+    private List<UserModel> Users = new List<UserModel>
+    {
+        new UserModel
+        {
+            Id = "1",
+            FullName = "مدیر سیستم",
+            EmployeeId = "001",
+            Email = "admin@company.com",
+            Roles = new List<string> { "مدیر سیستم", "اپراتور" }
+        },
+        new UserModel
+        {
+            Id = "2",
+            FullName = "محمد رضایی",
+            EmployeeId = "002",
+            Email = "mohammad@company.com",
+            Roles = new List<string> { "کاربر عادی", "نویسنده" }
+        },
+        new UserModel
+        {
+            Id = "3",
+            FullName = "فاطمه محمدی",
+            EmployeeId = "003",
+            Email = "fateme@company.com",
+            Roles = new List<string> { "مشاور", "نویسنده" }
+        },
+        new UserModel
+        {
+            Id = "4",
+            FullName = "علی حسینی",
+            EmployeeId = "004",
+            Email = "ali@company.com",
+            Roles = new List<string> { "اپراتور" }
+        },
+        new UserModel
+        {
+            Id = "5",
+            FullName = "سارا کریمی",
+            EmployeeId = "005",
+            Email = "sara@company.com",
+            Roles = new List<string> { "کاربر عادی" }
+        }
+    };
+
+    private List<UserModel> FilteredUsers =>
+        Users.Where(u =>
+            u.FullName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            u.EmployeeId.Contains(SearchTerm) ||
+            u.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            u.Roles.Any(r => r.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+
+    private void ShowDeleteConfirm(string userId)
+    {
+        UserToDelete = userId;
+        ShowDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        ShowDeleteModal = false;
+        UserToDelete = "";
+    }
+
+    private void ConfirmDelete()
+    {
+        if (!string.IsNullOrEmpty(UserToDelete))
+        {
+            var user = Users.FirstOrDefault(u => u.Id == UserToDelete);
+            if (user != null)
+            {
+                Users.Remove(user);
+            }
+        }
+        CloseDeleteModal();
+    }
+
+    private async Task RemoveRole(string userId, string roleName)
+    {
+        // تایید قبل از حذف نقش
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { $"آیا از حذف نقش '{roleName}' اطمینان دارید؟" });
+
+        if (confirm)
+        {
+            var user = Users.FirstOrDefault(u => u.Id == userId);
+            if (user != null && user.Roles.Contains(roleName))
+            {
+                user.Roles.Remove(roleName);
+                StateHasChanged(); // به روز رسانی UI
+            }
+        }
+    }
+
+    public class UserModel
+    {
+        public string Id { get; set; }
+        public string FullName { get; set; }
+        public string EmployeeId { get; set; }
+        public string Email { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+    }
+    protected override void OnInitialized()
+    {
+       
+        // بارگذاری دسترسی‌های موجود از دیتابیس یا سرویس
+        LoadExistingPermissions();
+       
+    }
+
+    private PermissionModel NewPermission = new PermissionModel();
+    private List<PermissionModel> ExistingPermissions = new List<PermissionModel>();
+
+    private void LoadExistingPermissions()
+    {
+        // داده‌های نمونه - در عمل باید از سرویس یا دیتابیس بارگذاری شود
+        ExistingPermissions = new List<PermissionModel>
+        {
+            new PermissionModel
+            {
+                Name = "ایجاد و ویرایش و حذف کاربران",
+                Description = "این دسترسی امکان مدیریت کامل کاربران را فراهم می‌کند",
+                Category = "user-management",
+                CanCreate = true,
+                CanRead = true,
+                CanUpdate = true,
+                CanDelete = true
+            },
+            new PermissionModel
+            {
+                Name = "ایجاد و ویرایش و حذف نقش‌ها",
+                Description = "این دسترسی امکان مدیریت کامل نقش‌ها را فراهم می‌کند",
+                Category = "role-management",
+                CanCreate = true,
+                CanRead = true,
+                CanUpdate = true,
+                CanDelete = true
+            },
+            new PermissionModel
+            {
+                Name = "مدیریت و پیگردی سرورها",
+                Description = "این دسترسی امکان مدیریت سرورها را فراهم می‌کند",
+                Category = "server-management",
+                CanCreate = true,
+                CanRead = true,
+                CanUpdate = false,
+                CanDelete = false
+            },
+            new PermissionModel
+            {
+                Name = "مدیریت سرویس‌های سیستم",
+                Description = "این دسترسی امکان مدیریت سرویس‌ها را فراهم می‌کند",
+                Category = "service-management",
+                CanCreate = true,
+                CanRead = true,
+                CanUpdate = true,
+                CanDelete = false
+            },
+            new PermissionModel
+            {
+                Name = "service_management",
+                Description = "دسترسی مدیریت سرویس‌ها",
+                Category = "service-management",
+                CanCreate = false,
+                CanRead = true,
+                CanUpdate = true,
+                CanDelete = false
+            }
+        };
+    }
+
+    private void HandleValidSubmit()
+    {
+        // افزودن دسترسی جدید به لیست
+        ExistingPermissions.Add(NewPermission);
+
+        // نمایش پیام موفقیت
+        // در عمل باید به سرویس ذخیره داده ارسال شود
+
+        // ریست کردن فرم
+        NewPermission = new PermissionModel();
+    }
+
+    private string GetCategoryName(string categoryKey)
+    {
+        return categoryKey switch
+        {
+            "user-management" => "مدیریت کاربران",
+            "role-management" => "مدیریت نقش‌ها",
+            "server-management" => "مدیریت سرورها",
+            "service-management" => "مدیریت سرویس‌ها",
+            _ => categoryKey
+        };
+    }
+
+    public class PermissionModel
+    {
+        [Required(ErrorMessage = "نام دسترسی الزامی است")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "توضیحات دسترسی الزامی است")]
+        public string Description { get; set; }
+
+        [Required(ErrorMessage = "انتخاب دسته‌بندی الزامی است")]
+        public string Category { get; set; }
+
+        public bool CanCreate { get; set; }
+        public bool CanRead { get; set; }
+        public bool CanUpdate { get; set; }
+        public bool CanDelete { get; set; }
+    }
+
+    private string SelectedUserId { get; set; } = "";
+    private string SelectedRoleId { get; set; } = "";
+
+    private bool IsFormValid => !string.IsNullOrEmpty(SelectedUserId) && !string.IsNullOrEmpty(SelectedRoleId);
+
+    private List<UserDto> Users2 = new List<UserDto>
+    {
+        new UserDto { Id = "1", UserName = "admin", FullName = "مدیر سیستم" },
+        new UserDto { Id = "2", UserName = "mohammad", FullName = "محمد رضایی" },
+        new UserDto { Id = "3", UserName = "fateme", FullName = "فاطمه محمدی" },
+        new UserDto { Id = "4", UserName = "ali", FullName = "علی حسینی" },
+        new UserDto { Id = "5", UserName = "sara", FullName = "سارا کریمی" }
+    };
+
+    private List<RoleDto> Roles = new List<RoleDto>
+    {
+        new RoleDto { Id = "1", Name = "مدیر سیستم" },
+        new RoleDto { Id = "2", Name = "کاربر عادی" },
+        new RoleDto { Id = "3", Name = "نویسنده" },
+        new RoleDto { Id = "4", Name = "مشاور" },
+        new RoleDto { Id = "5", Name = "اپراتور" }
+    };
+
+    private async Task AssignRole()
+    {
+        if (IsFormValid)
+        {
+            var user = Users2.FirstOrDefault(u => u.Id == SelectedUserId);
+            var role = Roles.FirstOrDefault(r => r.Id == SelectedRoleId);
+
+            // اینجا می‌توانید درخواست API برای تخصیص نقش ارسال کنید
+            // await Http.PostAsJsonAsync("api/userroles", new { UserId = SelectedUserId, RoleId = SelectedRoleId });
+
+            // نمایش پیام موفقیت
+            // await JSRuntime.InvokeVoidAsync("alert", $"نقش {role.Name} به کاربر {user.FullName} تخصیص داده شد");
+
+            // ریست کردن فرم
+            SelectedUserId = "";
+            SelectedRoleId = "";
+        }
+    }
+
+    public class UserDto
+    {
+        public string Id { get; set; }
+        public string UserName { get; set; }
+        public string FullName { get; set; }
+    }
+
+    public class RoleDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+
+}
