@@ -2,15 +2,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITSMDS.Infrastructure", "ITSMDS.Infrastructure\ITSMDS.Infrastructure.csproj", "{04D9D6C2-E292-4772-8D2B-601541590B80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.Infrastructure", "ITSMDS.Infrastructure\ITSMDS.Infrastructure.csproj", "{04D9D6C2-E292-4772-8D2B-601541590B80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITSMDS.ApiService", "ITSMDS.ApiService\ITSMDS.ApiService.csproj", "{D3314129-191A-478E-B83F-F7372DFB5ADC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.ApiService", "ITSMDS.ApiService\ITSMDS.ApiService.csproj", "{D3314129-191A-478E-B83F-F7372DFB5ADC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITSMDS.Core", "ITSMDS.Core\ITSMDS.Core.csproj", "{054475DA-35D6-4177-8F44-7CFEBA2346E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.Tests", "ITSMDS.Tests\ITSMDS.Tests.csproj", "{1A2B093F-6BD4-4D0A-8793-A292677AE120}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITSMDS.Tests", "ITSMDS.Tests\ITSMDS.Tests.csproj", "{1A2B093F-6BD4-4D0A-8793-A292677AE120}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.Web", "ITSMDS.Web\ITSMDS.Web.csproj", "{0AB8CE1E-AF06-45EB-B202-5A626D73236F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITSMDS.Web", "ITSMDS.Web\ITSMDS.Web.csproj", "{0AB8CE1E-AF06-45EB-B202-5A626D73236F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.Application", "ITSMDS.Application\ITSMDS.Application.csproj", "{D9F81CDD-DCB7-4B01-891B-98337BF5FADF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITSMDS.Domain", "ITSMDS.Domain\ITSMDS.Domain.csproj", "{8C7A09B4-D947-467C-A2F5-3D23D80B3778}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +28,6 @@ Global
 		{D3314129-191A-478E-B83F-F7372DFB5ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3314129-191A-478E-B83F-F7372DFB5ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3314129-191A-478E-B83F-F7372DFB5ADC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{054475DA-35D6-4177-8F44-7CFEBA2346E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{054475DA-35D6-4177-8F44-7CFEBA2346E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{054475DA-35D6-4177-8F44-7CFEBA2346E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{054475DA-35D6-4177-8F44-7CFEBA2346E8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A2B093F-6BD4-4D0A-8793-A292677AE120}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A2B093F-6BD4-4D0A-8793-A292677AE120}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A2B093F-6BD4-4D0A-8793-A292677AE120}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,8 +36,19 @@ Global
 		{0AB8CE1E-AF06-45EB-B202-5A626D73236F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AB8CE1E-AF06-45EB-B202-5A626D73236F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AB8CE1E-AF06-45EB-B202-5A626D73236F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9F81CDD-DCB7-4B01-891B-98337BF5FADF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9F81CDD-DCB7-4B01-891B-98337BF5FADF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9F81CDD-DCB7-4B01-891B-98337BF5FADF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9F81CDD-DCB7-4B01-891B-98337BF5FADF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C7A09B4-D947-467C-A2F5-3D23D80B3778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C7A09B4-D947-467C-A2F5-3D23D80B3778}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C7A09B4-D947-467C-A2F5-3D23D80B3778}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C7A09B4-D947-467C-A2F5-3D23D80B3778}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EAA99C16-4C18-4B4D-B765-ECD77DECB55E}
 	EndGlobalSection
 EndGlobal

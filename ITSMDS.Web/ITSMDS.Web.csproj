@@ -9,10 +9,12 @@
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.19" />
+    <PackageReference Include="MudBlazor" Version="8.12.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ITSMDS.Core\ITSMDS.Core.csproj" />
+    <ProjectReference Include="..\ITSMDS.Application\ITSMDS.Application.csproj" />
+    <ProjectReference Include="..\ITSMDS.Domain\ITSMDS.Domain.csproj" />
   </ItemGroup>
 
 </Project>

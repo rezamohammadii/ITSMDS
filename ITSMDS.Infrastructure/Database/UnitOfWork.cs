@@ -1,6 +1,6 @@
 ﻿
 
-using ITSMDS.Core.Application.Abstractions;
+using ITSMDS.Application.Abstractions;
 
 namespace ITSMDS.Infrastructure.Database;
 

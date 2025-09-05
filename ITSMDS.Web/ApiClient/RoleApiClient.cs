@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
-using ITSMDS.Core.Application.DTOs;
+using ITSMDS.Domain.DTOs;
 
 namespace ITSMDS.Web.ApiClient;
 

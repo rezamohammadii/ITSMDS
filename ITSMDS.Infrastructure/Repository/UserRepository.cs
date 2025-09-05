@@ -1,7 +1,7 @@
 ﻿
 
-using ITSMDS.Core.Application.Abstractions;
-using ITSMDS.Core.Application.DTOs;
+using ITSMDS.Application.Abstractions;
+using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
 using ITSMDS.Infrastructure.Database;
 using ITSMDS.Infrastructure.Extensions;
@@ -67,6 +67,12 @@ public class UserRepository : IUserRepository
     public async ValueTask<List<Permission?>> GetPermissionListAsync(CancellationToken cancellationToken = default)
     {
         var result = await _db.Permissions.Where(x => x.IsActive && !x.IsDeleted).ToListAsync(cancellationToken);
+        return result;
+    }
+
+    public async ValueTask<Permission?> GetPermissionByNameAsync(string permissionName, CancellationToken ct = default)
+    {
+        var result = await _db.Permissions.Where(x => !x.IsDeleted &&  x.Name == permissionName).FirstOrDefaultAsync(ct);
         return result;
     }
 

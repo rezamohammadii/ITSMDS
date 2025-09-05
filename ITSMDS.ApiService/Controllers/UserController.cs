@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Azure.Core;
-using ITSMDS.Core.Application.DTOs;
-using ITSMDS.Core.Application.Services;
+using ITSMDS.Domain.DTOs;
+using ITSMDS.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,119 +25,133 @@ namespace ITSMDS.ApiService.Controllers
         {
             try
             {
-                Console.WriteLine(JsonSerializer.Serialize(userRequest));
+                _logger.LogInformation("CreateUserAsync called with data: {@userRequest}", userRequest);
                 var user = await _userService.CreateAsync(userRequest, ct);
+
                 if (user is not null)
                 {
-                    return Ok(new
-                    {
-                        response = true,
-                        message = "User create successful"
-                    });
+                    _logger.LogInformation("User created successfully with ID: {UserId}", user.id);
+                    return Ok(new { response = true, message = "User create successful" });
                 }
-                else
-                {
-                    return BadRequest("Failed create user");
-                }
-                
+
+                _logger.LogWarning("User creation failed for data: {@userRequest}", userRequest);
+                return BadRequest(new ProblemDetails { Title = "Create Failed", Detail = "Failed to create user", Status = 400 });
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed create user {MSG}", ex.Message);
-                return StatusCode(500);
+                _logger.LogError(ex, "Exception in CreateUserAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
             }
-          
         }
+
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllAsync(CancellationToken ct )
+        public async Task<IActionResult> GetAllAsync(CancellationToken ct)
         {
-            var userList = await _userService.GetAllAsync(ct);
-            return Ok(userList);
-        }
-
-        [HttpGet("{personalCode}")]
-        public async Task<IActionResult> GetUserAsunc(int personalCode, CancellationToken ct)
-        {
-
             try
             {
-                var user = await _userService.GetUserAsync(personalCode, ct);
-                if (user is not null)
-                {
-                    return Ok(user);
-                }
-                else
-                {
-                    return BadRequest("Failed update user");
-                }
-
+                var userList = await _userService.GetAllAsync(ct);
+                _logger.LogInformation("Fetched {Count} users", userList.Count);
+                return Ok(userList);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed update user {MSG}", ex.Message);
-                return StatusCode(500);
+                _logger.LogError(ex, "Exception in GetAllAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
             }
         }
+
+
+        [HttpGet("{personalCode}")]
+        public async Task<IActionResult> GetUserAsync(int personalCode, CancellationToken ct)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user with personalCode: {Code}", personalCode);
+                var user = await _userService.GetUserAsync(personalCode, ct);
+
+                if (user is not null)
+                {
+                    _logger.LogInformation("User found: {@user}", user);
+                    return Ok(user);
+                }
+
+                _logger.LogWarning("User not found with personalCode: {Code}", personalCode);
+                return NotFound(new ProblemDetails { Title = "User Not Found", Detail = $"No user with code {personalCode}", Status = 404 });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in GetUserAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
+            }
+        }
+
 
         [HttpPut("edit")]
         public async Task<IActionResult> EditUserAsync(UpdateUserRequest request, CancellationToken ct)
         {
             try
             {
+                _logger.LogInformation("EditUserAsync called with data: {@request}", request);
                 var user = await _userService.UpdateAsync(request, ct);
+
                 if (user is not null)
                 {
-                    return Ok(new
-                    {
-                        response = user.id,
-                        message = "User update successful"
-                    });
-                }
-                else
-                {
-                    return BadRequest("Failed update user");
+                    _logger.LogInformation("User updated successfully: {UserId}", user.id);
+                    return Ok(new { response = user.id, message = "User update successful" });
                 }
 
+                _logger.LogWarning("User update failed for ID: {PersonalCode}", request.PersonalCode);
+                return BadRequest(new ProblemDetails { Title = "Update Failed", Detail = "Failed to update user", Status = 400 });
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed update user {MSG}", ex.Message);
-                return StatusCode(500);
+                _logger.LogError(ex, "Exception in EditUserAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
             }
         }
+
 
         [HttpDelete("delete/{pCode}")]
         public async Task<IActionResult> DeleteUserAsync(int pCode, CancellationToken ct)
         {
             try
             {
+                _logger.LogInformation("Attempting to delete user with code: {Code}", pCode);
                 var res = await _userService.DeleteUserAsync(pCode, ct);
+
                 if (res)
                 {
-                    return Ok(new
-                    {
-                        response = res,
-                        message = "User deleted successful"
-                    });
-                }
-                else
-                {
-                    return BadRequest("Failed deleted user");
+                    _logger.LogInformation("User deleted successfully: {Code}", pCode);
+                    return Ok(new { response = res, message = "User deleted successful" });
                 }
 
+                _logger.LogWarning("User deletion failed: {Code}", pCode);
+                return BadRequest(new ProblemDetails { Title = "Delete Failed", Detail = "Failed to delete user", Status = 400 });
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed deleted user {MSG}", ex.Message);
-                return StatusCode(500);
+                _logger.LogError(ex, "Exception in DeleteUserAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
             }
         }
+
 
         [HttpGet("permissions")]
         public async Task<IActionResult> GetPermissionsAsync(CancellationToken ct = default)
         {
-
+            try
+            {
+                var result = await _userService.GetPermissionListAsync(ct);
+                _logger.LogInformation("Permissions fetched: {Count}", result.Count);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in GetPermissionsAsync");
+                return StatusCode(500, new ProblemDetails { Title = "Server Error", Detail = ex.Message, Status = 500 });
+            }
         }
-    } 
+
+    }
 }

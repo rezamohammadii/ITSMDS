@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ITSMDS.Core\ITSMDS.Core.csproj" />
+    <ProjectReference Include="..\ITSMDS.Application\ITSMDS.Application.csproj" />
+    <ProjectReference Include="..\ITSMDS.Domain\ITSMDS.Domain.csproj" />
   </ItemGroup>
 
 

@@ -2,120 +2,202 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using ITSMDS.Domain.DTOs;
 using ITSMDS.Web.ViewModel;
 
 namespace ITSMDS.Web.ApiClient;
 
-public class UserApiClient(HttpClient httpClient)
+public class UserApiClient
 {
-    
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<UserApiClient> _logger;
+
+    public UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
+    {
+        _httpClient = httpClient;
+        _logger = logger;
+    }
+
     public async Task<UserModel[]> GetUserListAsync(CancellationToken ct = default)
     {
-        List<UserModel>? userList = null;
-        httpClient.Timeout = TimeSpan.FromSeconds(30);
-        await foreach (var user in httpClient.GetFromJsonAsAsyncEnumerable<UserModel>("/api/user/GetAll", ct))
+        try
         {
-            if (user is not null)
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            List<UserModel>? userList = null;
+
+            await foreach (var user in _httpClient.GetFromJsonAsAsyncEnumerable<UserModel>("/api/user/GetAll", ct))
             {
-                userList ??= [];
-                userList.Add(user);
+                if (user is not null)
+                {
+                    userList ??= [];
+                    userList.Add(user);
+                }
             }
+
+            _logger.LogInformation("Fetched {Count} users", userList?.Count ?? 0);
+            return userList?.ToArray() ?? [];
         }
-
-        return userList?.ToArray() ?? [];
-
-    }
-    public async Task<UserModel>? GetUserAsync(int personalCode, CancellationToken ct = default)
-    {
-        httpClient.Timeout = TimeSpan.FromSeconds(30);
-
-        var response = await httpClient.GetAsync($"/api/user/{personalCode}");
-
-        if(response.StatusCode == System.Net.HttpStatusCode.OK)
+        catch (Exception ex)
         {
-            var content = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(content))
-            {
-                return null;
-            }
-            var user = JsonSerializer.Deserialize<UserModel>(content);
-            return user ?? new UserModel { };
+            _logger.LogError(ex, "Error in GetUserListAsync");
+            return [];
         }
-        httpClient.Dispose();
-        return null;
-
     }
-    public async Task<UserModel>? EditUserAsync(UserModel userModel, CancellationToken ct = default)
+
+    public async Task<UserModel?> GetUserAsync(int personalCode, CancellationToken ct = default)
     {
-        var editUserRequest = new EditUserModel(
-            userModel.Email,
-            userModel.FirstName,
-            userModel.LastName,
-            userModel.PersonalCode.ToString(),
-            userModel.PhoneNumber,
-            userModel.UserName,
-            userModel.IpAddress
+        try
+        {
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            var response = await _httpClient.GetAsync($"/api/user/{personalCode}", ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync(ct);
+                if (string.IsNullOrEmpty(content))
+                {
+                    _logger.LogWarning("Empty response for user {Code}", personalCode);
+                    return null;
+                }
+
+                var user = JsonSerializer.Deserialize<UserModel>(content);
+                _logger.LogInformation("Fetched user {Code}", personalCode);
+                return user ?? new UserModel { };
+            }
+
+            _logger.LogWarning("Failed to fetch user {Code}, Status: {Status}", personalCode, response.StatusCode);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetUserAsync for code {Code}", personalCode);
+            return null;
+        }
+    }
+
+    public async Task<UserModel?> EditUserAsync(UserModel userModel, CancellationToken ct = default)
+    {
+        try
+        {
+            var editUserRequest = new EditUserModel(
+                userModel.Email,
+                userModel.FirstName,
+                userModel.LastName,
+                userModel.PersonalCode.ToString(),
+                userModel.PhoneNumber,
+                userModel.UserName,
+                userModel.IpAddress
             );
 
-        var jsonString = JsonSerializer.Serialize(editUserRequest);
-        var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            var jsonString = JsonSerializer.Serialize(editUserRequest);
+            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
-        var response = await httpClient.PutAsync($"/api/user/edit", content);
+            var response = await _httpClient.PutAsync("/api/user/edit", content, ct);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            var contentResonse = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(contentResonse))
+            if (response.IsSuccessStatusCode)
             {
-                return null;
-            }
-            var user = JsonSerializer.Deserialize<UserModel>(contentResonse);
-            return user ?? new UserModel { };
-        }
-        return null;
+                var contentResponse = await response.Content.ReadAsStringAsync(ct);
+                if (string.IsNullOrEmpty(contentResponse))
+                {
+                    _logger.LogWarning("Empty response on edit for user {Code}", userModel.PersonalCode);
+                    return null;
+                }
 
+                var user = JsonSerializer.Deserialize<UserModel>(contentResponse);
+                _logger.LogInformation("User edited successfully: {Code}", userModel.PersonalCode);
+                return user ?? new UserModel { };
+            }
+
+            _logger.LogWarning("Failed to edit user {Code}, Status: {Status}", userModel.PersonalCode, response.StatusCode);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in EditUserAsync for user {Code}", userModel.PersonalCode);
+            return null;
+        }
     }
+
     public async Task<bool> DeleteUserAsync(int personalCode, CancellationToken ct = default)
     {
-        var response = await httpClient.DeleteAsync($"/api/user/delete/{personalCode}", ct);
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        try
         {
-            var contentResonse = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(contentResonse))
+            var response = await _httpClient.DeleteAsync($"/api/user/delete/{personalCode}", ct);
+
+            if (response.IsSuccessStatusCode)
             {
-                return false;
+                var contentResponse = await response.Content.ReadAsStringAsync(ct);
+                if (string.IsNullOrEmpty(contentResponse))
+                {
+                    _logger.LogWarning("Empty delete response for user {Code}", personalCode);
+                    return false;
+                }
+
+                using var jsonDocument = JsonDocument.Parse(contentResponse);
+                var jsonElement = jsonDocument.RootElement;
+                bool res = jsonElement.GetProperty("response").GetBoolean();
+
+                _logger.LogInformation("User deleted: {Code}, Result: {Result}", personalCode, res);
+                return res;
             }
-            using JsonDocument jsonDocument = JsonDocument.Parse(contentResonse);
-            JsonElement jsonElement = jsonDocument.RootElement;
-            bool res = jsonElement.GetProperty("response").GetBoolean();
-            return res;
-            
+
+            _logger.LogWarning("Failed to delete user {Code}, Status: {Status}", personalCode, response.StatusCode);
+            return false;
         }
-        return false;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in DeleteUserAsync for user {Code}", personalCode);
+            return false;
+        }
     }
 
     public async Task<bool> CreateUserAsync(UserModelIn modelIn, CancellationToken ct = default)
     {
         try
         {
-            var serilaizeModel = JsonSerializer.Serialize(modelIn);
-            var content = new StringContent(serilaizeModel, Encoding.UTF8, "application/json");
-            var res = await httpClient.PostAsync("/api/user/create", content, ct);
-            if (res.StatusCode == System.Net.HttpStatusCode.OK)
+            var serializedModel = JsonSerializer.Serialize(modelIn);
+            var content = new StringContent(serializedModel, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("/api/user/create", content, ct);
+
+            if (response.IsSuccessStatusCode)
             {
-                var contentResonse = await res.Content.ReadAsStringAsync();
-                using JsonDocument jsonDocument = JsonDocument.Parse(contentResonse);
-                JsonElement jsonElement = jsonDocument.RootElement;
+                var contentResponse = await response.Content.ReadAsStringAsync(ct);
+                using var jsonDocument = JsonDocument.Parse(contentResponse);
+                var jsonElement = jsonDocument.RootElement;
                 bool result = jsonElement.GetProperty("response").GetBoolean();
+
+                _logger.LogInformation("User created: {Username}, Result: {Result}", modelIn.UserName, result);
                 return result;
             }
+
+            _logger.LogWarning("Failed to create user {Username}, Status: {Status}", modelIn.UserName, response.StatusCode);
             return false;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return false ;
-            throw;
+            _logger.LogError(ex, "Error in CreateUserAsync for user {Username}", modelIn.UserName);
+            return false;
         }
-       
+    }
+
+    public async Task<List<PermissionDto>> GetPermissionListAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            
+
+            var response = await _httpClient.GetFromJsonAsync<List<PermissionDto>>("/api/user/permissions", ct);
+            
+
+            _logger.LogInformation("Fetched {Count} permission", response?.Count ?? 0);
+            return response ?? [];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetPermissionListAsync");
+            return [];
+        }
     }
 }
+

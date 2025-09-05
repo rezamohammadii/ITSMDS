@@ -1,7 +1,6 @@
-using ITSMDS.Core;
 using ITSMDS.Infrastructure;
 using Microsoft.Extensions.Configuration;
-
+using ITSMDS.Domain;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
@@ -11,7 +10,7 @@ builder.Services.AddControllers();
 // Add services Infrastructure 
 builder.AddServiceInfrastructure(builder.Configuration);
 
-builder.AddCoreServices();
+//builder.AddCoreServices();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();

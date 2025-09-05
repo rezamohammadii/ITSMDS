@@ -1,7 +1,11 @@
 ﻿@page "/role/create"
-@using ITSMDS.Core.Application.DTOs
+@using ITSMDS.Domain.DTOs
 @using ITSMDS.Web.ApiClient
 @inject RoleApiClient roleApi
+@using ITSMDS.Web.ApiClient
+@inject UserApiClient userApi
+
+
 <PageTitle>اضافه کردن نقش </PageTitle>
 
 
@@ -12,7 +16,7 @@
         <h6 class="mb-0 text-muted">افزودن نقش ها و مجوز های سیستم</h6>
     </div>
 
-    <Button Color="ButtonColor.Warning" Class="ms-auto">
+    <Button Color="ButtonColor.Warning" Class="me-auto">
         <Icon Name="IconName.ArrowRight" /> بازگشت
     </Button>
 </div>
@@ -36,6 +40,81 @@
             <div class="mb-3">
                 <TextAreaInput @bind-Value="@roleDtoIn.Description" Rows="5" TextAlignment="Alignment.End" Class="form-control" />
             </div>
+
+            <div class="mb-3 text-muted">مدیریت دسترسی </div>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                  @if (ExistingPermissions == null)
+                {
+                    <p>در حال بارگذاری...</p>
+                }              
+                else
+                {
+                    <div class="row g-4">
+                        @foreach (var permission in ExistingPermissions)
+                        {
+
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded shadow-sm h-100" style="border-color: #ddd;">
+                                    @switch (@permission.Name)
+                                    {
+                                        case "user":
+                                            @:<h6 class="text-primary fw-bold mb-3"> مدیریت کاربران</h6>
+                                            break;
+                                        case "role":
+                                            @: <h6 class="text-primary fw-bold mb-3"> مدیریت نقش ها</h6>
+                                            break;
+                                        case "server":
+                                            @: <h6 class="text-primary fw-bold mb-3"> مدیریت سرور ها</h6>
+                                            break;
+                                        case "service":
+                                            @: <h6 class="text-primary fw-bold mb-3"> مدیریت سرویس ها</h6>
+                                            break;
+                                    }
+                                    
+
+                                    <div class="d-flex flex-wrap gap-3">
+                                             @foreach (var item in permission.Abilites)
+                                                {
+                                            var key = $"{permission.Name}.{item}";
+                                            <div class="col-6 mb-2 d-flex align-items-center gap-2">
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       id="@key"
+                                                       checked="@roleDtoIn.SelectedPermissions.Contains($"{permission.Name}.{item}")"
+                                                       @onchange="e => OnPermissionChanged(e, key)" />
+                                                        <label class="form-check-label" for="@($"{permission.Name}-{item}")">
+                                                            @switch (item)
+                                                            {
+                                                                case "create":
+                                                                    @:<span>ایجاد</span>
+                                                                    break;
+                                                                case "read":
+                                                                    @:<span>خواندن</span>
+                                                                    break;
+                                                                case "edit":
+                                                                    @:<span>ویرایش</span>
+                                                                    break;
+                                                                case "delete":
+                                                                    @:<span>حذف</span>
+                                                                    break;
+                                                            }
+                                                        </label>
+                                                      
+
+                                                      
+                                                    </div>
+                                                }
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+
+                }                         
+            </div>
+           
             <div class="mb-3 d-flex justify-content-start align-items-center gap-2">
                 <CheckboxInput Label="نقش فعال" @bind-Value="roleDtoIn.IsActive" />
             </div>
@@ -81,4 +160,28 @@
             isShowAlert = false;
         }
     }
+    private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ExistingPermissions = await userApi.GetPermissionListAsync();
+    }
+
+    private void OnPermissionChanged(ChangeEventArgs e, string key)
+    {
+
+        bool isChecked = e.Value?.ToString() == "true" || e.Value?.ToString() == "on";
+        isChecked = bool.Parse(e.Value.ToString());
+        if (isChecked)
+        {
+            if (!roleDtoIn.SelectedPermissions.Contains(key))
+                roleDtoIn.SelectedPermissions.Add(key);
+        }
+        else
+        {
+            roleDtoIn.SelectedPermissions.Remove(key);
+        }
+    }
+
+
 }

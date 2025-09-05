@@ -1,14 +1,14 @@
 ﻿
 
 using AutoMapper;
-using ITSMDS.Core.Application.Abstractions;
-using ITSMDS.Core.Application.DTOs;
-using ITSMDS.Core.Application.Services;
-using ITSMDS.Core.Tools;
+using ITSMDS.Application.Abstractions;
+using ITSMDS.Domain.DTOs;
+using ITSMDS.Application.Services;
+using ITSMDS.Domain;
 using ITSMDS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using ITSMDS.Domain.Tools;
 
 namespace ITSMDS.Infrastructure.Services;
 
@@ -17,21 +17,31 @@ public class RoleService : IRoleService
     private readonly IRoleRepository _roleRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RoleService> _logger;
+    private readonly IUserRepository _userRepository;
     public RoleService(IRoleRepository roleRepository,
-        IUnitOfWork unitOfWork, ILogger<RoleService> logger
+        IUnitOfWork unitOfWork, ILogger<RoleService> logger, IUserRepository userRepository
         )
     {
         _roleRepository = roleRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _userRepository = userRepository;
     }
 
     public async Task<bool> CreateRoleAsync(RoleDtoIn roleInput, CancellationToken ct)
     {
         try
         {
+           
             var role = new Role(roleInput.RoleName, roleInput.Description);
             role.Activate();
+            foreach (var item in roleInput.SelectedPermissions)
+            {
+                var permission = await _userRepository.GetPermissionByNameAsync(item);
+                if (permission is null) return false;
+                role.AddPermission(permission);
+            }
+            
             await _roleRepository.CreateRoleAsync(role, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             return true;

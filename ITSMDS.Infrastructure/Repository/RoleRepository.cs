@@ -1,7 +1,7 @@
 ﻿
 
 using System.Security;
-using ITSMDS.Core.Application.Abstractions;
+using ITSMDS.Application.Abstractions;
 using ITSMDS.Domain.Entities;
 using ITSMDS.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;

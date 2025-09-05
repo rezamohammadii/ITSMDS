@@ -1,5 +1,5 @@
-﻿using ITSMDS.Core.Application.Abstractions;
-using ITSMDS.Core.Application.Services;
+﻿using ITSMDS.Application.Abstractions;
+using ITSMDS.Application.Services;
 using ITSMDS.Extensions;
 using ITSMDS.Infrastructure.Database;
 using ITSMDS.Infrastructure.Repository;

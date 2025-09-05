@@ -1,5 +1,5 @@
-﻿using ITSMDS.Core.Application.DTOs;
-using ITSMDS.Core.Application.Services;
+﻿using ITSMDS.Application.Services;
+using ITSMDS.Domain.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

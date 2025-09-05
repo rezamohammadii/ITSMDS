@@ -1,7 +1,9 @@
 ﻿@page "/user/permission"
 
 @using System.ComponentModel.DataAnnotations
-
+@using ITSMDS.Domain.DTOs
+@using ITSMDS.Web.ApiClient
+@inject UserApiClient userApi
 
 <PageTitle>مدیریت نقش ها</PageTitle>
 
@@ -13,7 +15,7 @@
         <Content>
 
             <div class="row">
-                <div class="col-md-6">
+               @*  <div class="col-md-6">
                     <div class="card shadow-lg mx-auto">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">ایجاد دسترسی جدید +</h5>
@@ -46,37 +48,49 @@
                                     </InputSelect>
                                     <ValidationMessage For="@(() => NewPermission.Category)" />
                                 </div>
+
                                 <div class="form-group mb-4">
                                     <label>قابلیت‌ها</label>
                                     <div class="row text-center">
-                                        <div class="col-6 mb-3">
-                                            <input type="checkbox" class="permission-check" id="create" @bind="NewPermission.CanCreate" />
-                                            <label class="permission-label" for="create">
-                                                <i class="fas fa-plus permission-icon"></i>
-                                                <div>ایجاد</div>
-                                            </label>
-                                        </div>
-                                        <div class="col-6 mb-3">
-                                            <input type="checkbox" class="permission-check" id="read" @bind="NewPermission.CanRead" />
-                                            <label class="permission-label" for="read">
-                                                <i class="fas fa-eye permission-icon"></i>
-                                                <div>خواندن</div>
-                                            </label>
-                                        </div>
-                                        <div class="col-6 mb-3">
-                                            <input type="checkbox" class="permission-check" id="update" @bind="NewPermission.CanUpdate" />
-                                            <label class="permission-label" for="update">
-                                                <i class="fas fa-edit permission-icon"></i>
-                                                <div>ویرایش</div>
-                                            </label>
-                                        </div>
-                                        <div class="col-6 mb-3">
-                                            <input type="checkbox" class="permission-check" id="delete" @bind="NewPermission.CanDelete" />
-                                            <label class="permission-label" for="delete">
-                                                <i class="fas fa-trash permission-icon"></i>
-                                                <div>حذف</div>
-                                            </label>
-                                        </div>
+                                        @foreach (var item in NewPermission.Abilites)
+                                        {
+                                            <div class="col-6 mb-3">
+                                                @if (item == "create")
+                                                {
+                                                    <input type="checkbox" class="permission-check" id="create" @bind-Value="true" />
+                                                    <label class="permission-label" for="create">
+                                                        <i class="fas fa-plus permission-icon"></i>
+                                                        <div>ایجاد</div>
+                                                    </label>
+                                                }
+                                                @if(item == "read")
+                                                {
+                                                    <input type="checkbox" class="permission-check" id="read" @bind="item" />
+                                                    <label class="permission-label" for="read">
+                                                        <i class="fas fa-eye permission-icon"></i>
+                                                        <div>خواندن</div>
+                                                    </label>
+                                                }
+                                                @if(item == "edit")
+                                                {
+                                                    <input type="checkbox" class="permission-check" id="update" @bind="item" />
+                                                    <label class="permission-label" for="update">
+                                                        <i class="fas fa-edit permission-icon"></i>
+                                                        <div>ویرایش</div>
+                                                    </label>
+                                                }
+                                                @if(item == "delete")
+                                                {
+                                                    <input type="checkbox" class="permission-check" id="delete" @bind="item" />
+                                                    <label class="permission-label" for="delete">
+                                                        <i class="fas fa-trash permission-icon"></i>
+                                                        <div>حذف</div>
+                                                    </label>
+                                                }
+
+                                            </div>                                          
+                                        }
+                                        
                                     </div>
                                 </div>
 
@@ -86,8 +100,8 @@
                             </EditForm>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
+                </div> *@
+                <div class="col-md-12">
                     <div class="card h-100 d-flex flex-column shadow-lg mx-auto">
                         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">دسترسی‌های موجود</h5>
@@ -104,7 +118,7 @@
                             }
                             else
                             {
-                                @foreach (var category in ExistingPermissions.GroupBy(p => p.Category))
+                                @foreach (var category in ExistingPermissions.GroupBy(p => p.Name))
                                 {
                                     <div class="permission-category mb-4">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -114,7 +128,7 @@
 
                                         @foreach (var permission in category)
                                         {
-                                            <div class="card mb-3">
+                                            <div class="card mb-3" @onclick="() => HandlePermissionValue(permission.Name)">
                                                 <div class="card-body">
                                                     <h6 class="card-title text-dark">@permission.Name</h6>
                                                     <p class="card-text text-muted small mb-2">@permission.Description</p>
@@ -122,22 +136,26 @@
                                                     <div class="mt-3 pt-2 border-top">
                                                         <span class="text-muted small">قابلیت ها:</span>
                                                         <div class="capabilities ">
-                                                            @if (permission.CanCreate)
+                                                            @foreach (var item in permission.Abilites)
                                                             {
-                                                                <Badge Class="m-2" Color="BadgeColor.Primary" VisuallyHiddenText="Visually hidden text for Primary">Primary</Badge>
+                                                                @if (item == "read")
+                                                                {
+                                                                    <Badge Class="m-2" Color="BadgeColor.Primary">خواندن</Badge>
+                                                                }
+                                                                @if (item == "edit")
+                                                                {
+                                                                    <Badge Class="m-2" Color="BadgeColor.Secondary">ویرایش</Badge>
+                                                                }
+                                                                @if (item == "create")
+                                                                {
+                                                                    <Badge Class="m-2" Color="BadgeColor.Success" >ایجاد</Badge>
+                                                                }
+                                                                @if (item == "delete")
+                                                                {
+                                                                    <Badge Class="m-2" Color="BadgeColor.Danger" >حذف</Badge>
+                                                                }
                                                             }
-                                                            @if (permission.CanRead)
-                                                            {
-                                                                <Badge Class="m-2"  Color="BadgeColor.Secondary" VisuallyHiddenText="Visually hidden text for Secondary">Secondary</Badge>
-                                                            }
-                                                            @if (permission.CanUpdate)
-                                                            {
-                                                                <Badge Class="m-2" Color="BadgeColor.Success" VisuallyHiddenText="Visually hidden text for Success">Success</Badge>
-                                                            }
-                                                            @if (permission.CanDelete)
-                                                            {
-                                                                <Badge Class="m-2" Color="BadgeColor.Danger" VisuallyHiddenText="Visually hidden text for Danger">Danger</Badge>
-                                                            }
+                                                            
                                                         </div>
                                                     </div>
                                                 </div>
@@ -412,85 +430,27 @@
         public string Email { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
-    protected override void OnInitialized()
+
+
+    private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
+    protected override async void OnInitialized()
     {
-       
-        // بارگذاری دسترسی‌های موجود از دیتابیس یا سرویس
-        LoadExistingPermissions();
-       
+
+        ExistingPermissions = await userApi.GetPermissionListAsync();
+
     }
 
-    private PermissionModel NewPermission = new PermissionModel();
-    private List<PermissionModel> ExistingPermissions = new List<PermissionModel>();
+    private PermissionDto NewPermission = new PermissionDto();
+    
 
-    private void LoadExistingPermissions()
+    
+
+    private void HandlePermissionValue(string name)
     {
-        // داده‌های نمونه - در عمل باید از سرویس یا دیتابیس بارگذاری شود
-        ExistingPermissions = new List<PermissionModel>
+        if (ExistingPermissions != null)
         {
-            new PermissionModel
-            {
-                Name = "ایجاد و ویرایش و حذف کاربران",
-                Description = "این دسترسی امکان مدیریت کامل کاربران را فراهم می‌کند",
-                Category = "user-management",
-                CanCreate = true,
-                CanRead = true,
-                CanUpdate = true,
-                CanDelete = true
-            },
-            new PermissionModel
-            {
-                Name = "ایجاد و ویرایش و حذف نقش‌ها",
-                Description = "این دسترسی امکان مدیریت کامل نقش‌ها را فراهم می‌کند",
-                Category = "role-management",
-                CanCreate = true,
-                CanRead = true,
-                CanUpdate = true,
-                CanDelete = true
-            },
-            new PermissionModel
-            {
-                Name = "مدیریت و پیگردی سرورها",
-                Description = "این دسترسی امکان مدیریت سرورها را فراهم می‌کند",
-                Category = "server-management",
-                CanCreate = true,
-                CanRead = true,
-                CanUpdate = false,
-                CanDelete = false
-            },
-            new PermissionModel
-            {
-                Name = "مدیریت سرویس‌های سیستم",
-                Description = "این دسترسی امکان مدیریت سرویس‌ها را فراهم می‌کند",
-                Category = "service-management",
-                CanCreate = true,
-                CanRead = true,
-                CanUpdate = true,
-                CanDelete = false
-            },
-            new PermissionModel
-            {
-                Name = "service_management",
-                Description = "دسترسی مدیریت سرویس‌ها",
-                Category = "service-management",
-                CanCreate = false,
-                CanRead = true,
-                CanUpdate = true,
-                CanDelete = false
-            }
-        };
-    }
-
-    private void HandleValidSubmit()
-    {
-        // افزودن دسترسی جدید به لیست
-        ExistingPermissions.Add(NewPermission);
-
-        // نمایش پیام موفقیت
-        // در عمل باید به سرویس ذخیره داده ارسال شود
-
-        // ریست کردن فرم
-        NewPermission = new PermissionModel();
+            NewPermission = ExistingPermissions.FirstOrDefault(x => x.Name == name);
+        }
     }
 
     private string GetCategoryName(string categoryKey)
