@@ -4,14 +4,28 @@ using ITSMDS.Domain.DTOs;
 
 namespace ITSMDS.Web.ApiClient;
 
+
+public class RoleCacheManager
+{
+    public static Dictionary<int, string> RoleListCash = new Dictionary<int, string>();
+}
 public class RoleApiClient(HttpClient httpClient)
 {
+        
     public async Task<PageResultDto<RoleDto>>? RoleListAsync(int pageNumber = 1, int pageSize = 10, string searchTerm = "", CancellationToken cancellationToken = default)
     {
         try
         {
             var url = $"/api/role/list?pageNumber={pageNumber}&pageSize={pageSize}&searchTerm={searchTerm}";
             var result = await httpClient.GetFromJsonAsync<PageResultDto<RoleDto>>(url, cancellationToken);
+            foreach (var item in result.Items)
+            {
+                if (!RoleCacheManager.RoleListCash.ContainsKey(item.RoleId))
+                {
+                    RoleCacheManager.RoleListCash.Add(item.RoleId, item.RoleName);
+                }
+               
+            }
             return result;
         }
         catch (Exception ex)

@@ -2,6 +2,7 @@
 
 public class RoleDto
 {
+    public int RoleId { get; set; }
     public string RoleName { get; set; }
     public List<PermissionDto> AccessNames { get; set; }
     public string UpdateTime { get; set; }

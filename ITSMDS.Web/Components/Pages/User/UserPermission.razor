@@ -4,7 +4,7 @@
 @using ITSMDS.Domain.DTOs
 @using ITSMDS.Web.ApiClient
 @inject UserApiClient userApi
-
+@using ITSMDS.Web.Components.Pages.User.Component
 <PageTitle>مدیریت نقش ها</PageTitle>
 
 <h3>مدیریت نقش </h3>
@@ -182,25 +182,33 @@
                             <div class="flex-grow-1">
                                 <div class="form-group mb-0">
                                     <label for="user-select">انتخاب نام کاربر</label>
-                                    <InputSelect id="user-select" class="form-control" @bind-Value="SelectedUserId">
+                                    @* <InputSelect id="user-select" class="form-control" @bind-Value="SelectedUserId">
+                                        
                                         <option value="">کاربر را انتخاب کنید</option>
                                         @foreach (var user in Users2)
                                         {
                                             <option value="@user.Id">@user.FullName - @user.UserName</option>
                                         }
-                                    </InputSelect>
+                                    </InputSelect> *@
+                                    <SearchableSelect TItem="UserModel"
+                                                Items="Users"
+                                                @bind-Value="assignmentModel.SelectedUser"
+                                                TextField="@(u => u.FullName + " - " + u.EmployeeId)"
+                                                ValueField="@(u => u.Id)"
+                                                Placeholder="جستجو و انتخاب کاربر...">
+                                    </SearchableSelect>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
                                 <div class="form-group mb-0">
                                     <label for="role-select">انتخاب نقش</label>
-                                    <InputSelect id="role-select" class="form-control" @bind-Value="SelectedRoleId">
-                                        <option value="">نقش را انتخاب کنید</option>
-                                        @foreach (var role in Roles)
-                                        {
-                                            <option value="@role.Id">@role.Name</option>
-                                        }
-                                    </InputSelect>
+                                    <SearchableSelect TItem="UserModel"
+                                                      Items="Users"
+                                                      @bind-Value="assignmentModel.SelectedUser"
+                                                      TextField="@(u => u.FullName + " - " + u.EmployeeId)"
+                                                      ValueField="@(u => u.Id)"
+                                                      Placeholder="جستجو و انتخاب کاربر...">
+                                    </SearchableSelect>
                                 </div>
                             </div>
                             <div class="flex-shrink-0" style="min-width: 120px;">
@@ -328,6 +336,7 @@
     private string SearchTerm { get; set; } = "";
     private string UserToDelete { get; set; } = "";
     private bool ShowDeleteModal { get; set; } = false;
+    private AssignmentModel assignmentModel = new AssignmentModel();
 
     private List<UserModel> Users = new List<UserModel>
     {
@@ -421,6 +430,11 @@
             }
         }
     }
+    public class AssignmentModel
+    {
+        public UserModel SelectedUser { get; set; }
+         public RoleDto SelectedRole { get; set; }
+    }
 
     public class UserModel
     {
@@ -485,7 +499,7 @@
     private string SelectedUserId { get; set; } = "";
     private string SelectedRoleId { get; set; } = "";
 
-    private bool IsFormValid => !string.IsNullOrEmpty(SelectedUserId) && !string.IsNullOrEmpty(SelectedRoleId);
+    private bool IsFormValid => assignmentModel.SelectedUser != null && assignmentModel.SelectedRole != null;
 
     private List<UserDto> Users2 = new List<UserDto>
     {

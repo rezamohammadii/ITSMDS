@@ -1,0 +1,143 @@
+﻿@typeparam TItem
+@inherits InputBase<TItem>
+
+<div class="searchable-select">
+    <input type="text"
+           class="form-control search-input"
+           placeholder="@Placeholder"
+           @oninput="OnSearchInput"
+           @onfocus="ShowOptions"
+           @onblur="OnInputBlur"
+           value="@SearchText" />
+
+    @if (IsOptionsVisible)
+    {
+        <div class="options-container">
+            @foreach (var item in FilteredItems)
+            {
+                <div class="option-item @(IsItemSelected(item) ? "selected" : "") @(IsItemHighlighted(item) ? "highlighted" : "")"
+                     @onclick="() => SelectItem(item)"
+                     @onmouseover="() => HighlightItem(item)"
+                     @onmouseout="UnhighlightItem">
+                    @GetItemText(item)
+                </div>
+            }
+
+            @if (!FilteredItems.Any())
+            {
+                <div class="option-item no-results">
+                    موردی یافت نشد
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public Func<TItem, string> TextField { get; set; }
+    [Parameter] public Func<TItem, object> ValueField { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "جستجو...";
+
+    private string SearchText { get; set; } = "";
+    private bool IsOptionsVisible { get; set; } = false;
+    private IEnumerable<TItem> FilteredItems { get; set; } = Enumerable.Empty<TItem>();
+    private TItem HighlightedItem { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        FilterItems();
+
+        // اگر آیتمی انتخاب شده باشد، متن جستجو را برابر با متن آن آیتم قرار بده
+        if (CurrentValue != null)
+        {
+            SearchText = GetItemText(CurrentValue);
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        SearchText = e.Value?.ToString() ?? "";
+        FilterItems();
+        IsOptionsVisible = true;
+    }
+
+    private void FilterItems()
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            FilteredItems = Items;
+        }
+        else
+        {
+            FilteredItems = Items.Where(item =>
+                GetItemText(item).Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private string GetItemText(TItem item)
+    {
+        if (item == null) return "";
+        return TextField?.Invoke(item) ?? item?.ToString() ?? "";
+    }
+
+    private void SelectItem(TItem item)
+    {
+        CurrentValue = item;
+        SearchText = GetItemText(item);
+        IsOptionsVisible = false;
+    }
+
+    private bool IsItemSelected(TItem item)
+    {
+        if (CurrentValue == null || item == null) return false;
+
+        if (ValueField != null)
+        {
+            var currentValue = ValueField(CurrentValue);
+            var itemValue = ValueField(item);
+            return currentValue?.Equals(itemValue) == true;
+        }
+
+        return CurrentValue.Equals(item);
+    }
+
+    private bool IsItemHighlighted(TItem item)
+    {
+        if (HighlightedItem == null || item == null) return false;
+        return HighlightedItem.Equals(item);
+    }
+
+    private void ShowOptions()
+    {
+        FilterItems();
+        IsOptionsVisible = true;
+    }
+
+    private async void OnInputBlur()
+    {
+        // تأخیر برای اجازه دادن به کلیک روی آیتم‌ها
+        await Task.Delay(200);
+        IsOptionsVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HighlightItem(TItem item)
+    {
+        HighlightedItem = item;
+    }
+
+    private void UnhighlightItem()
+    {
+        HighlightedItem = default;
+    }
+
+    protected override bool TryParseValueFromString(string value, out TItem result, out string validationErrorMessage)
+    {
+        // این متد برای InputBase لازم است
+        result = default;
+        validationErrorMessage = "پارس کردن مقدار از رشته پشتیبانی نمی شود";
+        return false;
+    }
+}

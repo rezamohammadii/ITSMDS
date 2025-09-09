@@ -7,6 +7,11 @@ using ITSMDS.Web.ViewModel;
 
 namespace ITSMDS.Web.ApiClient;
 
+
+public class UserCacheManager
+{
+    public static List<UserModel> UserListCash = new List<UserModel>();
+}
 public class UserApiClient
 {
     private readonly HttpClient _httpClient;
@@ -22,6 +27,7 @@ public class UserApiClient
     {
         try
         {
+            
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
             List<UserModel>? userList = null;
 
