@@ -4,6 +4,8 @@
 @using ITSMDS.Domain.DTOs
 @using ITSMDS.Web.ApiClient
 @inject UserApiClient userApi
+@inject RoleApiClient roleApi
+@using ITSMDS.Web.ViewModel
 @using ITSMDS.Web.Components.Pages.User.Component
 <PageTitle>مدیریت نقش ها</PageTitle>
 
@@ -15,7 +17,7 @@
         <Content>
 
             <div class="row">
-               @*  <div class="col-md-6">
+                @*  <div class="col-md-6">
                     <div class="card shadow-lg mx-auto">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">ایجاد دسترسی جدید +</h5>
@@ -90,11 +92,11 @@
 
                                             </div>                                          
                                         }
-                                        
+
                                     </div>
                                 </div>
 
- 
+
 
                                 <button type="submit" class="btn btn-success btn-block mt-3">ایجاد دسترسی +</button>
                             </EditForm>
@@ -155,7 +157,7 @@
                                                                     <Badge Class="m-2" Color="BadgeColor.Danger" >حذف</Badge>
                                                                 }
                                                             }
-                                                            
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -183,31 +185,31 @@
                                 <div class="form-group mb-0">
                                     <label for="user-select">انتخاب نام کاربر</label>
                                     @* <InputSelect id="user-select" class="form-control" @bind-Value="SelectedUserId">
-                                        
+
                                         <option value="">کاربر را انتخاب کنید</option>
                                         @foreach (var user in Users2)
                                         {
                                             <option value="@user.Id">@user.FullName - @user.UserName</option>
                                         }
                                     </InputSelect> *@
-                                    <SearchableSelect TItem="UserModel"
-                                                Items="Users"
-                                                @bind-Value="assignmentModel.SelectedUser"
-                                                TextField="@(u => u.FullName + " - " + u.EmployeeId)"
-                                                ValueField="@(u => u.Id)"
-                                                Placeholder="جستجو و انتخاب کاربر...">
+                                   <SearchableSelect TItem="UserModel"
+                                    Items="Users"
+                                    @bind-Value="assignmentModel.SelectedUser"
+                                    TextField="@(u => u.FullName + " - " + u.EmployeeId)"
+                                    ValueField="@(u => u.Id)"
+                                    Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
                                 <div class="form-group mb-0">
                                     <label for="role-select">انتخاب نقش</label>
-                                    <SearchableSelect TItem="UserModel"
-                                                      Items="Users"
-                                                      @bind-Value="assignmentModel.SelectedUser"
-                                                      TextField="@(u => u.FullName + " - " + u.EmployeeId)"
-                                                      ValueField="@(u => u.Id)"
-                                                      Placeholder="جستجو و انتخاب کاربر...">
+                                    <SearchableSelect TItem="RoleDto"
+                                        Items="RoleList"
+                                        @bind-Value="assignmentModel.SelectedRole"
+                                        TextField="@(u => u.UserName + " - " + u.PersonalCode)"
+                                        ValueField="@(u => u.RoleId)"
+                                        Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
                                 </div>
                             </div>
@@ -256,7 +258,7 @@
                                         <div class="card h-100 user-card">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start mb-3">
-                                                    <h6 class="card-title mb-0">@user.FullName</h6>
+                                                    <h6 class="card-title mb-0">@user.UserName</h6>
                                                     <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirm(user.Id)">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -265,7 +267,7 @@
                                                 <div class="user-info mb-3">
                                                     <div class="d-flex align-items-center mb-2">
                                                         <i class="fas fa-id-card text-muted me-2"></i>
-                                                        <small>شماره پرسنلی: @user.EmployeeId</small>
+                                                        <small>شماره پرسنلی: @user.PersonalCode</small>
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <i class="fas fa-envelope text-muted me-2"></i>
@@ -276,14 +278,16 @@
                                                 <div class="user-roles">
                                                     <h6 class="text-muted mb-2">نقش‌ها:</h6>
                                                     <div class="d-flex flex-wrap gap-2">
-                                                        @foreach (var role in user.Roles)
+                                                        @foreach (var roleAccess in RoleList)
                                                         {
-                                                            <div class="role-badge-container position-relative">
-                                                                    <Badge Color="BadgeColor.Info"><Icon Name="IconName.XLg" /> @role</Badge>
-                                                                
-                                                                
-                                                               
+                                                            @foreach (var role in roleAccess.AccessNames)
+                                                            {
+                                                                 <div class="role-badge-container position-relative">
+                                                                <Badge Color="BadgeColor.Info"><Icon Name="IconName.XLg" /> @role</Badge>
+
                                                             </div>
+                                                            }
+                                                           
                                                         }
                                                     </div>
                                                 </div>
@@ -337,57 +341,16 @@
     private string UserToDelete { get; set; } = "";
     private bool ShowDeleteModal { get; set; } = false;
     private AssignmentModel assignmentModel = new AssignmentModel();
-
-    private List<UserModel> Users = new List<UserModel>
-    {
-        new UserModel
-        {
-            Id = "1",
-            FullName = "مدیر سیستم",
-            EmployeeId = "001",
-            Email = "admin@company.com",
-            Roles = new List<string> { "مدیر سیستم", "اپراتور" }
-        },
-        new UserModel
-        {
-            Id = "2",
-            FullName = "محمد رضایی",
-            EmployeeId = "002",
-            Email = "mohammad@company.com",
-            Roles = new List<string> { "کاربر عادی", "نویسنده" }
-        },
-        new UserModel
-        {
-            Id = "3",
-            FullName = "فاطمه محمدی",
-            EmployeeId = "003",
-            Email = "fateme@company.com",
-            Roles = new List<string> { "مشاور", "نویسنده" }
-        },
-        new UserModel
-        {
-            Id = "4",
-            FullName = "علی حسینی",
-            EmployeeId = "004",
-            Email = "ali@company.com",
-            Roles = new List<string> { "اپراتور" }
-        },
-        new UserModel
-        {
-            Id = "5",
-            FullName = "سارا کریمی",
-            EmployeeId = "005",
-            Email = "sara@company.com",
-            Roles = new List<string> { "کاربر عادی" }
-        }
-    };
+    private List<RoleDto> RoleList = new();
+    private List<UserModel> Users = new();
 
     private List<UserModel> FilteredUsers =>
         Users.Where(u =>
-            u.FullName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            u.EmployeeId.Contains(SearchTerm) ||
             u.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            u.Roles.Any(r => r.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+            u.PersonalCodeString.Contains(SearchTerm) ||
+            u.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            u.UserName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            u.IpAddress.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) 
         ).ToList();
 
     private void ShowDeleteConfirm(string userId)
@@ -406,7 +369,7 @@
     {
         if (!string.IsNullOrEmpty(UserToDelete))
         {
-            var user = Users.FirstOrDefault(u => u.Id == UserToDelete);
+            var user = Users.FirstOrDefault(u => u.HashId == UserToDelete);
             if (user != null)
             {
                 Users.Remove(user);
@@ -415,42 +378,21 @@
         CloseDeleteModal();
     }
 
-    private async Task RemoveRole(string userId, string roleName)
-    {
-        // تایید قبل از حذف نقش
-        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { $"آیا از حذف نقش '{roleName}' اطمینان دارید؟" });
-
-        if (confirm)
-        {
-            var user = Users.FirstOrDefault(u => u.Id == userId);
-            if (user != null && user.Roles.Contains(roleName))
-            {
-                user.Roles.Remove(roleName);
-                StateHasChanged(); // به روز رسانی UI
-            }
-        }
-    }
     public class AssignmentModel
     {
         public UserModel SelectedUser { get; set; }
-         public RoleDto SelectedRole { get; set; }
+        public RoleDto SelectedRole { get; set; }
     }
-
-    public class UserModel
-    {
-        public string Id { get; set; }
-        public string FullName { get; set; }
-        public string EmployeeId { get; set; }
-        public string Email { get; set; }
-        public List<string> Roles { get; set; } = new List<string>();
-    }
-
 
     private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
 
         ExistingPermissions = await userApi.GetPermissionListAsync();
+        var resultDto = await roleApi.RoleListAsync();
+        RoleList = resultDto.Items;
+        var outPut = await userApi.GetUserListAsync();
+        Users = outPut.ToList();
 
     }
 
@@ -479,62 +421,23 @@
         };
     }
 
-    public class PermissionModel
-    {
-        [Required(ErrorMessage = "نام دسترسی الزامی است")]
-        public string Name { get; set; }
 
-        [Required(ErrorMessage = "توضیحات دسترسی الزامی است")]
-        public string Description { get; set; }
-
-        [Required(ErrorMessage = "انتخاب دسته‌بندی الزامی است")]
-        public string Category { get; set; }
-
-        public bool CanCreate { get; set; }
-        public bool CanRead { get; set; }
-        public bool CanUpdate { get; set; }
-        public bool CanDelete { get; set; }
-    }
 
     private string SelectedUserId { get; set; } = "";
-    private string SelectedRoleId { get; set; } = "";
+    private int SelectedRoleId { get; set; }
 
     private bool IsFormValid => assignmentModel.SelectedUser != null && assignmentModel.SelectedRole != null;
-
-    private List<UserDto> Users2 = new List<UserDto>
-    {
-        new UserDto { Id = "1", UserName = "admin", FullName = "مدیر سیستم" },
-        new UserDto { Id = "2", UserName = "mohammad", FullName = "محمد رضایی" },
-        new UserDto { Id = "3", UserName = "fateme", FullName = "فاطمه محمدی" },
-        new UserDto { Id = "4", UserName = "ali", FullName = "علی حسینی" },
-        new UserDto { Id = "5", UserName = "sara", FullName = "سارا کریمی" }
-    };
-
-    private List<RoleDto> Roles = new List<RoleDto>
-    {
-        new RoleDto { Id = "1", Name = "مدیر سیستم" },
-        new RoleDto { Id = "2", Name = "کاربر عادی" },
-        new RoleDto { Id = "3", Name = "نویسنده" },
-        new RoleDto { Id = "4", Name = "مشاور" },
-        new RoleDto { Id = "5", Name = "اپراتور" }
-    };
 
     private async Task AssignRole()
     {
         if (IsFormValid)
         {
-            var user = Users2.FirstOrDefault(u => u.Id == SelectedUserId);
-            var role = Roles.FirstOrDefault(r => r.Id == SelectedRoleId);
-
-            // اینجا می‌توانید درخواست API برای تخصیص نقش ارسال کنید
-            // await Http.PostAsJsonAsync("api/userroles", new { UserId = SelectedUserId, RoleId = SelectedRoleId });
-
-            // نمایش پیام موفقیت
-            // await JSRuntime.InvokeVoidAsync("alert", $"نقش {role.Name} به کاربر {user.FullName} تخصیص داده شد");
+            var user = Users.FirstOrDefault(u => u.HashId == SelectedUserId);
+            var role = RoleList.FirstOrDefault(r => r.RoleId == SelectedRoleId);
 
             // ریست کردن فرم
             SelectedUserId = "";
-            SelectedRoleId = "";
+            SelectedRoleId = 0;
         }
     }
 
@@ -544,11 +447,4 @@
         public string UserName { get; set; }
         public string FullName { get; set; }
     }
-
-    public class RoleDto
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-    }
-
 }

@@ -18,14 +18,7 @@ public class RoleApiClient(HttpClient httpClient)
         {
             var url = $"/api/role/list?pageNumber={pageNumber}&pageSize={pageSize}&searchTerm={searchTerm}";
             var result = await httpClient.GetFromJsonAsync<PageResultDto<RoleDto>>(url, cancellationToken);
-            foreach (var item in result.Items)
-            {
-                if (!RoleCacheManager.RoleListCash.ContainsKey(item.RoleId))
-                {
-                    RoleCacheManager.RoleListCash.Add(item.RoleId, item.RoleName);
-                }
-               
-            }
+            
             return result;
         }
         catch (Exception ex)
