@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using ITSMDS.Domain.DTOs;
+using System.Text;
 using System.Text.Json;
-using ITSMDS.Domain.DTOs;
+using System.Threading;
 
 namespace ITSMDS.Web.ApiClient;
 
@@ -38,6 +39,26 @@ public class RoleApiClient(HttpClient httpClient)
             var res = await response.Content.ReadAsStringAsync();
             
             return bool.Parse(res);
+        }
+        catch (Exception)
+        {
+            return false;
+
+        }
+    }
+
+    public async Task<bool> AssignRoleAsync(string personalCode, int roleId, CancellationToken ct = default)
+    {
+        try
+        {
+            var url = $"/api/role/assignRole?personalCode={personalCode}&roleId={roleId}";
+            var result = await httpClient.PutAsync(url, null, ct);
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+            return false;
+
         }
         catch (Exception)
         {

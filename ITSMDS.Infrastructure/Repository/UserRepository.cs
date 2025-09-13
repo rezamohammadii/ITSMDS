@@ -35,7 +35,9 @@ public class UserRepository : IUserRepository
         }
     }
     public async ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken)
-      => await _db.Users.Where(x => !x.IsDeleted).AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
+      => await _db.Users.Where(x => !x.IsDeleted)
+        .Include(x => x.UserRoles).ThenInclude(x => x.Role)
+        .AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
     public async ValueTask<User?> GetUserByPersonalCodeAsync(int code, CancellationToken cancellationToken = default)
       => await _db.Users.FirstOrDefaultAsync(x => x.PersonalCode == code, cancellationToken);
 

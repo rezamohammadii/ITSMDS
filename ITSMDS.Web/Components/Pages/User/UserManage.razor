@@ -47,6 +47,7 @@ else
                             <th>نام کاربری</th>
                             <th>تاریخ ایجاد</th>
                             <th>شماره تلفن</th>
+                            <th>نقش ها</th>
                             <th>آدرس IP</th>
                             <th>عملیات</th>
 
@@ -63,6 +64,12 @@ else
                                 <td>@user.UserName</td>
                                 <td>@user.CreateDate</td>
                                 <td>@user.PhoneNumber</td>
+                                <td>
+                                    @foreach (var item in user.RoleName)
+                                    {
+                                        @item
+                                    }
+                                    </td>
                                 <td>@user.IpAddress</td>
                                 <td>
                                     <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEditUser(user.PersonalCode.Value)">

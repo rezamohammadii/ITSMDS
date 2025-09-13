@@ -7,6 +7,9 @@
 @inject RoleApiClient roleApi
 @using ITSMDS.Web.ViewModel
 @using ITSMDS.Web.Components.Pages.User.Component
+@inject ISweetAlertService SweetAlert
+
+
 <PageTitle>مدیریت نقش ها</PageTitle>
 
 <h3>مدیریت نقش </h3>
@@ -195,8 +198,8 @@
                                    <SearchableSelect TItem="UserModel"
                                     Items="Users"
                                     @bind-Value="assignmentModel.SelectedUser"
-                                    TextField="@(u => u.FullName + " - " + u.EmployeeId)"
-                                    ValueField="@(u => u.Id)"
+                                    TextField="@(u => u.UserName + " - " + u.PersonalCodeString)"
+                                    ValueField="@(u => u.PersonalCodeString)"
                                     Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
                                 </div>
@@ -207,7 +210,7 @@
                                     <SearchableSelect TItem="RoleDto"
                                         Items="RoleList"
                                         @bind-Value="assignmentModel.SelectedRole"
-                                        TextField="@(u => u.UserName + " - " + u.PersonalCode)"
+                                        TextField="@(u => u.RoleName)"
                                         ValueField="@(u => u.RoleId)"
                                         Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
@@ -216,7 +219,7 @@
                             <div class="flex-shrink-0" style="min-width: 120px;">
                                 <div class="form-group mb-0">
                                     <label class="d-block invisible">دکمه</label>
-                                    <button class="btn btn-success w-100" @onclick="AssignRole" disabled="@(!IsFormValid)">
+                                    <button class="btn btn-success w-100" @onclick="async () => await AssignRoleAsync(SpinnerColor.Success, SpinnerType.Dots)" disabled="@(!IsFormValid)">
                                         تخصیص نقش
                                     </button>
                                 </div>
@@ -259,7 +262,7 @@
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                                     <h6 class="card-title mb-0">@user.UserName</h6>
-                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirm(user.Id)">
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirm(user.HashId)">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
@@ -278,16 +281,11 @@
                                                 <div class="user-roles">
                                                     <h6 class="text-muted mb-2">نقش‌ها:</h6>
                                                     <div class="d-flex flex-wrap gap-2">
-                                                        @foreach (var roleAccess in RoleList)
-                                                        {
-                                                            @foreach (var role in roleAccess.AccessNames)
-                                                            {
-                                                                 <div class="role-badge-container position-relative">
-                                                                <Badge Color="BadgeColor.Info"><Icon Name="IconName.XLg" /> @role</Badge>
-
-                                                            </div>
-                                                            }
-                                                           
+                                                        @foreach (var roleAccess in user.RoleName)
+                                                        {                                                                                                                           
+                                                            <div class="role-badge-container position-relative">
+                                                                <Badge Class="m-2" Color="BadgeColor.Primary">@roleAccess</Badge>
+                                                            </div>                                               
                                                         }
                                                     </div>
                                                 </div>
@@ -331,6 +329,7 @@
                     </div>
                 </div>
             }
+
         </Content>
     </Tab>
 </Tabs>
@@ -343,6 +342,18 @@
     private AssignmentModel assignmentModel = new AssignmentModel();
     private List<RoleDto> RoleList = new();
     private List<UserModel> Users = new();
+    private string SelectedUserId { get; set; } = "";
+    private int SelectedRoleId { get; set; }
+    private bool IsFormValid => assignmentModel.SelectedUser != null && assignmentModel.SelectedRole != null;
+    private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
+    [Inject] protected PreloadService PreloadService { get; set; } = default!;
+
+    public class AssignmentModel
+    {
+        public UserModel SelectedUser { get; set; }
+        public RoleDto SelectedRole { get; set; }
+    }
+
 
     private List<UserModel> FilteredUsers =>
         Users.Where(u =>
@@ -378,13 +389,7 @@
         CloseDeleteModal();
     }
 
-    public class AssignmentModel
-    {
-        public UserModel SelectedUser { get; set; }
-        public RoleDto SelectedRole { get; set; }
-    }
-
-    private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
+  
     protected override async Task OnInitializedAsync()
     {
 
@@ -397,9 +402,6 @@
     }
 
     private PermissionDto NewPermission = new PermissionDto();
-    
-
-    
 
     private void HandlePermissionValue(string name)
     {
@@ -421,30 +423,43 @@
         };
     }
 
-
-
-    private string SelectedUserId { get; set; } = "";
-    private int SelectedRoleId { get; set; }
-
-    private bool IsFormValid => assignmentModel.SelectedUser != null && assignmentModel.SelectedRole != null;
-
-    private async Task AssignRole()
+   
+    private async Task AssignRoleAsync(SpinnerColor spinnerColor,  SpinnerType spinnerType = default)
     {
         if (IsFormValid)
         {
-            var user = Users.FirstOrDefault(u => u.HashId == SelectedUserId);
-            var role = RoleList.FirstOrDefault(r => r.RoleId == SelectedRoleId);
+            var pCode = assignmentModel.SelectedUser?.PersonalCodeString;
+            var roleId = assignmentModel.SelectedRole?.RoleId;
 
-            // ریست کردن فرم
-            SelectedUserId = "";
-            SelectedRoleId = 0;
+            if (!string.IsNullOrEmpty(pCode) && roleId.HasValue)
+            {
+                try
+                {
+                    PreloadService.Show(spinnerColor);
+                    await roleApi.AssignRoleAsync(pCode, roleId.Value);
+                    
+
+                    await SweetAlert.ShowSuccessAsync("نقش با موفقیت تخصیص داده شد");
+
+                    assignmentModel = new AssignmentModel();
+                    StateHasChanged();
+                    await OnInitializedAsync();
+                }
+                catch (Exception ex)
+                {
+                    await SweetAlert.ShowErrorAsync($"خطا در تخصیص نقش: {ex.Message}");
+
+                }
+                finally
+                {
+                    PreloadService.Hide();
+                }
+            }
         }
-    }
+        else
+        {
+            await SweetAlert.ShowWarningAsync("لطفاً کاربر و نقش را انتخاب کنید");
 
-    public class UserDto
-    {
-        public string Id { get; set; }
-        public string UserName { get; set; }
-        public string FullName { get; set; }
+        }
     }
 }

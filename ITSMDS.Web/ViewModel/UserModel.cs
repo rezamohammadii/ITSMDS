@@ -32,6 +32,8 @@ public partial class UserModel
         ErrorMessage = "🛑 IP وارد شده معتبر نیست.")]
 
     public string IpAddress { get; set; }
+
+    public List<string> RoleName { get; set; }
     public bool IsActive { get; set; }
 
 

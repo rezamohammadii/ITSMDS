@@ -28,6 +28,23 @@ public class RoleService : IRoleService
         _userRepository = userRepository;
     }
 
+    public async Task<bool> AssignRoleToUserAsync(string personalCode, int roleId, CancellationToken ct)
+    {
+        var role = await _roleRepository.GetRoleByRoleIdAsync(roleId);
+        if (role is null)
+        {
+            return false;
+        }
+        var user = await _userRepository.GetUserByPersonalCodeAsync(int.Parse(personalCode), ct);
+        if (user is null)
+        {
+            return false;
+        }
+        role.AddUser(user);
+        await _unitOfWork.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<bool> CreateRoleAsync(RoleDtoIn roleInput, CancellationToken ct)
     {
         try
@@ -75,22 +92,47 @@ public class RoleService : IRoleService
             int totalCount = await rolesQuery.CountAsync();
 
             var roleList = await rolesQuery
-                
-                .OrderBy(x => x.Name)
-                .Skip(itemToSkip)
-                .Take(pageSize)                
-                .Select(x => new RoleDto
+              .OrderBy(x => x.Name)
+              .Skip(itemToSkip)
+              .Take(pageSize)
+              .Select(x => new RoleDto
+              {
+                  UpdateTime = ConvertDate.ConvertToShamsi(x.ModifiedTime),
+                  RoleName = x.Name,
+                  UserCount = x.UserRoles.Count,
+                  IsActive = x.IsActive,
+                  RoleId = (int)x.Id,
+                  Permissions = x.RolePermissions.Select(
+                      rp => new PermissionDto
+                      {
+                          Name = rp.Permission.Name
+                      }
+                      ).ToList(),
+              }).ToListAsync(ct);
+
+            foreach (var role in roleList)
             {
-                UpdateTime = ConvertDate.ConvertToShamsi(x.ModifiedTime),
-                RoleName = x.Name,
-                UserCount = x.UserRoles.Count,
-                IsActive = x.IsActive,
-                AccessNames = x.RolePermissions.Select(p => new PermissionDto
-                {
-                    Name = p.Permission.Name,
-                    Description = p.Permission.Description,
-                }).ToList()
-            }).ToListAsync(ct);
+
+                role.Permissions = role.Permissions
+                    .Select(permissionName =>
+                    {
+                        var parts = permissionName.Name.Split('.');
+                        return new
+                        {
+                            Category = parts[0],
+                            Ability = parts.Length > 1 ? parts[1] : string.Empty
+                        };
+                    })
+                    .Where(x => !string.IsNullOrEmpty(x.Ability))
+                    .GroupBy(x => x.Category)
+                    .Select(g => new PermissionDto
+                    {
+                        Name = g.Key,
+                        Abilites = g.Select(x => x.Ability).Distinct().ToList()
+                    })
+                   .ToList();
+            }
+
 
             // Pagination result
             var result = new PageResultDto<RoleDto>
@@ -110,5 +152,27 @@ public class RoleService : IRoleService
             throw new InvalidOperationException(ex.Message);
         }
 
+    }
+
+    private List<PermissionDto> GroupPermissions(List<string> permissionNames)
+    {
+        return permissionNames
+            .Select(permissionName =>
+            {
+                var parts = permissionName.Split('.');
+                return new
+                {
+                    Category = parts[0],
+                    Ability = parts.Length > 1 ? parts[1] : string.Empty
+                };
+            })
+            .Where(x => !string.IsNullOrEmpty(x.Ability))
+            .GroupBy(x => x.Category)
+            .Select(g => new PermissionDto
+            {
+                Name = g.Key,
+                Abilites = g.Select(x => x.Ability).Distinct().ToList()
+            })
+            .ToList();
     }
 }

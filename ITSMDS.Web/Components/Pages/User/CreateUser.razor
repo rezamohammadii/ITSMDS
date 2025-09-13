@@ -5,20 +5,27 @@
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject UserApiClient userApi
+@inject ISweetAlertService SweetAlert
+
 
 <EditForm Model="@user" OnValidSubmit="HandleValidSubmit" class="space-y-6" >
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="d-flex align-items-center gap-4">
-        <button type="button" class="btn btn-outline-secondary" @onclick="NavigateToUsers">
-            🡐 بازگشت
-        </button>
-        <div>
+
+
+    <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
+
+        <div class="d-flex flex-column">
             <h1 class="h4 fw-bold text-dark">افزودن کاربر جدید</h1>
             <p class="text-muted mt-1">ایجاد حساب کاربری جدید در سیستم</p>
         </div>
+
+        <Button Color="ButtonColor.Warning" Class="me-auto">
+            <Icon Name="IconName.ArrowRight" /> بازگشت
+        </Button>
     </div>
+
 
     <div class="row g-4">
         <div class="col-md-6">
@@ -87,7 +94,7 @@
     <!-- دکمه‌های فرم -->
     <div class="d-flex gap-3 pt-4 border-top">
         <button type="submit" class="btn btn-success" disabled="@isSubmitting">
-            💾 @(isSubmitting ? "در حال ذخیره..." : "ذخیره کاربر")
+            💾 ذخیره کاربر
         </button>
 
         <button type="button" class="btn btn-outline-secondary" @onclick="HandleReset" disabled="@isSubmitting">
@@ -106,16 +113,27 @@
 
     private UserModelIn user = new();
     private bool isSubmitting = false;
+    [Inject] protected PreloadService PreloadService { get; set; } = default!;
 
     private async void HandleValidSubmit()
     {
-
-        isSubmitting = true;
-        var res = await userApi.CreateUserAsync(user);
-        if (res)
+        try
         {
-            isSubmitting = false;
+            PreloadService.Show(SpinnerColor.Primary);
+            var res = await userApi.CreateUserAsync(user);
+
+            await SweetAlert.ShowSuccessAsync("کاربر با موفقیت اضافه شد");
+            StateHasChanged();
         }
+        catch (Exception ex)
+        {
+            await SweetAlert.ShowErrorAsync($"خطا در ساخت کاربر: {ex.Message}");
+
+        }
+        finally
+        {
+            PreloadService.Hide();
+        }    
         
     }
 

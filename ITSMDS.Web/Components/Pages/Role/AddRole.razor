@@ -128,11 +128,11 @@
             {
                 if (isShowAlert.Value)
                 {
-                    <Alert Color="AlertColor.Success" @ref="alert"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>نقش با موفقیت اضافه شد  </Alert>
+                    <Alert Color="AlertColor.Success"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>نقش با موفقیت اضافه شد  </Alert>
                 }
                 else
                 {
-                    <Alert Color="AlertColor.Danger" @ref="alert"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>مشکلی در اضافه کردن نقش وجود دارد </Alert>
+                    <Alert Color="AlertColor.Danger"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>مشکلی در اضافه کردن نقش وجود دارد </Alert>
                 }
             }
            
@@ -148,7 +148,7 @@
     private RoleDtoIn? roleDtoIn = new RoleDtoIn();
     private string? enteredText = "sample text";
     private bool? isShowAlert = null;
-    Alert alert;
+    
     private async Task HandleValidSubmit()
     {
         var result = await roleApi.CreateRoleAsync(roleDtoIn);

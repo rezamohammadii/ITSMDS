@@ -17,6 +17,7 @@ public class UserApiClient
     public UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
     {
         _httpClient = httpClient;
+        _httpClient.Timeout = TimeSpan.FromSeconds(30);
         _logger = logger;
     }
 
@@ -25,7 +26,7 @@ public class UserApiClient
         try
         {
             
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            
             List<UserModel>? userList = null;
 
             await foreach (var user in _httpClient.GetFromJsonAsAsyncEnumerable<UserModel>("/api/user/GetAll", ct))
@@ -51,7 +52,6 @@ public class UserApiClient
     {
         try
         {
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
             var response = await _httpClient.GetAsync($"/api/user/{personalCode}", ct);
 
             if (response.IsSuccessStatusCode)
@@ -187,11 +187,8 @@ public class UserApiClient
     public async Task<List<PermissionDto>> GetPermissionListAsync(CancellationToken ct = default)
     {
         try
-        {
-            
-
-            var response = await _httpClient.GetFromJsonAsync<List<PermissionDto>>("/api/user/permissions", ct);
-            
+        {            
+            var response = await _httpClient.GetFromJsonAsync<List<PermissionDto>>("/api/user/permissions", ct);            
 
             _logger.LogInformation("Fetched {Count} permission", response?.Count ?? 0);
             return response ?? [];

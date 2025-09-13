@@ -29,7 +29,7 @@
             @context.RoleName
         </GridColumn>
         <GridColumn TItem="RoleDto" HeaderText="مجوز ها">
-            @foreach (var item in context.AccessNames)
+            @foreach (var item in context.Permissions)
             {
                 <Badge Class="m-2" Color="BadgeColor.Primary" VisuallyHiddenText="Visually hidden text for Primary">@item.Name</Badge>
             }

@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
-
+builder.Services.AddScoped<ISweetAlertService, SweetAlertService>();
 
 builder.Services.AddOutputCache();
 var mvcBuilder = builder.Services.AddRazorPages();

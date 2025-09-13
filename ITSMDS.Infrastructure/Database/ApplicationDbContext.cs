@@ -74,9 +74,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(x => x.HashId).HasMaxLength(255).HasDefaultValue(Guid.NewGuid().ToString()).HasColumnName("hash_Id");
             entity.Property(x => x.PhoneNumber).HasColumnName("phone_number");
             entity.Property(x => x.CreateDate).HasDefaultValue(DateTimeOffset.UtcNow).HasColumnName("create_date");
+            entity.Property(x => x.HashId).HasMaxLength(255);
             entity.Property(x => x.ModifiedTime).HasDefaultValue(DateTimeOffset.UtcNow).HasColumnName("modidied_time");
             entity.HasIndex(x => new { x.IsActive, x.IsDeleted }).HasDatabaseName("IX_User_ActiveDeleted");
-            entity.HasIndex(x => x.HashId).IsUnique().HasDatabaseName("IX_User_HashId");
 
         });
 

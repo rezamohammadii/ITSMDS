@@ -33,7 +33,7 @@ public class UserService : IUserService
         {
             _logger.LogInformation("CreateAsync called with username: {Username}, personalCode: {Code}", request.userName, request.personalCode);
 
-            if (await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
+            if (!await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
             {
                 _logger.LogWarning("User already exists: {Username}", request.userName);
                 throw new InvalidOperationException("User with this email or personal code already exists.");
@@ -49,7 +49,7 @@ public class UserService : IUserService
             _logger.LogInformation("User created successfully: {UserId}", user.HashId);
 
             return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName,
-                ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName, user.PersonalCode);
+                ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName, user.PersonalCode, []);
         }
         catch (Exception ex)
         {
@@ -94,7 +94,9 @@ public class UserService : IUserService
             _logger.LogInformation("Fetched {Count} users", items.Count);
 
             return items.Select(x => new UserResponse(x.HashId, x.Email, x.FirstName, x.LastName,
-                ConvertDate.ConvertToShamsi(x.CreateDate), x.PhoneNumber, x.IpAddress, x.UserName, x.PersonalCode)).ToList();
+                ConvertDate.ConvertToShamsi(x.CreateDate), x.PhoneNumber, x.IpAddress, x.UserName, x.PersonalCode,
+                x.UserRoles.Select(x => x.Role.Name).ToList()
+                )).ToList();
         }
         catch (Exception ex)
         {

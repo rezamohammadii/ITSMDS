@@ -39,5 +39,19 @@ namespace ITSMDS.ApiService.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpPut("assignRole")]
+        public async Task<IActionResult> AssignRoleToUser(
+            [FromQuery] string personalCode,
+            [FromQuery] int roleId, CancellationToken ct = default
+            )
+        {
+            var result = await _roleService.AssignRoleToUserAsync(personalCode, roleId, ct);
+            if (result)
+            {
+                return Ok();
+            }
+            return BadRequest("information incorrect");
+        }
     }
 }

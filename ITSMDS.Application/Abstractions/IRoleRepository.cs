@@ -9,6 +9,6 @@ public interface IRoleRepository
 
     ValueTask CreateRoleAsync(Role role, CancellationToken ct);
 
-
+    ValueTask<Role> GetRoleByRoleIdAsync(int roleId  , CancellationToken ct = default);
 
 }

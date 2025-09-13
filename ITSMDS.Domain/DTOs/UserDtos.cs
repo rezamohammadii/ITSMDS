@@ -18,4 +18,4 @@ public class UpdateUserRequest
 
 public record UserResponse(string id, string email, string fName,
     string lName, string createDate, string? phoneNumber,
-    string ipAddress, string userName, int personalCode);
+    string ipAddress, string userName, int personalCode, List<string> roleName );
