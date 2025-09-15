@@ -80,4 +80,18 @@ public class HashGenerator
 
         return hash == storedHash;
     }
+    public static string GenerateHashSHA512(string inputPassword)
+    {
+        using (var sha512 = SHA512.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(inputPassword);
+            byte[] hash = sha512.ComputeHash(bytes);
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (var item in hash)
+            {
+                stringBuilder.Append(item.ToString("x2"));
+            }
+            return stringBuilder.ToString();
+        }
+    }
 }

@@ -3,11 +3,15 @@
 using AutoMapper;
 using Azure.Core;
 using ITSMDS.Application.Abstractions;
-using ITSMDS.Domain.DTOs;
+using ITSMDS.Application.CustomExceptions;
 using ITSMDS.Application.Services;
-using ITSMDS.Domain.Tools;
+using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
+using ITSMDS.Domain.Tools;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ITSMDS.Infrastructure.Services;
@@ -18,12 +22,14 @@ public class UserService : IUserService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserService> _logger;
     private readonly IMapper _mapper;
-    public UserService(IUnitOfWork unitOfWork, IUserRepository repo, ILogger<UserService> logger, IMapper mapper)
+    private readonly IRoleRepository _roleRepository;
+    public UserService(IUnitOfWork unitOfWork, IUserRepository repo, ILogger<UserService> logger, IMapper mapper, IRoleRepository roleRepository)
     {
         _unitOfWork = unitOfWork;
         _repo = repo;
         _logger = logger;
         _mapper = mapper;
+        _roleRepository = roleRepository;
     }
 
     #region UserMethod
@@ -33,13 +39,13 @@ public class UserService : IUserService
         {
             _logger.LogInformation("CreateAsync called with username: {Username}, personalCode: {Code}", request.userName, request.personalCode);
 
-            if (!await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
+            if (await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
             {
                 _logger.LogWarning("User already exists: {Username}", request.userName);
-                throw new InvalidOperationException("User with this email or personal code already exists.");
+                throw new ValidationException("User already exists", new { Field = "Username" });
             }
 
-            string hashPass = HashGenerator.HashPassword(request.password);
+            string hashPass = HashGenerator.GenerateHashSHA512(request.password);
             var user = new User(request.firstName, request.lastName, request.email, int.Parse(request.personalCode),
                 request.phoneNumber!, request.userName ?? "", hashPass, "", request.ipAddress);
 
@@ -51,11 +57,22 @@ public class UserService : IUserService
             return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName,
                 ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName, user.PersonalCode, []);
         }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
+        {
+            // خطای unique constraint violation
+            throw new ValidationException("User already exists", new { Field = "Username" });
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error while creating user");
+            throw new AppException("Database operation failed", 500, "DATABASE_ERROR");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in CreateAsync");
-            throw;
+            throw new AppException("Failed to create user", 500, "USER_CREATION_FAILED");
         }
+
     }
 
 
@@ -107,7 +124,7 @@ public class UserService : IUserService
 
 
 
-    public async Task<UserResponse> GetUserAsync(int pCode, CancellationToken ct = default)
+    public async Task<UserResponse> GetUserByPersonalCodeAsync(int pCode, CancellationToken ct = default)
     {
         try
         {
@@ -148,6 +165,31 @@ public class UserService : IUserService
         }
     }
 
+
+    public async Task<UserResponse> GetUserByUserNameAsync(string username, CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching user with Username: {username}", username);
+            var user = await _repo.GetUserByUsernameAsync(username, ct);
+
+            if (user == null)
+            {
+                _logger.LogWarning("User not found: {Username}", username);
+                throw new InvalidOperationException("User not found.");
+            }
+
+            return _mapper.Map<UserResponse>(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetUserAsync");
+            throw new InvalidOperationException("Failed to fetch user: " + ex.Message);
+        }
+    }
+
+    
+
     #endregion
 
     #region PermissionMethod
@@ -180,7 +222,67 @@ public class UserService : IUserService
             throw new InvalidOperationException("Failed to fetch permissions: " + ex.Message);
         }
     }
+    #endregion
 
+    #region Auth
+    public async Task<LoginResponseDTO> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default)
+    {
+        personalCode = int.Parse(username);
+        username = "";
+        try
+        {
+            _logger.LogInformation("Fetching user with Username: {username}", username);
+            User? user;
+            if (!string.IsNullOrEmpty(username))
+            {
+                user = await _repo.GetUserByUsernameAsync(username, ct);
+            }
+            else
+            {
+                _logger.LogInformation("Fetching user with Personal Code: {personalCode}", personalCode);
+                user = await _repo.GetUserByPersonalCodeAsync(personalCode, ct);
+            }
+            if (user == null)
+            {
+                _logger.LogWarning("User not found: {Username}", username);
+                throw new InvalidOperationException("User not found.");
+            }
+            var hashPass = HashGenerator.GenerateHashSHA512(pass);
+
+
+            if (user.Password != hashPass)
+            {
+                _logger.LogWarning("Password not matched");
+                throw new InvalidDataException("Password is incorrect");
+            }
+
+            var roleQuery = _roleRepository.GetRoleQueryAsync();
+            var userRoleList = roleQuery.Where(x => x.UserRoles.Any(x => x.UserId == user.Id)).ToList();
+            var roleNames = userRoleList.Select(x => x.Name).ToList();
+            var permissionNames = userRoleList.SelectMany(r => r.RolePermissions)
+                .Select(rp => rp.Permission.Name)
+                .Distinct()
+                .ToList();
+
+            var loginResponse = new LoginResponseDTO
+            {
+                PermissionNames = permissionNames,
+                PersonalCode = user.PersonalCode,
+                RoleNames = roleNames,
+                UserId = user.HashId,
+                Username = user.UserName
+            };
+
+            return (loginResponse);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in LoginAsync");
+            throw new InvalidOperationException("Failed to fetch user: " + ex.Message);
+        }
+
+
+    }
     #endregion
 
 }

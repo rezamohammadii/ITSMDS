@@ -31,7 +31,8 @@ namespace ITSMDS.ApiService.Controllers
                 if (user is not null)
                 {
                     _logger.LogInformation("User created successfully with ID: {UserId}", user.id);
-                    return Ok(new { response = true, message = "User create successful" });
+                    return Ok(ApiResponse<UserResponse>.Ok(user, "User created successfully"));
+
                 }
 
                 _logger.LogWarning("User creation failed for data: {@userRequest}", userRequest);
@@ -68,7 +69,7 @@ namespace ITSMDS.ApiService.Controllers
             try
             {
                 _logger.LogInformation("Fetching user with personalCode: {Code}", personalCode);
-                var user = await _userService.GetUserAsync(personalCode, ct);
+                var user = await _userService.GetUserByPersonalCodeAsync(personalCode, ct);
 
                 if (user is not null)
                 {

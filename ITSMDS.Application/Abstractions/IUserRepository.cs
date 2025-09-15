@@ -7,6 +7,7 @@ namespace ITSMDS.Application.Abstractions
     {
         #region User
         ValueTask<User?> GetUserByPersonalCodeAsync(int code, CancellationToken cancellationToken = default);
+        ValueTask<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default);
         ValueTask<User?> UpdateUserAsync(User request, CancellationToken cancellationToken = default);
         ValueTask AddUserAsync(User user, CancellationToken cancellationToken = default);
         ValueTask<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default);

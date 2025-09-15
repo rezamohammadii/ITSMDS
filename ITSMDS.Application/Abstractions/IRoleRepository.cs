@@ -5,7 +5,7 @@ namespace ITSMDS.Application.Abstractions;
 
 public interface IRoleRepository
 {
-    IQueryable<Role> GetListRoleAsync(CancellationToken ct = default);
+    IQueryable<Role> GetRoleQueryAsync(CancellationToken ct = default);
 
     ValueTask CreateRoleAsync(Role role, CancellationToken ct);
 

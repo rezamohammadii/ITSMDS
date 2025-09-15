@@ -17,7 +17,7 @@ public class RoleRepository : IRoleRepository
     public async ValueTask CreateRoleAsync(Role role, CancellationToken ct)
         => await _context.Roles.AddAsync(role, ct);
 
-    public IQueryable<Role> GetListRoleAsync(CancellationToken ct = default)
+    public IQueryable<Role> GetRoleQueryAsync(CancellationToken ct = default)
     {
 
         var query =  _context.Roles.Where(x => !x.IsDeleted).Include(x => x.RolePermissions)

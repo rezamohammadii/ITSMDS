@@ -1,7 +1,39 @@
-﻿@page "/"
+﻿
+@page "/"
+@using ITSMDS.Web.Components.Pages.Auth
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+<AuthorizePermissionView Permission="user.read">
+    <p>فقط کاربران احراز هویت‌شده می‌تونن این صفحه رو ببینن.</p>
+
+</AuthorizePermissionView>
+
+
+@code{
+
+    [Inject]private AuthService AuthService { get; set; }
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (AuthStateProvider is CustomAuthStateProvider customProvider)
+            {
+                await customProvider.InitializeAsync();
+                return;
+            }            
+        }
+        else
+        {
+            var hasPermission = await AuthService.HasPermission("user.read");
+        }
+
+    }  
+
+}

@@ -1,4 +1,5 @@
 ﻿using ITSMDS.Web.ApiClient;
+using ITSMDS.Web.Components.Pages.Auth;
 
 namespace ITSMDS.Web;
 
@@ -18,6 +19,12 @@ public static class DependencyInjection
             client.BaseAddress = new(baseAddress);
         }); 
         services.AddHttpClient<RoleApiClient>(client =>
+        {
+
+            client.BaseAddress = new(baseAddress);
+        });
+
+        services.AddHttpClient<AuthService>(client =>
         {
 
             client.BaseAddress = new(baseAddress);

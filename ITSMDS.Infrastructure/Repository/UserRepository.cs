@@ -39,8 +39,7 @@ public class UserRepository : IUserRepository
         .Include(x => x.UserRoles).ThenInclude(x => x.Role)
         .AsNoTracking().OrderByDescending(x => x.Id).ToListAsync(cancellationToken);
     public async ValueTask<User?> GetUserByPersonalCodeAsync(int code, CancellationToken cancellationToken = default)
-      => await _db.Users.FirstOrDefaultAsync(x => x.PersonalCode == code, cancellationToken);
-
+      => await _db.Users.Where(x => !x.IsDeleted && x.IsActive && x.PersonalCode == code).FirstOrDefaultAsync(cancellationToken);
     public async ValueTask<User?> UpdateUserAsync(User request, CancellationToken cancellationToken = default)
     {
         var user = await _db.Users.Where(x => x.PersonalCode == request.PersonalCode)
@@ -63,6 +62,12 @@ public class UserRepository : IUserRepository
         }
         return default;
     }
+
+
+    public async ValueTask<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    
+      =>  await _db.Users.Where(x => !x.IsDeleted && x.IsActive && x.UserName == username).FirstOrDefaultAsync(cancellationToken);
+    
     #endregion
 
     #region PermissionMethod

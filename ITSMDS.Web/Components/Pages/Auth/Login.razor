@@ -1,54 +1,86 @@
 ﻿@page "/login"
+@using ITSMDS.Domain.DTOs
 @layout ITSMDS.Web.Components.Layout.LoginLayout
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject AuthService authService
 
-<h3>ورود به سیستم</h3>
+<div class="login-container">
+    <div class="login-card">
+        <h3 class="text-center mb-4">ورود به سیستم</h3>
 
-<EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
-    <DataAnnotationsValidator />
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
 
-    <div class="form-group">
-        <label for="username">نام کاربری</label>
-        <InputText id="username" @bind-Value="loginModel.Username" class="form-control" placeholder="نام کاربری خود را وارد کنید" />
-        <ValidationMessage For="@(() => loginModel.Username)" />
+            <div class="form-floating mb-3">
+                <InputText id="username" @bind-Value="loginModel.Username" class="form-control" placeholder="نام کاربری" />
+                <label for="username">نام کاربری</label>
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="رمز عبور" />
+                <label for="password">رمز عبور</label>
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>در حال ورود...</span>
+                }
+                else
+                {
+                    <span>ورود</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="text-center mt-3">
+            <a href="#" class="forgot-link">رمز عبور را فراموش کرده‌اید؟</a>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="password">رمز عبور</label>
-        <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="رمز عبور خود را وارد کنید" />
-        <ValidationMessage For="@(() => loginModel.Password)" />
-    </div>
-
-    <div class="form-check">
-        <InputCheckbox @bind-Value="loginModel.RememberMe" class="form-check-input" />
-        <label class="form-check-label" for="rememberMe">مرا به خاطر بسپار</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100 mt-3">ورود</button>
-</EditForm>
-
-<div class="text-center mt-3">
-    <a href="#">رمز عبور را فراموش کرده‌اید؟</a>
 </div>
 
 @code {
-    private LoginModel loginModel = new LoginModel();
-
-    private void HandleLogin()
+    private LoginDTO loginModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+    @inject IJSRuntime js
+    private async Task HandleLogin()
     {
-        // منطق ورود به سیستم را اینجا پیاده‌سازی کنید
-        Console.WriteLine($"ورود با نام کاربری: {loginModel.Username}");
+        isLoading = true;
+        errorMessage = string.Empty;
 
-        // پس از ورود موفق، کاربر را به صفحه اصلی هدایت کنید
-        NavigationManager.NavigateTo("/");
-    }
+        try
+        {
+            var result = await authService.LoginAsync(loginModel);
 
-    public class LoginModel
-    {
-        public string Username { get; set; }
-
-        public string Password { get; set; }
-
-        public bool RememberMe { get; set; }
+            if (result)
+            {
+                await Task.Delay(100);
+               // await js.InvokeVoidAsync("window.location.replace", "/");
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = "نام کاربری یا رمز عبور اشتباه است";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "خطا در ارتباط با سرور";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

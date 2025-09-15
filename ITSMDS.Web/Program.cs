@@ -1,5 +1,9 @@
 using ITSMDS.Web;
 using ITSMDS.Web.Components;
+using ITSMDS.Web.Components.Pages.Auth;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +15,39 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
+
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ISweetAlertService, SweetAlertService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "ITSMDS.Auth";
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/access-denied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.SlidingExpiration = true;
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAuthentication", policy =>
+        policy.RequireAuthenticatedUser());
+});
+builder.Services.AddHttpContextAccessor();
+
+
 
 builder.Services.AddOutputCache();
 var mvcBuilder = builder.Services.AddRazorPages();
@@ -22,6 +58,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddCustomHttpClient(builder.Configuration);
+builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 
@@ -38,6 +75,10 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.UseOutputCache();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

@@ -162,20 +162,47 @@ public class UserApiClient
             var content = new StringContent(serializedModel, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync("/api/user/create", content, ct);
-
             if (response.IsSuccessStatusCode)
             {
                 var contentResponse = await response.Content.ReadAsStringAsync(ct);
-                using var jsonDocument = JsonDocument.Parse(contentResponse);
-                var jsonElement = jsonDocument.RootElement;
-                bool result = jsonElement.GetProperty("response").GetBoolean();
 
-                _logger.LogInformation("User created: {Username}, Result: {Result}", modelIn.UserName, result);
-                return result;
+                _logger.LogInformation("API Response: {Response}", contentResponse);
+
+                try
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    var result = JsonSerializer.Deserialize<ApiResponseClient<UserResponse>>(contentResponse, options);
+
+                    if (result is not null && result.Success)
+                    {
+                        _logger.LogInformation("User created: {Username}, Result: {Result}", modelIn.UserName, result.Data);
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("User creation failed: {Username}, Response: {Response}",
+                            modelIn.UserName, contentResponse);
+                        return false;
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "JSON deserialization error for response: {Response}", contentResponse);
+                    return false;
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(ct);
+                _logger.LogError("API Error: {StatusCode}, Response: {Response}",
+                    response.StatusCode, errorContent);
+                return false;
             }
 
-            _logger.LogWarning("Failed to create user {Username}, Status: {Status}", modelIn.UserName, response.StatusCode);
-            return false;
         }
         catch (Exception ex)
         {

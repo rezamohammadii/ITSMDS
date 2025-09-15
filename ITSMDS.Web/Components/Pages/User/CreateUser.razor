@@ -121,6 +121,11 @@
         {
             PreloadService.Show(SpinnerColor.Primary);
             var res = await userApi.CreateUserAsync(user);
+            if (!res)
+            {
+                await SweetAlert.ShowErrorAsync("خطا در ایجاد کاربر جدید");
+                return;
+            }
 
             await SweetAlert.ShowSuccessAsync("کاربر با موفقیت اضافه شد");
             StateHasChanged();

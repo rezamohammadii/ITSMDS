@@ -1,6 +1,10 @@
-using ITSMDS.Infrastructure;
-using Microsoft.Extensions.Configuration;
+using ITSMDS.ApiService.Middleware;
 using ITSMDS.Domain;
+using ITSMDS.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
@@ -11,6 +15,29 @@ builder.Services.AddControllers();
 builder.AddServiceInfrastructure(builder.Configuration);
 
 //builder.AddCoreServices();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        // The following values should be replaced with your own configuration
+        // ValidIssuer = builder.Configuration["JWT:Issuer"]!,
+        //ValidAudience = builder.Configuration["JWT:Audience"]!,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!))
+    };
+});
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -33,6 +60,8 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
@@ -45,6 +74,8 @@ var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/weatherforecast", () =>
 {

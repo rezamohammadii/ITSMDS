@@ -74,7 +74,7 @@ public class RoleService : IRoleService
 
         try
         {
-            var rolesQuery = _roleRepository.GetListRoleAsync();
+            var rolesQuery = _roleRepository.GetRoleQueryAsync();
             
             int itemToSkip = (pageNumber - 1) * pageSize;
 
