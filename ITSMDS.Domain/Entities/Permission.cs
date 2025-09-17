@@ -19,12 +19,14 @@ public class Permission : Entity<long>, IAggregateRoot
     // Private constructor for EF Core
     private Permission() { }
 
-    public Permission(string name, string? description = null)
+    public Permission(string name, string? description = null, bool isActive = default, bool isDeleted = default)
     {
         ValidateName(name);
 
         Name = name;
         Description = description;
+        IsActive = isActive;
+        IsDeleted = isDeleted;
     }
 
     public void UpdateName(string name)

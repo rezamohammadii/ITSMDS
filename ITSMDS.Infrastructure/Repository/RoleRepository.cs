@@ -24,7 +24,6 @@ public class RoleRepository : IRoleRepository
             .ThenInclude(x => x.Permission)
             .Include(x => x.UserRoles).ThenInclude(x => x.User)
             .AsQueryable();
-
         return query;
     }
 

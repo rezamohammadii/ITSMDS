@@ -1,5 +1,6 @@
 using ITSMDS.ApiService.Middleware;
 using ITSMDS.Domain;
+using ITSMDS.Domain.Tools;
 using ITSMDS.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;

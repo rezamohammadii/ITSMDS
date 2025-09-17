@@ -13,7 +13,7 @@ using ITSMDS.Domain.Common;
 public class User : Entity<long>, IAggregateRoot
 {
     public string HashId { get; private set; }
-    public string FirstName { get; private set; }
+    public string FirstName { get; set; }
     public string LastName { get; private set; }
     public string Email { get; private set; }
     public int LoginAttempt { get; private set; }
@@ -42,7 +42,8 @@ public class User : Entity<long>, IAggregateRoot
         string userName,
         string password,
         string? teamName,
-        string ipAddress)
+        string ipAddress,
+        string hashId = default)
     {
         Validate(firstName, lastName, email, personalCode, phoneNumber, userName, password, ipAddress);
 
@@ -60,6 +61,7 @@ public class User : Entity<long>, IAggregateRoot
         IsDeleted = false;
         LoginAttempt = 0;
         IpAddress = ipAddress;
+        HashId = hashId;
     }
 
     private static void Validate(string? firstName, string? lastName, string? email, int personalCode,

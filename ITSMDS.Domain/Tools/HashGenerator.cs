@@ -82,6 +82,7 @@ public class HashGenerator
     }
     public static string GenerateHashSHA512(string inputPassword)
     {
+       
         using (var sha512 = SHA512.Create())
         {
             byte[] bytes = Encoding.UTF8.GetBytes(inputPassword);

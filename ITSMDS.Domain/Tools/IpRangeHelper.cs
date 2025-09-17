@@ -43,20 +43,17 @@ public static class IpRangeHelper
 
     public static IPAddress ToIPv4(IPAddress ip)
     {
-        // اگر IPv4 باشه همون رو برمی‌گردونیم
         if (ip != null && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
         {
             if (ip.IsIPv4MappedToIPv6)
             {
                 ip = ip.MapToIPv4();
             }
-            else if (ip.Equals(IPAddress.IPv6Loopback)) // یعنی ::1
+            else if (ip.Equals(IPAddress.IPv6Loopback)) //  ::1
             {
                 ip = IPAddress.Loopback; // تبدیل به 127.0.0.1
             }
         }
-
-        // اگر هیچکدوم نبود همون IPv6 رو برمی‌گردونیم
         return ip;
     }
 }
