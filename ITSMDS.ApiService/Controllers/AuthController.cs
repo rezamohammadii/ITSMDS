@@ -1,5 +1,7 @@
 ﻿using ITSMDS.Application.Services;
 using ITSMDS.Domain.DTOs;
+using ITSMDS.Domain.Enums;
+using ITSMDS.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -27,28 +29,28 @@ namespace ITSMDS.ApiService.Controllers
 
             if (user is null)
             {
-                return Unauthorized("User or passwoed invalid");
+                return Unauthorized(ApiResponse<object>.Fail(ErrorCode.InvalidCredentials));
             }
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(JWT_KEY);
 
             StringBuilder roleBuilder = new StringBuilder();
-            foreach (var role in user.PermissionNames)
+            foreach (var role in user.RoleNames)
             {
-                roleBuilder.Append(role);
+                roleBuilder.Append(role + "|");
             }
 
             StringBuilder permissionName = new StringBuilder();
-            foreach (var role in user.RoleNames)
+            foreach (var permission in user.PermissionNames)
             {
-                roleBuilder.Append(role);
+                permissionName.Append(permission + "|");
             }
             
             var tokenDecriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                      new Claim(ClaimTypes.Name, loginDto.Username ?? ""),
+                      new Claim(ClaimTypes.Name, user.Username ?? ""),
                       new Claim(ClaimTypes.NameIdentifier, user.PersonalCode.ToString() ?? ""),
                       new Claim(ClaimTypes.Role, roleBuilder.ToString()),
                       new Claim("Permissions", permissionName.ToString())
@@ -64,7 +66,7 @@ namespace ITSMDS.ApiService.Controllers
             var token = tokenHandler.CreateToken(tokenDecriptor);
             var jwt = tokenHandler.WriteToken(token);
             user.Token= jwt;
-            return Ok(user);
+            return Ok(ApiResponse<object>.Ok(user, ErrorCode.LoginSuccessfully.GetMessage()));
 
         }
 

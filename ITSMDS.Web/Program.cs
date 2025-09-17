@@ -1,9 +1,11 @@
 using ITSMDS.Web;
 using ITSMDS.Web.Components;
 using ITSMDS.Web.Components.Pages.Auth;
+using ITSMDS.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +17,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
-
+builder.Services.AddScoped<ProtectedLocalStorage>();
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<PermissionService>();
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthApiClient>();
 builder.Services.AddScoped<ISweetAlertService, SweetAlertService>();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-
+//builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

@@ -1,27 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="login-page">
-    <div class="login-container">
+    <div class="login-overlay"></div>
+
+    <div class="login-content">
         @Body
     </div>
 </div>
 
-<style>
-    .login-page {
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 15px;
-    }
-
-    .login-container {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-        padding: 25px;
-    }
-</style>
+@code {
+}

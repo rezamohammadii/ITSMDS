@@ -1,39 +1,33 @@
 ﻿
 @page "/"
 @using ITSMDS.Web.Components.Pages.Auth
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
-
-<AuthorizePermissionView Permission="user.read">
-    <p>فقط کاربران احراز هویت‌شده می‌تونن این صفحه رو ببینن.</p>
-
-</AuthorizePermissionView>
-
+<AuthorizeView>
+    <Authorized>
+        <div class="user-info">
+            <span>سلام, @context.User.Identity.Name!</span>
+            <button class="btn btn-link" @onclick="Logout">خروج</button>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <a href="/login">ورود</a>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code{
 
-    [Inject]private AuthService AuthService { get; set; }
+    [Inject]private AuthApiClient AuthService { get; set; }
     [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    @inject IJSRuntime JS
+    private async void Logout()
     {
-        if (firstRender)
-        {
-            if (AuthStateProvider is CustomAuthStateProvider customProvider)
-            {
-                await customProvider.InitializeAsync();
-                return;
-            }            
-        }
-        else
-        {
-            var hasPermission = await AuthService.HasPermission("user.read");
-        }
+        // پاک کردن توکن
+        Navigation.NavigateTo("/", true);
+    }
 
-    }  
 
 }

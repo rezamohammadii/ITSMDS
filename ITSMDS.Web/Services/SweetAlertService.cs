@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace ITSMDS.Web;
+namespace ITSMDS.Web.Services;
 
 
 public interface ISweetAlertService
@@ -45,7 +45,7 @@ public class SweetAlertService : ISweetAlertService
     {
         return await _jsRuntime.InvokeAsync<bool>("Swal.fire", new
         {
-            title = title,
+            title,
             text = message,
             icon = "warning",
             showCancelButton = true,

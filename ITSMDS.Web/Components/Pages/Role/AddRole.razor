@@ -97,6 +97,9 @@
                                                                 case "delete":
                                                                     @:<span>حذف</span>
                                                                     break;
+                                                                case "all":
+                                                                    @:<span>دسترسی به بخش</span>
+                                                                    break;
                                                             }
                                                         </label>
                                                       
@@ -124,18 +127,6 @@
             <Button Color="ButtonColor.Success" Type="ButtonType.Submit" Class="mt-3 w-100">
                 اضافه کردن نقش
             </Button>
-            @if (isShowAlert is not null)
-            {
-                if (isShowAlert.Value)
-                {
-                    <Alert Color="AlertColor.Success"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>نقش با موفقیت اضافه شد  </Alert>
-                }
-                else
-                {
-                    <Alert Color="AlertColor.Danger"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>مشکلی در اضافه کردن نقش وجود دارد </Alert>
-                }
-            }
-           
         </EditForm>
     </CardBody>
 </Card>
@@ -147,24 +138,27 @@
 @code {
     private RoleDtoIn? roleDtoIn = new RoleDtoIn();
     private string? enteredText = "sample text";
-    private bool? isShowAlert = null;
-    
+    @inject ISweetAlertService SweetAlert
+
     private async Task HandleValidSubmit()
     {
         var result = await roleApi.CreateRoleAsync(roleDtoIn);
-        if (result)
+        if (result.Success)
         {
-            isShowAlert = true;
 
-        }else{
-            isShowAlert = false;
+           await SweetAlert.ShowSuccessAsync(result.Message);
+        }
+        else
+        {
+            await SweetAlert.ShowErrorAsync(result.Message);
         }
     }
     private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
 
     protected override async Task OnInitializedAsync()
     {
-        ExistingPermissions = await userApi.GetPermissionListAsync();
+        var res = await userApi.GetPermissionListAsync();
+        ExistingPermissions = res.Data;
     }
 
     private void OnPermissionChanged(ChangeEventArgs e, string key)

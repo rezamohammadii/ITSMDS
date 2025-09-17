@@ -24,7 +24,7 @@ public static class DependencyInjection
             client.BaseAddress = new(baseAddress);
         });
 
-        services.AddHttpClient<AuthService>(client =>
+        services.AddHttpClient<AuthApiClient>(client =>
         {
 
             client.BaseAddress = new(baseAddress);

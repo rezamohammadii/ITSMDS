@@ -64,18 +64,16 @@
     private async Task<GridDataProviderResult<RoleDto>> RoleDataProvider(GridDataProviderRequest<RoleDto> request)
     {
 
-        if (roleList is null) 
-            roleList = await roleApi.RoleListAsync(request.PageNumber, request.PageSize);
+        if (roleList is null)
+        {
+            var res = await roleApi.RoleListAsync(request.PageNumber, request.PageSize);
+            roleList = res.Data;
+        }
+        
 
         
         return await Task.FromResult(request.ApplyTo(roleList.Items));
     }
-    // protected override async Task OnInitializedAsync()
-    // {
-        
-    // }
-   
-
     private void OnAddUser()
     {
         NavigationManager.NavigateTo("/role/create");

@@ -1,5 +1,7 @@
 ﻿using ITSMDS.Application.Services;
 using ITSMDS.Domain.DTOs;
+using ITSMDS.Domain.Enums;
+using ITSMDS.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +25,7 @@ namespace ITSMDS.ApiService.Controllers
             [FromQuery] string searchTerm = "", CancellationToken ct = default)
         {
             var result  = await _roleService.GetAllRoleAsync(pageNumber, pageSize, searchTerm, ct);
-            return Ok(result);
+            return Ok(ApiResponse<PageResultDto<RoleDto>>.Ok(result));
         }
 
         [HttpPost("create")]
@@ -32,11 +34,13 @@ namespace ITSMDS.ApiService.Controllers
             var result = await _roleService.CreateRoleAsync(modelIn, ct);
             if (result)
             {
-                return Ok(result);
+                return Ok(ApiResponse<bool>.Ok(true, ErrorCode.RoleCreateSuccessfully.GetMessage()));
+
             }
             else
             {
-                return BadRequest();
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError));
+
             }
         }
 
@@ -49,9 +53,10 @@ namespace ITSMDS.ApiService.Controllers
             var result = await _roleService.AssignRoleToUserAsync(personalCode, roleId, ct);
             if (result)
             {
-                return Ok();
+                return Ok(ApiResponse<bool>.Ok(true, ErrorCode.RoleAsignToUserSuccessfully.GetMessage()));
+
             }
-            return BadRequest("information incorrect");
+            return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError));
         }
     }
 }

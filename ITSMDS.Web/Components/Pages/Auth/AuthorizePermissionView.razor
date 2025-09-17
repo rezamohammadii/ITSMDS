@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components
+﻿@* @using Microsoft.AspNetCore.Components
 @inherits ComponentBase
 
 @if (HasPermission())
@@ -16,5 +16,48 @@
     {
         return string.IsNullOrEmpty(Permission) ||
                AuthService.HasPermission(Permission).Result;
+    }
+} *@
+
+
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        @if (HasPermission)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @NotAuthorizedContent
+        }
+    </Authorized>
+    <NotAuthorized>
+        @NotAuthenticatedContent
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public string Permission { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment NotAuthorizedContent { get; set; }
+    [Parameter] public RenderFragment NotAuthenticatedContent { get; set; }
+
+    private bool HasPermission { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrEmpty(Permission))
+        {
+            HasPermission = false;
+            return;
+        }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        // Permission به صورت claim با نوع "Permission" ذخیره می‌شود
+        HasPermission = user?.Claims?.Any(c => c.Type == "Permission" && c.Value == Permission) == true;
     }
 }

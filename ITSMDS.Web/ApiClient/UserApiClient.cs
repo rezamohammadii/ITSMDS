@@ -21,64 +21,56 @@ public class UserApiClient
         _logger = logger;
     }
 
-    public async Task<UserModel[]> GetUserListAsync(CancellationToken ct = default)
+    public async Task<(bool Success, string Message, UserModel[] Data)> GetUserListAsync(CancellationToken ct = default)
     {
         try
         {
-            
-            
-            List<UserModel>? userList = null;
+            var response = await _httpClient.GetAsync("/api/user/GetAll", ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
 
-            await foreach (var user in _httpClient.GetFromJsonAsAsyncEnumerable<UserModel>("/api/user/GetAll", ct))
-            {
-                if (user is not null)
-                {
-                    userList ??= [];
-                    userList.Add(user);
-                }
-            }
+            if (string.IsNullOrEmpty(content))
+                return (false, "پاسخی از سرور دریافت نشد.", Array.Empty<UserModel>());
 
-            _logger.LogInformation("Fetched {Count} users", userList?.Count ?? 0);
-            return userList?.ToArray() ?? [];
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel[]>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.", Array.Empty<UserModel>());
+
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data ?? Array.Empty<UserModel>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetUserListAsync");
-            return [];
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", Array.Empty<UserModel>());
         }
     }
 
-    public async Task<UserModel?> GetUserAsync(int personalCode, CancellationToken ct = default)
+    public async Task<(bool Success, string Message, UserModel? Data)> GetUserAsync(int personalCode, CancellationToken ct = default)
     {
         try
         {
             var response = await _httpClient.GetAsync($"/api/user/{personalCode}", ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync(ct);
-                if (string.IsNullOrEmpty(content))
-                {
-                    _logger.LogWarning("Empty response for user {Code}", personalCode);
-                    return null;
-                }
+            if (string.IsNullOrEmpty(content))
+                return (false, "پاسخی از سرور دریافت نشد.", null);
 
-                var user = JsonSerializer.Deserialize<UserModel>(content);
-                _logger.LogInformation("Fetched user {Code}", personalCode);
-                return user ?? new UserModel { };
-            }
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            _logger.LogWarning("Failed to fetch user {Code}, Status: {Status}", personalCode, response.StatusCode);
-            return null;
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.", null);
+
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetUserAsync for code {Code}", personalCode);
-            return null;
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", null);
         }
     }
 
-    public async Task<UserModel?> EditUserAsync(UserModel userModel, CancellationToken ct = default)
+
+    public async Task<(bool Success, string Message, UserModel? Data)> EditUserAsync(UserModel userModel, CancellationToken ct = default)
     {
         try
         {
@@ -96,65 +88,52 @@ public class UserApiClient
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PutAsync("/api/user/edit", content, ct);
+            var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var contentResponse = await response.Content.ReadAsStringAsync(ct);
-                if (string.IsNullOrEmpty(contentResponse))
-                {
-                    _logger.LogWarning("Empty response on edit for user {Code}", userModel.PersonalCode);
-                    return null;
-                }
+            if (string.IsNullOrEmpty(contentResponse))
+                return (false, "پاسخی از سرور دریافت نشد.", null);
 
-                var user = JsonSerializer.Deserialize<UserModel>(contentResponse);
-                _logger.LogInformation("User edited successfully: {Code}", userModel.PersonalCode);
-                return user ?? new UserModel { };
-            }
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            _logger.LogWarning("Failed to edit user {Code}, Status: {Status}", userModel.PersonalCode, response.StatusCode);
-            return null;
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.", null);
+
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in EditUserAsync for user {Code}", userModel.PersonalCode);
-            return null;
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", null);
         }
     }
 
-    public async Task<bool> DeleteUserAsync(int personalCode, CancellationToken ct = default)
+
+    public async Task<(bool Success, string Message)> DeleteUserAsync(int personalCode, CancellationToken ct = default)
     {
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/user/delete/{personalCode}", ct);
+            var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var contentResponse = await response.Content.ReadAsStringAsync(ct);
-                if (string.IsNullOrEmpty(contentResponse))
-                {
-                    _logger.LogWarning("Empty delete response for user {Code}", personalCode);
-                    return false;
-                }
+            if (string.IsNullOrEmpty(contentResponse))
+                return (false, "پاسخی از سرور دریافت نشد.");
 
-                using var jsonDocument = JsonDocument.Parse(contentResponse);
-                var jsonElement = jsonDocument.RootElement;
-                bool res = jsonElement.GetProperty("response").GetBoolean();
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                _logger.LogInformation("User deleted: {Code}, Result: {Result}", personalCode, res);
-                return res;
-            }
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.");
 
-            _logger.LogWarning("Failed to delete user {Code}, Status: {Status}", personalCode, response.StatusCode);
-            return false;
+            return (apiResponse.Success, apiResponse.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in DeleteUserAsync for user {Code}", personalCode);
-            return false;
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.");
         }
     }
 
-    public async Task<bool> CreateUserAsync(UserModelIn modelIn, CancellationToken ct = default)
+
+    public async Task<(bool Success, string Message)> CreateUserAsync(UserModelIn modelIn, CancellationToken ct = default)
     {
         try
         {
@@ -162,69 +141,69 @@ public class UserApiClient
             var content = new StringContent(serializedModel, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync("/api/user/create", content, ct);
-            if (response.IsSuccessStatusCode)
+            var contentResponse = await response.Content.ReadAsStringAsync(ct);
+
+            _logger.LogInformation("API Response: {Response}", contentResponse);
+
+            var options = new JsonSerializerOptions
             {
-                var contentResponse = await response.Content.ReadAsStringAsync(ct);
+                PropertyNameCaseInsensitive = true
+            };
 
-                _logger.LogInformation("API Response: {Response}", contentResponse);
+            var result = JsonSerializer.Deserialize<ApiResponseClient<UserResponse>>(contentResponse, options);
 
-                try
+            if (result is not null)
+            {
+                if (result.Success)
                 {
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-
-                    var result = JsonSerializer.Deserialize<ApiResponseClient<UserResponse>>(contentResponse, options);
-
-                    if (result is not null && result.Success)
-                    {
-                        _logger.LogInformation("User created: {Username}, Result: {Result}", modelIn.UserName, result.Data);
-                        return true;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("User creation failed: {Username}, Response: {Response}",
-                            modelIn.UserName, contentResponse);
-                        return false;
-                    }
+                    _logger.LogInformation("User created: {Username}, Result: {Result}", modelIn.UserName, result.Data);
+                    return (true, result.Message); 
                 }
-                catch (JsonException ex)
+                else
                 {
-                    _logger.LogError(ex, "JSON deserialization error for response: {Response}", contentResponse);
-                    return false;
+                    _logger.LogWarning("User creation failed: {Username}, Message: {Message}", modelIn.UserName, result.Message);
+                    return (false, result.Message); 
                 }
             }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogError("API Error: {StatusCode}, Response: {Response}",
-                    response.StatusCode, errorContent);
-                return false;
-            }
 
+            return (false, "پاسخی از سرور دریافت نشد.");
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "JSON deserialization error");
+            return (false, "خطا در پردازش پاسخ سرور.");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in CreateUserAsync for user {Username}", modelIn.UserName);
-            return false;
+            return (false, "مشکلی در ارتباط با سرور پیش آمده، لطفاً بعداً تلاش کنید.");
         }
     }
 
-    public async Task<List<PermissionDto>> GetPermissionListAsync(CancellationToken ct = default)
+
+    public async Task<(bool Success, string Message, List<PermissionDto> Data)> GetPermissionListAsync(CancellationToken ct = default)
     {
         try
-        {            
-            var response = await _httpClient.GetFromJsonAsync<List<PermissionDto>>("/api/user/permissions", ct);            
+        {
+            var response = await _httpClient.GetAsync("/api/user/permissions", ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
 
-            _logger.LogInformation("Fetched {Count} permission", response?.Count ?? 0);
-            return response ?? [];
+            if (string.IsNullOrEmpty(content))
+                return (false, "پاسخی از سرور دریافت نشد.", new List<PermissionDto>());
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<List<PermissionDto>>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.", new List<PermissionDto>());
+
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data ?? new List<PermissionDto>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetPermissionListAsync");
-            return [];
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", new List<PermissionDto>());
         }
     }
+
 }
 

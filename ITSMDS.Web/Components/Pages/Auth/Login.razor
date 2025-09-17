@@ -1,51 +1,39 @@
 ﻿@page "/login"
 @using ITSMDS.Domain.DTOs
-@layout ITSMDS.Web.Components.Layout.LoginLayout
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
-@inject AuthService authService
+@inject AuthApiClient authService
+@layout ITSMDS.Web.Components.Layout.LoginLayout
+@inject ISweetAlertService SweetAlert
 
-<div class="login-container">
-    <div class="login-card">
-        <h3 class="text-center mb-4">ورود به سیستم</h3>
+<div class="login-card">
+    <h3 class="text-center mb-4 fw-bold">ورود به سیستم</h3>
 
-        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
-            <DataAnnotationsValidator />
+    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+        <DataAnnotationsValidator />
 
-            <div class="form-floating mb-3">
-                <InputText id="username" @bind-Value="loginModel.Username" class="form-control" placeholder="نام کاربری" />
-                <label for="username">نام کاربری</label>
-                <ValidationMessage For="@(() => loginModel.Username)" />
-            </div>
-
-            <div class="form-floating mb-3">
-                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="رمز عبور" />
-                <label for="password">رمز عبور</label>
-                <ValidationMessage For="@(() => loginModel.Password)" />
-            </div>
-
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger">@errorMessage</div>
-            }
-
-            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
-                @if (isLoading)
-                {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span>در حال ورود...</span>
-                }
-                else
-                {
-                    <span>ورود</span>
-                }
-            </button>
-        </EditForm>
-
-        <div class="text-center mt-3">
-            <a href="#" class="forgot-link">رمز عبور را فراموش کرده‌اید؟</a>
+        <div class="mb-3">
+            <InputText @bind-Value="loginModel.Username" class="form-control form-control-lg rounded-3" placeholder="نام کاربری" />
+            <ValidationMessage For="@(() => loginModel.Username)" />
         </div>
-    </div>
+
+        <div class="mb-3">
+            <InputText @bind-Value="loginModel.Password" type="password" class="form-control form-control-lg rounded-3" placeholder="رمز عبور" />
+            <ValidationMessage For="@(() => loginModel.Password)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 rounded-3" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                <span>در حال ورود...</span>
+            }
+            else
+            {
+                <span>ورود</span>
+            }
+        </button>
+    </EditForm>
 </div>
 
 @code {
@@ -62,20 +50,22 @@
         {
             var result = await authService.LoginAsync(loginModel);
 
-            if (result)
+            if (result.Success)
             {
-                await Task.Delay(100);
-               // await js.InvokeVoidAsync("window.location.replace", "/");
+                
+                await SweetAlert.ShowSuccessAsync(result.Message);
+                await Task.Delay(500);
                 NavigationManager.NavigateTo("/", forceLoad: true);
             }
             else
             {
-                errorMessage = "نام کاربری یا رمز عبور اشتباه است";
+                await SweetAlert.ShowErrorAsync(result.Message);
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "خطا در ارتباط با سرور";
+            await SweetAlert.ShowErrorAsync("خطا در ارتباط با سرور");
+
             Console.WriteLine($"Login error: {ex.Message}");
         }
         finally

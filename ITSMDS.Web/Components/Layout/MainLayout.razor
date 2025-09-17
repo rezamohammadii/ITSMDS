@@ -1,10 +1,11 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using ITSMDS.Web.Components.Pages.Auth
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inherits LayoutComponentBase
 
 @inject NavigationManager Navigation
 
-<AuthorizeView>
+@* <AuthorizeView>
     <NotAuthorized>
         @if (!isChecking)
         {
@@ -14,8 +15,10 @@
     <Authorized>
         @Body
     </Authorized>
-</AuthorizeView>
+</AuthorizeView> *@
 
+
+<CascadingAuthenticationState>
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -32,12 +35,17 @@
     </main>
 </div>
 
+<div class="content px-4">
+               
+            </div>
+
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
 
+</CascadingAuthenticationState>
 
 @code {
     private bool isChecking = true;

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
@@ -59,8 +61,9 @@ builder.Services
     });
 
 var app = builder.Build();
-
+var ranges = File.ReadAllLines(@"Configs/IpRange.txt").Where(x => !string.IsNullOrWhiteSpace(x));
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<HandleIPMiddleware>(ranges);
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();

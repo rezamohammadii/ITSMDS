@@ -1,5 +1,6 @@
 ﻿@page "/user/create"
 @using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.Services
 @using ITSMDS.Web.ViewModel
 @inject IConfiguration Configuration
 @inject IJSRuntime JS
@@ -121,13 +122,13 @@
         {
             PreloadService.Show(SpinnerColor.Primary);
             var res = await userApi.CreateUserAsync(user);
-            if (!res)
+            if (!res.Success)
             {
-                await SweetAlert.ShowErrorAsync("خطا در ایجاد کاربر جدید");
+                await SweetAlert.ShowErrorAsync(res.Message);
                 return;
             }
 
-            await SweetAlert.ShowSuccessAsync("کاربر با موفقیت اضافه شد");
+            await SweetAlert.ShowSuccessAsync(res.Message);
             StateHasChanged();
         }
         catch (Exception ex)

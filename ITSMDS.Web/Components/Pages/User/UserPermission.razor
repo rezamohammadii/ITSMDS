@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using ITSMDS.Domain.DTOs
 @using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.Services
 @inject UserApiClient userApi
 @inject RoleApiClient roleApi
 @using ITSMDS.Web.ViewModel
@@ -126,16 +127,16 @@
                                 @foreach (var category in ExistingPermissions.GroupBy(p => p.Name))
                                 {
                                     <div class="permission-category mb-4">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                        @* <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="text-secondary mb-0">@GetCategoryName(category.Key)</h6>
                                             <span class="badge badge-primary">@category.Count() مورد</span>
-                                        </div>
+                                        </div> *@
 
                                         @foreach (var permission in category)
                                         {
-                                            <div class="card mb-3" @onclick="() => HandlePermissionValue(permission.Name)">
+                                            <div class="card mb-3">
                                                 <div class="card-body">
-                                                    <h6 class="card-title text-dark">@permission.Name</h6>
+                                                    <h6 class="card-title text-dark">@GetCategoryName(category.Key)</h6>
                                                     <p class="card-text text-muted small mb-2">@permission.Description</p>
 
                                                     <div class="mt-3 pt-2 border-top">
@@ -393,32 +394,23 @@
     protected override async Task OnInitializedAsync()
     {
 
-        ExistingPermissions = await userApi.GetPermissionListAsync();
+        var res = await userApi.GetPermissionListAsync();
+        ExistingPermissions = res.Data;
         var resultDto = await roleApi.RoleListAsync();
-        RoleList = resultDto.Items;
+        RoleList = resultDto.Data.Items;
         var outPut = await userApi.GetUserListAsync();
-        Users = outPut.ToList();
+        Users = outPut.Data.ToList();
 
-    }
-
-    private PermissionDto NewPermission = new PermissionDto();
-
-    private void HandlePermissionValue(string name)
-    {
-        if (ExistingPermissions != null)
-        {
-            NewPermission = ExistingPermissions.FirstOrDefault(x => x.Name == name);
-        }
     }
 
     private string GetCategoryName(string categoryKey)
     {
         return categoryKey switch
         {
-            "user-management" => "مدیریت کاربران",
-            "role-management" => "مدیریت نقش‌ها",
-            "server-management" => "مدیریت سرورها",
-            "service-management" => "مدیریت سرویس‌ها",
+            "user" => "مدیریت کاربران",
+            "role" => "مدیریت نقش‌ها",
+            "server" => "مدیریت سرورها",
+            "service" => "مدیریت سرویس‌ها",
             _ => categoryKey
         };
     }

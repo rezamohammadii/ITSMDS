@@ -67,7 +67,8 @@ else
                                 <td>
                                     @foreach (var item in user.RoleName)
                                     {
-                                        @item
+                                        <Badge Class="m-2" Color="BadgeColor.Primary"> @item </Badge>
+                                        
                                     }
                                     </td>
                                 <td>@user.IpAddress</td>
@@ -110,12 +111,21 @@ else
 
 @code {
     @inject IJSRuntime JSRuntime
-
+    @inject ISweetAlertService SweetAlert
     private UserModel[]? users;
 
     protected override async Task OnInitializedAsync()
     {
-        users = await userApi.GetUserListAsync();
+        var res  = await userApi.GetUserListAsync();
+
+        if (res.Success)
+        {
+            users = res.Data;
+        }
+        else
+        {
+            await SweetAlert.ShowErrorAsync(res.Message);
+        }
     }
 
     private void OnAddUser()
@@ -134,9 +144,23 @@ else
         if (confirmed)
         {
             var result = await userApi.DeleteUserAsync(personalCode);
-            if (result)
+            if (result.Success)
             {
-                users = await userApi.GetUserListAsync();
+                await SweetAlert.ShowSuccessAsync(result.Message);
+                var res = await userApi.GetUserListAsync();
+
+                if (res.Success)
+                {
+                    users = res.Data;
+                }
+                else
+                {
+                    await SweetAlert.ShowErrorAsync(res.Message);
+                }
+            }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(result.Message);
             }
         }
     }

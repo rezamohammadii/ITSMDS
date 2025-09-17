@@ -12,16 +12,3 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-@code {
-    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && AuthStateProvider is CustomAuthStateProvider customProvider)
-        {
-           
-            await customProvider.InitializeAsync();
-        }
-    }
-}

@@ -1,6 +1,6 @@
 ﻿
 
-namespace ITSMDS.Infrastructure.CustomAttribute;
+namespace ITSMDS.Domain.CustomAttribute;
 
 public sealed class PermissionCommentAttribute : Attribute
 {

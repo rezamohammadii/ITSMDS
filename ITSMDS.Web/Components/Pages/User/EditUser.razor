@@ -1,6 +1,5 @@
 ﻿@page "/user/edit/{PersonalCode}"
-@using ITSMDS.Web.ApiClient
-@using ITSMDS.Web.ViewModel
+
 @inject UserApiClient userApi
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
@@ -8,78 +7,105 @@
 
 <h4 class="mb-4">ویرایش کاربر</h4>
 
-@if (user == null)
+
+@if (PermissionService.HasPermission(PermissionName.USER_EDIT))
 {
-    <p>در حال بارگذاری اطلاعات...</p>
+    @if (user == null)
+    {
+        <p>در حال بارگذاری اطلاعات...</p>
+    }
+    else
+    {
+        <EditForm Model="user" OnValidSubmit="HandleValidSubmit" class="row g-3" FormName="EditUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="col-md-6">
+                <label class="form-label">نام</label>
+                <InputText class="form-control" @bind-Value="user.FirstName" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">نام خانوادگی</label>
+                <InputText class="form-control" @bind-Value="user.LastName" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">نام کاربری</label>
+                <InputText class="form-control" @bind-Value="user.UserName" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">کد پرسنلی</label>
+                <InputNumber class="form-control" @bind-Value="user.PersonalCode" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">ایمیل</label>
+                <InputText class="form-control" @bind-Value="user.Email" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">شماره تماس</label>
+                <InputText class="form-control" @bind-Value="user.PhoneNumber" />
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">آدرس IP</label>
+                <InputText class="form-control" @bind-Value="user.IpAddress" />
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="submit" class="btn btn-success px-4">💾 ذخیره تغییرات</button>
+            </div>
+        </EditForm>
+    }
 }
 else
 {
-    <EditForm Model="user" OnValidSubmit="HandleValidSubmit" class="row g-3" FormName="EditUser">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="col-md-6">
-            <label class="form-label">نام</label>
-            <InputText class="form-control" @bind-Value="user.FirstName" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">نام خانوادگی</label>
-            <InputText class="form-control" @bind-Value="user.LastName" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">نام کاربری</label>
-            <InputText class="form-control" @bind-Value="user.UserName" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">کد پرسنلی</label>
-            <InputNumber class="form-control" @bind-Value="user.PersonalCode" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">ایمیل</label>
-            <InputText class="form-control" @bind-Value="user.Email" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">شماره تماس</label>
-            <InputText class="form-control" @bind-Value="user.PhoneNumber" />
-        </div>
-
-        <div class="col-md-12">
-            <label class="form-label">آدرس IP</label>
-            <InputText class="form-control" @bind-Value="user.IpAddress" />
-        </div>
-
-        <div class="mt-4 d-flex justify-content-end">
-            <button type="submit" class="btn btn-success px-4">💾 ذخیره تغییرات</button>
-        </div>
-    </EditForm>
+    <p>شما دسترسی به این صفحه را ندارید</p>
 }
+
+
 
 @code {
     [Parameter]
     public string? PersonalCode { get; set; }
+    @inject AuthenticationStateProvider AuthStateProvider;
+    @inject PermissionService PermissionService
+    @inject ISweetAlertService SweetAlert
 
     private UserModel? user;
+    private List<string> userPermissions = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await PermissionService.InitializeAsync();
+
         if (PersonalCode is not null )
         {
-            user = await userApi.GetUserAsync(int.Parse(PersonalCode));
-            // apiUrl = Configuration.GetSection("BaseAddress").Value!;
+
+            var res = await userApi.GetUserAsync(int.Parse(PersonalCode));
+
+            if (res.Success)
+            {
+
+                user = res.Data;
+            }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(res.Message);
+            }
 
         }
     }
-
     private async Task HandleValidSubmit()
     {
         var result = await userApi.EditUserAsync(user!);
-        if (result is not null)
+        if (result.Success)
         {
+            await SweetAlert.ShowSuccessAsync(result.Message);
+
             NavigationManager.NavigateTo("/user_list");
         }
     }
