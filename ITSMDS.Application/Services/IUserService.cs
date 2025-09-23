@@ -5,7 +5,7 @@ namespace ITSMDS.Application.Services;
 public interface IUserService
 {
     #region User
-    Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken ct = default);
+    Task<(bool, string)> CreateAsync(CreateUserRequest request, CancellationToken ct = default);
     Task<UserResponse> GetUserByPersonalCodeAsync(int pCode, CancellationToken ct = default);
     Task<List<UserResponse>> GetAllAsync(CancellationToken ct = default);
     Task<UserResponse> UpdateAsync(UpdateUserRequest request, CancellationToken ct = default);

@@ -1,8 +1,12 @@
-﻿using ITSMDS.Domain.Enums;
+﻿using ITSMDS.Domain.DTOs;
+using ITSMDS.Domain.Entities;
+using ITSMDS.Domain.Enums;
 using ITSMDS.Domain.Tools;
 using ITSMDS.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace ITSMDS.ApiService.Middleware
@@ -43,14 +47,14 @@ namespace ITSMDS.ApiService.Middleware
 
                     if (string.IsNullOrEmpty(REQUEST_IP_ADDRESS.ToString()))
                     {
-                        await WriteResponse(httpContext, HttpStatusCode.NotAcceptable, ErrorCode.InvalidIpAddress);
+                        await WriteResponse(httpContext, HttpStatusCode.NotAcceptable, ErrorCode.InvalidIpAddress, null);
 
                         return;
                     }
                     bool allowed = _allowedRanges.Any(c => IpRangeHelper.IsIpRange(REQUEST_IP_ADDRESS!, c));
                     if (!allowed)
                     {
-                        await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.IpNotRange);
+                        await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.IpNotRange, null);
 
                         return;
                     }
@@ -59,15 +63,58 @@ namespace ITSMDS.ApiService.Middleware
                         using (var scope = httpContext.RequestServices.CreateScope())
                         {
                             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                            var checkIpUser = await db.Users
-                                .AnyAsync(x => x.IpAddress == REQUEST_IP_ADDRESS.ToString());
-
-                            if (!checkIpUser)
+                            httpContext.Request.EnableBuffering();
+                            using (var reader = new StreamReader(httpContext.Request.Body, Encoding.UTF8, leaveOpen: true))
                             {
-                                await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.IpNotAllowed);
+                                var bodyStr = await reader.ReadToEndAsync();
 
-                                return;
+                                httpContext.Request.Body.Position = 0;
+
+                                var modelBody = JsonSerializer.Deserialize<LoginDTO>(bodyStr, new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                                if (modelBody == null) return;
+
+                                bool checkIpUser = true;
+                                
+                                if (modelBody.PersonalCode != 0)
+                                {
+                                    var user = await db.Users.FirstOrDefaultAsync(x =>
+                                        x.PersonalCode == modelBody.PersonalCode);
+
+                                    if (user is null)
+                                    {
+                                        await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.Unauthorized, "کد پرسنلی معتبر نمی باشد");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        checkIpUser = user.IpAddress == REQUEST_IP_ADDRESS.ToString();
+                                    }
+                                }
+                                else
+                                {
+                                    var user = await db.Users.FirstOrDefaultAsync(x =>
+                                        x.UserName == modelBody.Username);
+
+                                    if (user is null)
+                                    {
+                                        await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.Unauthorized, "نام کاربری معتبر نمی باشد");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        checkIpUser = user.IpAddress == REQUEST_IP_ADDRESS.ToString();
+                                    }
+                                }
+
+                                if (!checkIpUser)
+                                {
+                                    await WriteResponse(httpContext, HttpStatusCode.Forbidden, ErrorCode.IpNotAllowed, null);
+                                    return;
+                                }
                             }
                         }
 
@@ -83,17 +130,17 @@ namespace ITSMDS.ApiService.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unhandled exception has occurred");
-                await WriteResponse(httpContext, HttpStatusCode.InternalServerError, ErrorCode.InvalidIpAddress);
+                await WriteResponse(httpContext, HttpStatusCode.InternalServerError, ErrorCode.InvalidIpAddress, null);
             }
         }
 
 
-        private async Task WriteResponse(HttpContext context, HttpStatusCode statusCode, ErrorCode errorCode)
+        private async Task WriteResponse(HttpContext context, HttpStatusCode statusCode, ErrorCode errorCode, string? message)
         {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
 
-            var response = ApiResponse<object>.Fail(errorCode);
+            var response = ApiResponse<object>.Fail(errorCode, message);
             var json = System.Text.Json.JsonSerializer.Serialize(response);
 
             await context.Response.WriteAsync(json);

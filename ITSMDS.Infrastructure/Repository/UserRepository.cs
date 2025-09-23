@@ -21,13 +21,14 @@ public class UserRepository : IUserRepository
 
     public async ValueTask<bool> CheckUserExsitAsync(string? userName = null, int? personalCode = null, CancellationToken ct = default)
     {
-        if (userName != null)
-        {
-            return await _db.Users.AnyAsync(x => x.UserName == userName, ct);
-        }
+        
         if (personalCode != null)
         {
             return await _db.Users.AnyAsync(x => x.PersonalCode == personalCode, ct);
+        }
+        if (userName != null)
+        {
+            return await _db.Users.AnyAsync(x => x.UserName == userName, ct);
         }
         else
         {

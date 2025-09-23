@@ -1,12 +1,16 @@
 ﻿
 
+using System.ComponentModel.DataAnnotations;
+
 namespace ITSMDS.Domain.DTOs;
 
 public class LoginDTO
 {
+
     public int PersonalCode { get; set; }
     public string? Username { get; set; }
     public string Password { get; set; }
+
 }
 
 public class LoginResponseDTO 

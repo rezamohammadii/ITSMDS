@@ -21,7 +21,7 @@ public class UserApiClient
         _logger = logger;
     }
 
-    public async Task<(bool Success, string Message, UserModel[] Data)> GetUserListAsync(CancellationToken ct = default)
+    public async Task<(bool Success, string Message, UserViewModel[] Data)> GetUserListAsync(CancellationToken ct = default)
     {
         try
         {
@@ -29,23 +29,23 @@ public class UserApiClient
             var content = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(content))
-                return (false, "پاسخی از سرور دریافت نشد.", Array.Empty<UserModel>());
+                return (false, "پاسخی از سرور دریافت نشد.", Array.Empty<UserViewModel>());
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel[]>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserViewModel[]>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
-                return (false, "خطا در پردازش پاسخ سرور.", Array.Empty<UserModel>());
+                return (false, "خطا در پردازش پاسخ سرور.", Array.Empty<UserViewModel>());
 
-            return (apiResponse.Success, apiResponse.Message, apiResponse.Data ?? Array.Empty<UserModel>());
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data ?? Array.Empty<UserViewModel>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in GetUserListAsync");
-            return (false, "مشکلی در ارتباط با سرور پیش آمده.", Array.Empty<UserModel>());
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", Array.Empty<UserViewModel>());
         }
     }
 
-    public async Task<(bool Success, string Message, UserModel? Data)> GetUserAsync(int personalCode, CancellationToken ct = default)
+    public async Task<(bool Success, string Message, UserViewModel? Data)> GetUserAsync(int personalCode, CancellationToken ct = default)
     {
         try
         {
@@ -55,7 +55,7 @@ public class UserApiClient
             if (string.IsNullOrEmpty(content))
                 return (false, "پاسخی از سرور دریافت نشد.", null);
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.", null);
@@ -70,7 +70,7 @@ public class UserApiClient
     }
 
 
-    public async Task<(bool Success, string Message, UserModel? Data)> EditUserAsync(UserModel userModel, CancellationToken ct = default)
+    public async Task<(bool Success, string Message, UserViewModel? Data)> EditUserAsync(UserViewModel userModel, CancellationToken ct = default)
     {
         try
         {
@@ -93,7 +93,7 @@ public class UserApiClient
             if (string.IsNullOrEmpty(contentResponse))
                 return (false, "پاسخی از سرور دریافت نشد.", null);
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserModel>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<UserViewModel>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.", null);
@@ -118,7 +118,7 @@ public class UserApiClient
             if (string.IsNullOrEmpty(contentResponse))
                 return (false, "پاسخی از سرور دریافت نشد.");
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool?>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.");

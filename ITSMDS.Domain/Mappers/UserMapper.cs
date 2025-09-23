@@ -27,7 +27,7 @@ public class UserMapper : Profile
                 src.PersonalCode,
                 src.UserRoles != null ?
                     src.UserRoles.Select(ur => ur.Role.Name ?? "").Where(name => !string.IsNullOrEmpty(name)).ToList()
-                    : new List<string>() // اضافه کردن roleName
+                    : new List<string>(), src.IsActive // اضافه کردن roleName
             ))
             .ForMember(d => d.createDate, m => m.MapFrom(m => ConvertDate.ConvertToShamsi(m.CreateDate)))
             .ReverseMap();

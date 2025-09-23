@@ -58,7 +58,6 @@ public class ExceptionMiddleware
                 response.ErrorCode = unauthorizedException.ErrorCode;
                 break;
 
-            // سپس استثناهای عمومی‌تر (والدین) را بررسی کنید
             case AppException appException:
                 context.Response.StatusCode = appException.StatusCode;
                 response.Message = appException.Message;
@@ -70,7 +69,6 @@ public class ExceptionMiddleware
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 response.Message = "Internal server error";
                 response.ErrorCode = "INTERNAL_ERROR";
-                // در محیط production جزئیات خطا را نشان ندهید
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                 {
                     response.AdditionalData = new { Detail = exception.Message, StackTrace = exception.StackTrace };

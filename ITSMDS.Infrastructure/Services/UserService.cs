@@ -33,7 +33,7 @@ public class UserService : IUserService
     }
 
     #region UserMethod
-    public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken ct = default)
+    public async Task<(bool, string)> CreateAsync(CreateUserRequest request, CancellationToken ct = default)
     {
         try
         {
@@ -42,7 +42,8 @@ public class UserService : IUserService
             if (await _repo.CheckUserExsitAsync(request.userName, int.Parse(request.personalCode), ct))
             {
                 _logger.LogWarning("User already exists: {Username}", request.userName);
-                throw new ValidationException("User already exists", new { Field = "Username" });
+                return (false, "نام کاربری یا کد پرسنلی در سیستم موجود است");
+               // throw new ValidationException("User already exists", new { Field = "Username" });
             }
 
             string hashPass = HashGenerator.GenerateHashSHA512(request.password);
@@ -54,23 +55,23 @@ public class UserService : IUserService
 
             _logger.LogInformation("User created successfully: {UserId}", user.HashId);
 
-            return new UserResponse(user.HashId, user.Email, user.FirstName, user.LastName,
-                ConvertDate.ConvertToShamsi(user.CreateDate), user.PhoneNumber, user.IpAddress, user.UserName, user.PersonalCode, []);
+            return (true, "کاربر با موفقیت دخیره شد");
+
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
         {
             // خطای unique constraint violation
-            throw new ValidationException("User already exists", new { Field = "Username" });
+            return (false, "خطا هنگام ذخیره سازی کاربر لطفا بعدا تلاش کنید");
         }
         catch (DbUpdateException ex)
         {
             _logger.LogError(ex, "Database error while creating user");
-            throw new AppException("Database operation failed", 500, "DATABASE_ERROR");
+            return (false, "خطا هنگام ذخیره سازی کاربر لطفا بعدا تلاش کنید");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in CreateAsync");
-            throw new AppException("Failed to create user", 500, "USER_CREATION_FAILED");
+            return (false, "کاربر دخیره نشد خطا نامشخص");
         }
 
     }
@@ -112,7 +113,7 @@ public class UserService : IUserService
 
             return items.Select(x => new UserResponse(x.HashId, x.Email, x.FirstName, x.LastName,
                 ConvertDate.ConvertToShamsi(x.CreateDate), x.PhoneNumber, x.IpAddress, x.UserName, x.PersonalCode,
-                x.UserRoles.Select(x => x.Role.Name).ToList()
+                x.UserRoles.Select(x => x.Role.Name).ToList(), x.IsActive
                 )).ToList();
         }
         catch (Exception ex)
@@ -227,8 +228,7 @@ public class UserService : IUserService
     #region Auth
     public async Task<LoginResponseDTO> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default)
     {
-        personalCode = int.Parse(username);
-        username = "";
+        
         try
         {
             _logger.LogInformation("Fetching user with Username: {username}", username);

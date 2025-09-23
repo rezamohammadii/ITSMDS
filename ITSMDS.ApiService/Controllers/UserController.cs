@@ -29,10 +29,10 @@ namespace ITSMDS.ApiService.Controllers
                 _logger.LogInformation("CreateUserAsync called with data: {@userRequest}", userRequest);
                 var user = await _userService.CreateAsync(userRequest, ct);
 
-                if (user is not null)
+                if (user.Item1)
                 {
-                    _logger.LogInformation("User created successfully with ID: {UserId}", user.id);
-                    return Ok(ApiResponse<UserResponse>.Ok(user, "کاربر با موفقیت ایجاد شد."));
+                    _logger.LogInformation("User created successfully with Personali Code: {PC}", userRequest.personalCode);
+                    return Ok(ApiResponse<bool>.Ok(user.Item1, "کاربر با موفقیت ایجاد شد."));
                 }
 
                 _logger.LogWarning("User creation failed for data: {@userRequest}", userRequest);
