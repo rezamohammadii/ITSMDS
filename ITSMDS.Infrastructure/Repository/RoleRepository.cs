@@ -32,4 +32,7 @@ public class RoleRepository : IRoleRepository
         var role = await _context.Roles.Where(x => x.Id == roleId && !x.IsDeleted).FirstOrDefaultAsync(ct);
         return role;
     }
+
+    public async ValueTask<bool> CheckRoleNameExsistAsync(string roleName, CancellationToken ct = default)
+        => await _context.Roles.AnyAsync(x => x.Name == roleName);
 }

@@ -1,14 +1,16 @@
-﻿@page "/user_list"
+﻿@page "/users"
 @* @attribute [StreamRendering(true)] *@
 @rendermode InteractiveServer
 @using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.Components.Pages.User.Component
 @using ITSMDS.Web.ViewModel
+@using System.Linq.Expressions
 
 @inject UserApiClient userApi
 @inject NavigationManager NavigationManager
 
 
-<h3 class="mb-4">لیست کاربران</h3>
+<h3 class="mb-4 text-gradient">لیست کاربران</h3>
 
 <button class="btn btn-success mb-3" @onclick="OnAddUser">
     <i class="fas fa-user fa-lg"></i> افزودن کاربر
@@ -36,63 +38,82 @@ else
             <h5 class="mb-0">لیست کاربران</h5>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped align-middle text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>نام</th>
-                            <th>نام خانوادگی</th>
-                            <th>ایمیل سازمانی</th>
-                            <th>کد پرسنلی</th>
-                            <th>نام کاربری</th>
-                            <th>تاریخ ایجاد</th>
-                            <th>شماره تلفن</th>
-                            <th>نقش ها</th>
-                            <th>آدرس IP</th>
-                            <th>عملیات</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in users)
-                        {
-                            <tr>
-                                <td>@user.FirstName</td>
-                                <td>@user.LastName</td>
-                                <td>@user.Email</td>
-                                <td>@user.PersonalCode</td>
-                                <td>@user.UserName</td>
-                                <td>@user.CreateDate</td>
-                                <td>@user.PhoneNumber</td>
-                                <td>
-                                    @foreach (var item in user.RoleName)
-                                    {
-                                        <Badge Class="m-2" Color="BadgeColor.Primary"> @item </Badge>
-                                        
-                                    }
-                                    </td>
-                                <td>@user.IpAddress</td>
-                                <td>
-                                    <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEditUser(user.PersonalCode.Value)">
-                                        <i class="fas fa-file-edit fa-lg"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteUser(user.PersonalCode.Value)">
-                                        <i class="fas fa-trash fa-lg"></i>
-                                    </button>
-                                </td>
-
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="input-group mb-3">
+                <InputText class="form-control" @bind-Value="searchTerm"
+                           @oninput="OnSearchChanged" placeholder="نام، نام خانوادگی، ایمیل..." />
+                <span class="input-group-text">🔍 جستجو</span>
             </div>
+            <Grid @ref="userGrid" TItem="UserViewModel"
+                  DataProvider="UserDataProvider"
+                  AllowPaging="true"
+                  AutoHidePaging="true"
+                  Class="table table-hover table-bordered table-striped"
+                  PageSize="10"
+                  PageSizeSelectorVisible="true"
+                  ItemsPerPageText="تعداد نمایش"
+                  PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+                  Responsive="true">
+
+                <GridColumn TItem="UserViewModel" HeaderText="نام" HeaderTextAlignment="Alignment.Center">
+                    @context.FirstName
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="نام خانوادگی" HeaderTextAlignment="Alignment.Center">
+                    @context.LastName
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="ایمیل سازمانی" HeaderTextAlignment="Alignment.Center">
+                    @context.Email
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="کد پرسنلی" HeaderTextAlignment="Alignment.Center">
+                    @context.PersonalCode
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="نام کاربری" HeaderTextAlignment="Alignment.Center">
+                    @context.UserName
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="تاریخ ایجاد" HeaderTextAlignment="Alignment.Center">
+                    @context.CreateDate
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="شماره تلفن" HeaderTextAlignment="Alignment.Center">
+                    @context.PhoneNumber
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="نقش‌ها" HeaderTextAlignment="Alignment.Center">
+                    @foreach (var role in context.RoleName)
+                    {
+                        <Badge Class="m-1" Color="BadgeColor.Primary">@role</Badge>
+                    }
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="آدرس IP" HeaderTextAlignment="Alignment.Center" SortKeySelector="item => item.IpAddress">
+                    @context.IpAddress
+                </GridColumn>
+
+                <GridColumn TItem="UserViewModel" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <Button Color="ButtonColor.Secondary" @onclick="() => ShowUserDetails(context)">
+                            <Icon Name="IconName.FileEarmarkMedical" /> مشاهده
+                        </Button>
+                        <Button Color="ButtonColor.Warning" @onclick="() => OnEditUser(context.PersonalCode.Value)">
+                            <Icon Name="IconName.FileEarmarkMedical" /> ویرایش
+                        </Button>
+                        <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteUser(context.PersonalCode.Value)">
+                            <Icon Name="IconName.Trash" /> حذف
+                        </Button>
+                    </div>
+                </GridColumn>
+                <Modal @ref="modal" Size="ModalSize.Large" />
+            </Grid>
         </div>
     </div>
 }
 
 <script>
-
-        window.showDeleteConfirmation = function (message) {
+    window.showDeleteConfirmation = function (message) {
         return Swal.fire({
             title: 'تأیید حذف',
             text: message,
@@ -105,22 +126,61 @@ else
             return result.isConfirmed;
         });
     };
-
 </script>
-
 
 @code {
     @inject IJSRuntime JSRuntime
     @inject ISweetAlertService SweetAlert
-    private UserModel[]? users;
+
+    private UserViewModel[]? users;
+    private UserViewModel? singleUser;
+    private UserViewModel[]? allUsers; // ذخیره تمام کاربران برای فیلتر کردن
+    private Grid<UserViewModel>? userGrid;
+    private string searchTerm = string.Empty;
+    private Modal modal = default!;
+
+    private async Task<GridDataProviderResult<UserViewModel>> UserDataProvider(GridDataProviderRequest<UserViewModel> request)
+    {
+        IEnumerable<UserViewModel> filteredUsers = allUsers ?? Array.Empty<UserViewModel>();
+
+        // اعمال فیلتر جستجو
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var searchLower = searchTerm.ToLower();
+            filteredUsers = filteredUsers.Where(user =>
+                (user.FirstName != null && user.FirstName.ToLower().Contains(searchLower)) ||
+                (user.LastName != null && user.LastName.ToLower().Contains(searchLower)) ||
+                (user.Email != null && user.Email.ToLower().Contains(searchLower)) ||
+                (user.UserName != null && user.UserName.ToLower().Contains(searchLower)) ||
+                (user.PersonalCode.HasValue && user.PersonalCode.Value.ToString().Contains(searchTerm)) ||
+                (user.PhoneNumber != null && user.PhoneNumber.Contains(searchTerm)) ||
+                (user.IpAddress != null && user.IpAddress.Contains(searchTerm)) ||
+                (user.RoleName != null && user.RoleName.Any(role =>
+                    role != null && role.ToLower().Contains(searchLower)))
+            );
+        }
+
+        return await Task.FromResult(request.ApplyTo(filteredUsers.ToArray()));
+    }
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        if (userGrid != null)
+        {
+            await userGrid.RefreshDataAsync();
+        }
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        var res  = await userApi.GetUserListAsync();
+        var res = await userApi.GetUserListAsync();
 
         if (res.Success)
         {
             users = res.Data;
+            allUsers = res.Data; // ذخیره تمام کاربران برای فیلتر کردن
         }
         else
         {
@@ -133,10 +193,29 @@ else
         NavigationManager.NavigateTo("/user/create");
     }
 
+    private async Task ShowUserDetails(UserViewModel user)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["User"] = user      // نام پارامتر در کامپوننت بدنه باید "User" باشد
+        };
+        await modal.ShowAsync<UserDetailModal>(title: "اطلاعات کاربر", parameters: parameters);
+    
+    }
+
+
     private void OnEditUser(int personalCode)
     {
         NavigationManager.NavigateTo($"/user/edit/{personalCode}");
     }
+    // private async Task ShowUserModalComponent(int personalCode)
+    // {
+    //     singleUser = allUsers.Where(x => x.PersonalCode == personalCode).First();
+    //     var parameters = new Dictionary<string, object>();
+    //     parameters.Add(personalCode.ToString(), singleUser);
+    //     await modal.ShowAsync<UserDetailModal>(title: "مشخصات کاربر", parameters: parameters);
+    // }
+
 
     private async Task OnDeleteUser(int personalCode)
     {
@@ -147,11 +226,17 @@ else
             if (result.Success)
             {
                 await SweetAlert.ShowSuccessAsync(result.Message);
+                // بارگذاری مجدد داده‌ها
                 var res = await userApi.GetUserListAsync();
 
                 if (res.Success)
                 {
                     users = res.Data;
+                    allUsers = res.Data; // به روز رسانی لیست کامل
+                    if (userGrid != null)
+                    {
+                        await userGrid.RefreshDataAsync();
+                    }
                 }
                 else
                 {
@@ -165,4 +250,3 @@ else
         }
     }
 }
-

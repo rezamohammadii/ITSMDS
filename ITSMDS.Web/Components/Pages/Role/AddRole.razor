@@ -2,8 +2,8 @@
 @using ITSMDS.Domain.DTOs
 @using ITSMDS.Web.ApiClient
 @inject RoleApiClient roleApi
-@using ITSMDS.Web.ApiClient
 @inject UserApiClient userApi
+@inject NavigationManager NavigationManager
 
 
 <PageTitle>اضافه کردن نقش </PageTitle>
@@ -12,11 +12,11 @@
 <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
     
     <div class="d-flex flex-column">
-        <h3 class="mb-1">افزودن نقش جدید</h3>
+        <h3 class="mb-1 text-gradient">افزودن نقش جدید</h3>
         <h6 class="mb-0 text-muted">افزودن نقش ها و مجوز های سیستم</h6>
     </div>
 
-    <Button Color="ButtonColor.Warning" Class="me-auto">
+    <Button Color="ButtonColor.Warning" Class="me-auto" @onclick="NavigateToUsers">
         <Icon Name="IconName.ArrowRight" /> بازگشت
     </Button>
 </div>
@@ -25,23 +25,19 @@
 
 <Card Class="mb-5 shadow-lg mx-auto" Style="width: 70%;">
     <CardBody class="text-end">
-        <CardTitle class="mb-4 fw-bold">اطلاعات نقش</CardTitle>
+        <CardTitle class="mb-2 fw-bold">اطلاعات نقش</CardTitle>
         <EditForm Model="roleDtoIn" OnValidSubmit="HandleValidSubmit" class="row g-3" FormName="AddRole">
             <DataAnnotationsValidator />
             <ValidationSummary />
-            <div class="mb-3 text-muted">نام نقش </div>
+            <div class="mb-1 text-muted">نام نقش </div>
 
-            <div class="mb-3">
+            <div class="mb-1">
                 <TextInput @bind-Value="@roleDtoIn.RoleName" TextAlignment="Alignment.End" Class="form-control" />
             </div>
 
-            <div class="mb-3 text-muted">توضیحات </div>
+            
 
-            <div class="mb-3">
-                <TextAreaInput @bind-Value="@roleDtoIn.Description" Rows="5" TextAlignment="Alignment.End" Class="form-control" />
-            </div>
-
-            <div class="mb-3 text-muted">مدیریت دسترسی </div>
+            <div class="mb-1 text-muted">مدیریت دسترسی </div>
             <div class="d-flex justify-content-between align-items-start mb-3">
                   @if (ExistingPermissions == null)
                 {
@@ -68,6 +64,9 @@
                                             break;
                                         case "service":
                                             @: <h6 class="text-primary fw-bold mb-3"> مدیریت سرویس ها</h6>
+                                            break;
+                                        case "manage":
+                                            @: <h6 class="text-primary fw-bold mb-3"> مدیریت دسترسی ها</h6>
                                             break;
                                     }
                                     
@@ -97,7 +96,7 @@
                                                                 case "delete":
                                                                     @:<span>حذف</span>
                                                                     break;
-                                                                case "all":
+                                                                case "manage":
                                                                     @:<span>دسترسی به بخش</span>
                                                                     break;
                                                             }
@@ -117,6 +116,11 @@
 
                 }                         
             </div>
+            <div class="mb-1 text-muted">توضیحات </div>
+
+            <div class="mb-1">
+                <TextAreaInput @bind-Value="@roleDtoIn.Description" Rows="5" TextAlignment="Alignment.End" Class="form-control" />
+            </div>
            
             <div class="mb-3 d-flex justify-content-start align-items-center gap-2">
                 <CheckboxInput Label="نقش فعال" @bind-Value="roleDtoIn.IsActive" />
@@ -132,9 +136,6 @@
 </Card>
 
 
-
-
-
 @code {
     private RoleDtoIn? roleDtoIn = new RoleDtoIn();
     private string? enteredText = "sample text";
@@ -142,16 +143,23 @@
 
     private async Task HandleValidSubmit()
     {
+
+        if (roleDtoIn.SelectedPermissions.Count < 1)
+        {
+            await SweetAlert.ShowErrorAsync("حداقل باید یک دسترسی مشخص کنید");
+        }
         var result = await roleApi.CreateRoleAsync(roleDtoIn);
         if (result.Success)
         {
 
            await SweetAlert.ShowSuccessAsync(result.Message);
+            NavigationManager.NavigateTo("/role/list");
         }
         else
         {
             await SweetAlert.ShowErrorAsync(result.Message);
         }
+        StateHasChanged();
     }
     private List<PermissionDto> ExistingPermissions = new List<PermissionDto>();
 
@@ -177,5 +185,9 @@
         }
     }
 
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/role/list");
+    }
 
 }

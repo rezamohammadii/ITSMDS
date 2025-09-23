@@ -32,14 +32,14 @@ namespace ITSMDS.ApiService.Controllers
         public async Task<IActionResult> CreateRoleAsync(RoleDtoIn modelIn, CancellationToken ct= default)
         {
             var result = await _roleService.CreateRoleAsync(modelIn, ct);
-            if (result)
+            if (result.Item1)
             {
                 return Ok(ApiResponse<bool>.Ok(true, ErrorCode.RoleCreateSuccessfully.GetMessage()));
 
             }
             else
             {
-                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError));
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError, result.Item2));
 
             }
         }
@@ -57,6 +57,22 @@ namespace ITSMDS.ApiService.Controllers
 
             }
             return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError));
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteRole([FromQuery] int roleId, CancellationToken ct= default)
+        {
+            var result = await _roleService.DeleteRoleAsync(roleId, ct);
+            if (result.Item1)
+            {
+                return Ok(ApiResponse<bool>.Ok(true, result.Item2));
+
+            }
+            else
+            {
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.DeleteFailed, result.Item2));
+
+            }
         }
     }
 }

@@ -19,7 +19,7 @@
 
         <ul class="nav flex-column">
 
-            @if (PermissionService.HasPermission(PermissionName.USER_ALL))
+            @if (PermissionService.HasPermission(PermissionName.USER_READ))
             {
             <!-- مدیریت کاربران -->
             <li class="nav-item">
@@ -52,7 +52,7 @@
             </li>
             }
 
-            @if (PermissionService.HasPermission(PermissionName.ROLE_ALL))
+            @if (PermissionService.HasPermission(PermissionName.ROLE_READ))
             {
                 <!-- مدیریت نقش ها   -->
                 <li class="nav-item">
@@ -82,15 +82,15 @@
                     </div>
                 </li>            
                 }
-            @if (PermissionService.HasPermission(PermissionName.SERVER_ALL))
+            @if (PermissionService.HasPermission(PermissionName.SERVER_READ))
             {
             <!-- مدیریت سرور -->
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="fas fa-server"></i> مدیریت سرور</a>
+                <a class="nav-link" href="/servers"><i class="fas fa-server"></i> مدیریت سرور</a>
             </li>
             }
 
-            @if (PermissionService.HasPermission(PermissionName.SERVICE_ALL))
+            @if (PermissionService.HasPermission(PermissionName.SERVICE_READ))
             {
                 <!-- مدیریت سرویس‌ها -->
                 <li class="nav-item">

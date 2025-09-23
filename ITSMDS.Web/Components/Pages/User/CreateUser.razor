@@ -13,16 +13,14 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-
-
     <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
 
         <div class="d-flex flex-column">
-            <h1 class="h4 fw-bold text-dark">افزودن کاربر جدید</h1>
+            <h1 class="h4 fw-bold text-dark text-gradient">افزودن کاربر جدید</h1>
             <p class="text-muted mt-1">ایجاد حساب کاربری جدید در سیستم</p>
         </div>
 
-        <Button Color="ButtonColor.Warning" Class="me-auto">
+        <Button Color="ButtonColor.Warning" Class="me-auto" @onclick="NavigateToUsers">
             <Icon Name="IconName.ArrowRight" /> بازگشت
         </Button>
     </div>
@@ -121,6 +119,8 @@
         try
         {
             PreloadService.Show(SpinnerColor.Primary);
+            await Task.Delay(3000);
+          
             var res = await userApi.CreateUserAsync(user);
             if (!res.Success)
             {
@@ -152,6 +152,4 @@
     {
         NavigationManager.NavigateTo("/users");
     }
-
-
 }

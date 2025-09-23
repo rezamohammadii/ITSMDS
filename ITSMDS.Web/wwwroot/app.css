@@ -133,11 +133,13 @@ h1:focus {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
 }
-
+.bg-primary {
+    background-image: linear-gradient(270deg, rgb(5, 39, 103) 0%, #3a0647 70%) !important;
+}
 
 .btn-nav {
-    color : #fff;
-    text-decoration : none
+    color: #fff;
+    text-decoration: none
 }
 .btn-link:hover{
     color : antiquewhite
@@ -489,3 +491,95 @@ h1:focus {
         transform: translateY(0);
     }
 }
+ 
+/*server style
+*/
+
+.text-gradient {
+    background: linear-gradient(90deg, #4e54c8, #8f94fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card-statistic {
+    transition: transform 0.2s;
+}
+
+    .card-statistic:hover {
+        transform: translateY(-5px);
+    }
+
+.icon-statistic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-server {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.updates-timeline {
+    position: relative;
+}
+
+.update-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 15px;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.update-indicator {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.update-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.update-desc {
+    font-size: 0.8rem;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25em 0.6em;
+}
+
+.page-link {
+    cursor: pointer;
+}
+
+
+.users-section {
+    margin-top: 2rem;
+    min-height: 200px; /* ????? ?????? ???? ??? ?????? */
+}
+
+.user-card {
+    transition: all 0.3s ease;
+}
+
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }

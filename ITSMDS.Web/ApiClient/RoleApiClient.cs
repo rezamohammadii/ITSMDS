@@ -57,7 +57,7 @@ public class RoleApiClient
             if (string.IsNullOrEmpty(responseContent))
                 return (false, "پاسخی از سرور دریافت نشد.");
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool?>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.");
@@ -83,7 +83,7 @@ public class RoleApiClient
             if (string.IsNullOrEmpty(responseContent))
                 return (false, "پاسخی از سرور دریافت نشد.");
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool?>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.");
@@ -93,6 +93,31 @@ public class RoleApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in AssignRoleAsync");
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.");
+        }
+    }
+
+    public async Task<(bool Success, string Message)> DeleteRoleAsync(int roleId, CancellationToken ct = default)
+    {
+        try
+        {
+            var url = $"/api/role?roleId={roleId}";
+            var response = await _httpClient.DeleteAsync(url, ct);
+            var responseContent = await response.Content.ReadAsStringAsync(ct);
+
+            if (string.IsNullOrEmpty(responseContent))
+                return (false, "پاسخی از سرور دریافت نشد.");
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool?>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.");
+
+            return (apiResponse.Success, apiResponse.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in DeleteRoleAsync");
             return (false, "مشکلی در ارتباط با سرور پیش آمده.");
         }
     }

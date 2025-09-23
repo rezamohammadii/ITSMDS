@@ -11,4 +11,5 @@ public interface IRoleRepository
 
     ValueTask<Role> GetRoleByRoleIdAsync(int roleId  , CancellationToken ct = default);
 
+    ValueTask<bool> CheckRoleNameExsistAsync(string roleName, CancellationToken ct = default);
 }

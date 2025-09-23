@@ -16,6 +16,8 @@ namespace ITSMDS.Application.Constants
         public const string USER_EDIT = "user.edit";
         public const string USER_DELETE = "user.delete";
 
+        public const string PERMISSION_MANAGE = "permission.manage";
+
         public const string ROLE_READ = "role.read";
         public const string ROLE_ALL = "role.all";
         public const string ROLE_CREATE = "role.create";

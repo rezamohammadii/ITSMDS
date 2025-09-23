@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace ITSMDS.Web.ViewModel;
 
-public partial class UserModel
+public partial class UserViewModel
 {
     [JsonPropertyName("id")]
     public string HashId { get;  set; }

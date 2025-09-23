@@ -22,11 +22,25 @@
 
     [Inject]private AuthApiClient AuthService { get; set; }
     [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
+    @inject PermissionService PermissionService
+
     @inject IJSRuntime JS
     private async void Logout()
     {
         // پاک کردن توکن
         Navigation.NavigateTo("/", true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                Navigation.NavigateTo("/login", true);
+            }
+        }
     }
 
 

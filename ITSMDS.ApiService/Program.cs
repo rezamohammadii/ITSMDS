@@ -63,7 +63,7 @@ builder.Services
 
 var app = builder.Build();
 var ranges = File.ReadAllLines(@"Configs/IpRange.txt").Where(x => !string.IsNullOrWhiteSpace(x));
-app.UseMiddleware<ExceptionMiddleware>();
+//app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<HandleIPMiddleware>(ranges);
 
 // Configure the HTTP request pipeline.

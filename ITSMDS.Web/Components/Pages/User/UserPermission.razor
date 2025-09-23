@@ -11,9 +11,9 @@
 @inject ISweetAlertService SweetAlert
 
 
-<PageTitle>مدیریت نقش ها</PageTitle>
+<PageTitle>مدیریت دسترسی ها</PageTitle>
 
-<h3>مدیریت نقش </h3>
+<h3 class="mb-4 text-gradient">مدیریت دسترسی </h3>
 
 
 <Tabs EnableFadeEffect="true" Style="margin-bottom: 20px">
@@ -21,95 +21,9 @@
         <Content>
 
             <div class="row">
-                @*  <div class="col-md-6">
-                    <div class="card shadow-lg mx-auto">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">ایجاد دسترسی جدید +</h5>
-                        </div>
-                        <div class="card-body">
-                            <EditForm Model="@NewPermission" OnValidSubmit="@HandleValidSubmit">
-                                <DataAnnotationsValidator />
-                                <ValidationSummary />
-
-                                <div class="form-group mb-4">
-                                    <label for="permission-name">نام دسترسی</label>
-                                    <InputText id="permission-name" class="form-control" @bind-Value="NewPermission.Name" placeholder="نام دسترسی را وارد کنید" />
-                                    <ValidationMessage For="@(() => NewPermission.Name)" />
-                                </div>
-
-                                <div class="form-group mb-4">
-                                    <label for="permission-desc">توضیحات</label>
-                                    <InputTextArea id="permission-desc" class="form-control" @bind-Value="NewPermission.Description" placeholder="توضیحات دسترسی را وارد کنید"></InputTextArea>
-                                    <ValidationMessage For="@(() => NewPermission.Description)" />
-                                </div>
-
-                                <div class="form-group mb-4">
-                                    <label for="permission-category">دسته بندی</label>
-                                    <InputSelect id="permission-category" class="form-control" @bind-Value="NewPermission.Category">
-                                        <option value="">دسته بندی را انتخاب کنید</option>
-                                        <option value="user-management">مدیریت کاربران</option>
-                                        <option value="role-management">مدیریت نقش‌ها</option>
-                                        <option value="server-management">مدیریت سرورها</option>
-                                        <option value="service-management">مدیریت سرویس‌ها</option>
-                                    </InputSelect>
-                                    <ValidationMessage For="@(() => NewPermission.Category)" />
-                                </div>
-
-                                <div class="form-group mb-4">
-                                    <label>قابلیت‌ها</label>
-                                    <div class="row text-center">
-                                        @foreach (var item in NewPermission.Abilites)
-                                        {
-                                            <div class="col-6 mb-3">
-                                                @if (item == "create")
-                                                {
-                                                    <input type="checkbox" class="permission-check" id="create" @bind-Value="true" />
-                                                    <label class="permission-label" for="create">
-                                                        <i class="fas fa-plus permission-icon"></i>
-                                                        <div>ایجاد</div>
-                                                    </label>
-                                                }
-                                                @if(item == "read")
-                                                {
-                                                    <input type="checkbox" class="permission-check" id="read" @bind="item" />
-                                                    <label class="permission-label" for="read">
-                                                        <i class="fas fa-eye permission-icon"></i>
-                                                        <div>خواندن</div>
-                                                    </label>
-                                                }
-                                                @if(item == "edit")
-                                                {
-                                                    <input type="checkbox" class="permission-check" id="update" @bind="item" />
-                                                    <label class="permission-label" for="update">
-                                                        <i class="fas fa-edit permission-icon"></i>
-                                                        <div>ویرایش</div>
-                                                    </label>
-                                                }
-                                                @if(item == "delete")
-                                                {
-                                                    <input type="checkbox" class="permission-check" id="delete" @bind="item" />
-                                                    <label class="permission-label" for="delete">
-                                                        <i class="fas fa-trash permission-icon"></i>
-                                                        <div>حذف</div>
-                                                    </label>
-                                                }
-
-                                            </div>                                          
-                                        }
-
-                                    </div>
-                                </div>
-
-
-
-                                <button type="submit" class="btn btn-success btn-block mt-3">ایجاد دسترسی +</button>
-                            </EditForm>
-                        </div>
-                    </div>
-                </div> *@
                 <div class="col-md-12">
                     <div class="card h-100 d-flex flex-column shadow-lg mx-auto">
-                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">دسترسی‌های موجود</h5>
                             <span class="badge badge-light">@ExistingPermissions.Count دسترسی</span>
                         </div>
@@ -180,28 +94,21 @@
         <Content>
             <div class="col-md-12 mt-4">
                 <div class="card shadow-lg mx-auto">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-primary text-white" style="background-image: linear-gradient(270deg, rgb(5, 39, 103) 0%, #3a0647 70%);">
                         <h5 class="mb-0">تخصیص نقش به کاربر</h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex flex-row align-items-end gap-3 flex-wrap">
+                        <!-- بخش فیلدهای ورودی -->
+                        <div class="d-flex flex-row align-items-end gap-3 flex-wrap mb-4">
                             <div class="flex-grow-1">
                                 <div class="form-group mb-0">
                                     <label for="user-select">انتخاب نام کاربر</label>
-                                    @* <InputSelect id="user-select" class="form-control" @bind-Value="SelectedUserId">
-
-                                        <option value="">کاربر را انتخاب کنید</option>
-                                        @foreach (var user in Users2)
-                                        {
-                                            <option value="@user.Id">@user.FullName - @user.UserName</option>
-                                        }
-                                    </InputSelect> *@
-                                   <SearchableSelect TItem="UserModel"
-                                    Items="Users"
-                                    @bind-Value="assignmentModel.SelectedUser"
-                                    TextField="@(u => u.UserName + " - " + u.PersonalCodeString)"
-                                    ValueField="@(u => u.PersonalCodeString)"
-                                    Placeholder="جستجو و انتخاب کاربر...">
+                                    <SearchableSelect TItem="UserViewModel"
+                                                      Items="Users"
+                                                      @bind-Value="assignmentModel.SelectedUser"
+                                                      TextField="@(u => u.UserName + " - " + u.PersonalCodeString)"
+                                                      ValueField="@(u => u.PersonalCodeString)"
+                                                      Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
                                 </div>
                             </div>
@@ -209,11 +116,11 @@
                                 <div class="form-group mb-0">
                                     <label for="role-select">انتخاب نقش</label>
                                     <SearchableSelect TItem="RoleDto"
-                                        Items="RoleList"
-                                        @bind-Value="assignmentModel.SelectedRole"
-                                        TextField="@(u => u.RoleName)"
-                                        ValueField="@(u => u.RoleId)"
-                                        Placeholder="جستجو و انتخاب کاربر...">
+                                                      Items="RoleList"
+                                                      @bind-Value="assignmentModel.SelectedRole"
+                                                      TextField="@(u => u.RoleName)"
+                                                      ValueField="@(u => u.RoleId)"
+                                                      Placeholder="جستجو و انتخاب کاربر...">
                                     </SearchableSelect>
                                 </div>
                             </div>
@@ -226,82 +133,56 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </Content>
-    </Tab>
-    <Tab Title="نقش های کاربر">
-        <Content>
-            <div class="col-md-12 mt-4">
-                <div class="card">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">مدیریت نقش‌های کاربران</h5>
-                        <span class="badge bg-light text-dark">@FilteredUsers.Count کاربر</span>
-                    </div>
-                    <div class="card-body">
-                        <!-- فرم جستجو -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="جستجو کاربر..." @bind="SearchTerm" @bind:event="oninput" />
-                                    <span class="input-group-text">
-                                        <i class="fas fa-search"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- بخش کاربران -->
-                        <div class="row">
+                        <!-- بخش نمایش کاربران - جدا از فیلدهای ورودی -->
+                        <div class="users-section">
                             @if (FilteredUsers.Any())
                             {
-                                @foreach (var user in FilteredUsers)
-                                {
-                                    <div class="col-md-6 col-lg-4 mb-4">
-                                        <div class="card h-100 user-card">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                                    <h6 class="card-title mb-0">@user.UserName</h6>
-                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirm(user.HashId)">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-
-                                                <div class="user-info mb-3">
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <i class="fas fa-id-card text-muted me-2"></i>
-                                                        <small>شماره پرسنلی: @user.PersonalCode</small>
+                                <div class="row">
+                                    @foreach (var user in FilteredUsers)
+                                    {
+                                        <div class="col-md-6 col-lg-4 mb-4">
+                                            <div class="card h-100 user-card">
+                                                <div class="card-body">
+                                                    <div class="user-info mb-3">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="fas fa-id-card text-muted me-2"></i>
+                                                            <small>شماره پرسنلی: @user.PersonalCode</small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-envelope text-muted me-2"></i>
+                                                            <small>@user.Email</small>
+                                                        </div>
                                                     </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-envelope text-muted me-2"></i>
-                                                        <small>@user.Email</small>
-                                                    </div>
-                                                </div>
 
-                                                <div class="user-roles">
-                                                    <h6 class="text-muted mb-2">نقش‌ها:</h6>
-                                                    <div class="d-flex flex-wrap gap-2">
-                                                        @foreach (var roleAccess in user.RoleName)
-                                                        {                                                                                                                           
-                                                            <div class="role-badge-container position-relative">
-                                                                <Badge Class="m-2" Color="BadgeColor.Primary">@roleAccess</Badge>
-                                                            </div>                                               
-                                                        }
+                                                    <div class="user-roles">
+                                                        <h6 class="text-muted mb-2">نقش‌ها:</h6>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            @foreach (var roleAccess in user.RoleName)
+                                                            {
+                                                                <div class="role-badge-container position-relative">
+                                                                    <Button Type="ButtonType.Button" Color="ButtonColor.Primary"
+                                                                            Size="ButtonSize.ExtraSmall" @onclick="() => ShowDeleteConfirm(user.HashId)"
+                                                                            Style="padding: 0px;font-size:12px;padding-right:10px">
+                                                                        @roleAccess <Badge Class="m-2" Color="BadgeColor.Danger">
+                                                                            <Icon Name="IconName.X" />
+                                                                        </Badge>
+                                                                    </Button>
+                                                                </div>
+                                                            }
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                }
+                                    }
+                                </div>
                             }
                             else
                             {
-                                <div class="col-12">
-                                    <div class="alert alert-info text-center">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        کاربری یافت نشد.
-                                    </div>
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    کاربری یافت نشد.
                                 </div>
                             }
                         </div>
@@ -309,7 +190,6 @@
                 </div>
             </div>
 
-            <!-- مودال تایید حذف -->
             @if (ShowDeleteModal)
             {
                 <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -320,17 +200,16 @@
                                 <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
                             </div>
                             <div class="modal-body">
-                                <p>آیا از حذف این کاربر اطمینان دارید؟ این عمل قابل بازگشت نیست.</p>
+                                <p>آیا از حذف این نقش اطمینان دارید؟ این عمل قابل بازگشت نیست.</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">انصراف</button>
-                                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">حذف کاربر</button>
+                                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">حذف نقش</button>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-
         </Content>
     </Tab>
 </Tabs>
@@ -342,7 +221,7 @@
     private bool ShowDeleteModal { get; set; } = false;
     private AssignmentModel assignmentModel = new AssignmentModel();
     private List<RoleDto> RoleList = new();
-    private List<UserModel> Users = new();
+    private List<UserViewModel> Users = new();
     private string SelectedUserId { get; set; } = "";
     private int SelectedRoleId { get; set; }
     private bool IsFormValid => assignmentModel.SelectedUser != null && assignmentModel.SelectedRole != null;
@@ -351,12 +230,12 @@
 
     public class AssignmentModel
     {
-        public UserModel SelectedUser { get; set; }
+        public UserViewModel SelectedUser { get; set; }
         public RoleDto SelectedRole { get; set; }
     }
 
 
-    private List<UserModel> FilteredUsers =>
+    private List<UserViewModel> FilteredUsers =>
         Users.Where(u =>
             u.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
             u.PersonalCodeString.Contains(SearchTerm) ||
@@ -411,6 +290,7 @@
             "role" => "مدیریت نقش‌ها",
             "server" => "مدیریت سرورها",
             "service" => "مدیریت سرویس‌ها",
+            "permission" => "مدیریت دسترسی ها",
             _ => categoryKey
         };
     }

@@ -49,7 +49,6 @@
         base.OnParametersSet();
         FilterItems();
 
-        // اگر آیتمی انتخاب شده باشد، متن جستجو را برابر با متن آن آیتم قرار بده
         if (CurrentValue != null)
         {
             SearchText = GetItemText(CurrentValue);
@@ -117,7 +116,6 @@
 
     private async void OnInputBlur()
     {
-        // تأخیر برای اجازه دادن به کلیک روی آیتم‌ها
         await Task.Delay(200);
         IsOptionsVisible = false;
         await InvokeAsync(StateHasChanged);
@@ -135,7 +133,6 @@
 
     protected override bool TryParseValueFromString(string value, out TItem result, out string validationErrorMessage)
     {
-        // این متد برای InputBase لازم است
         result = default;
         validationErrorMessage = "پارس کردن مقدار از رشته پشتیبانی نمی شود";
         return false;

@@ -1,0 +1,49 @@
+﻿.user-details .detail-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    margin-bottom: 10px;
+}
+
+.user-details .detail-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+.user-details .detail-content {
+    flex-grow: 1;
+}
+
+.user-details .detail-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.user-details .detail-value {
+    font-weight: 500;
+    color: #343a40;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-title h5 {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.modal-title small {
+    opacity: 0.9;
+}

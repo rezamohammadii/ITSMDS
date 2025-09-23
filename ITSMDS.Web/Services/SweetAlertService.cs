@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using System.Text.Json;
 
 namespace ITSMDS.Web.Services;
 
@@ -43,7 +44,7 @@ public class SweetAlertService : ISweetAlertService
 
     public async Task<bool> ShowConfirmAsync(string message, string title = "تأیید عملیات")
     {
-        return await _jsRuntime.InvokeAsync<bool>("Swal.fire", new
+        var result = await _jsRuntime.InvokeAsync<JsonElement>("Swal.fire", new
         {
             title,
             text = message,
@@ -55,5 +56,12 @@ public class SweetAlertService : ISweetAlertService
             cancelButtonText = "خیر",
             focusCancel = true
         });
+
+        if (result.TryGetProperty("isConfirmed", out var confirmed))
+        {
+            return confirmed.GetBoolean();
+        }
+
+        return false;
     }
 }

@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 @inject IConfiguration Configuration
 
-<h4 class="mb-4">ویرایش کاربر</h4>
+<h4 class="mb-4 text-gradient">ویرایش کاربر</h4>
 
 
 @if (PermissionService.HasPermission(PermissionName.USER_EDIT))
@@ -55,8 +55,14 @@
                 <InputText class="form-control" @bind-Value="user.IpAddress" />
             </div>
 
-            <div class="mt-4 d-flex justify-content-end">
-                <button type="submit" class="btn btn-success px-4">💾 ذخیره تغییرات</button>
+            <div class="d-flex gap-3 pt-4 border-top">
+                <button type="submit" class="btn btn-success" >
+                    💾 ذخیره تغییرات
+                </button>
+
+                <button type="button" class="btn btn-outline-secondary" @onclick="HandleReset">
+                    🔄 بازنشانی
+                </button>
             </div>
         </EditForm>
     }
@@ -75,8 +81,10 @@ else
     @inject PermissionService PermissionService
     @inject ISweetAlertService SweetAlert
 
-    private UserModel? user;
+    private UserViewModel? user;
+    private UserViewModel? userOld;
     private List<string> userPermissions = new();
+   
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,6 +99,7 @@ else
             {
 
                 user = res.Data;
+                userOld = user;
             }
             else
             {
@@ -98,6 +107,7 @@ else
             }
 
         }
+
     }
     private async Task HandleValidSubmit()
     {
@@ -106,8 +116,15 @@ else
         {
             await SweetAlert.ShowSuccessAsync(result.Message);
 
-            NavigationManager.NavigateTo("/user_list");
+            NavigationManager.NavigateTo("/users");
         }
+    }
+
+    private void HandleReset()
+    {
+        //user = userOld;
+        StateHasChanged();
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 
 }

@@ -11,7 +11,7 @@ public class ApiResponseClient<T>
     public string Message { get; set; }
 
     [JsonPropertyName("data")]
-    public T Data { get; set; }
+    public T? Data { get; set; }
 
     [JsonPropertyName("errorCode")]
     public string ErrorCode { get; set; }

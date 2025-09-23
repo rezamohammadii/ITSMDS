@@ -37,24 +37,24 @@ public partial class NavMenu
 
             if (PermissionService.HasPermission(PermissionName.USER_READ))
             {
-                userMenuItems.Add(new MenuItem("لیست کاربران", "/user_list", "fas fa-list"));
+                userMenuItems.Add(new MenuItem("لیست کاربران", "/users", "fas fa-list"));
             }
             if (PermissionService.HasPermission(PermissionName.USER_CREATE))
             {
                 userMenuItems.Add(new MenuItem("افزودن کاربر", "/user/create", "fas fa-user-plus"));
             }
 
-            if (PermissionService.HasPermission(PermissionName.USER_ALL))
+            if (PermissionService.HasPermission(PermissionName.PERMISSION_MANAGE))
             {
                 userMenuItems.Add(new MenuItem("مدیریت دسترسی‌ها", "/user/permission", "fas fa-user-shield"));
             }
-            if (PermissionService.HasPermission(PermissionName.ROLE_ALL))
+            if (PermissionService.HasPermission(PermissionName.ROLE_READ))
             {
                 roleMenuItems.Add(new MenuItem("لیست نقش ها", "/role/list", "fas fa-list"));
             }
             if (PermissionService.HasPermission(PermissionName.ROLE_CREATE))
             {
-                roleMenuItems.Add(new MenuItem("فزودن نقش", "/role/create", "fas fa-user-plus"));
+                roleMenuItems.Add(new MenuItem("افزودن نقش", "/role/create", "fas fa-user-plus"));
             }
             StateHasChanged();
         }

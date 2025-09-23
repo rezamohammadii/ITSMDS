@@ -56,7 +56,7 @@ public static class ErrorCodeExtensions
             ErrorCode.SuspiciousActivity => "فعالیت مشکوک شناسایی شد.",
             ErrorCode.IpBlocked => "دسترسی از این آی‌پی مسدود شده است.",
             ErrorCode.AccessRestricted => "دسترسی شما به دلیل محدودیت‌های امنیتی امکان‌پذیر نیست.",
-            ErrorCode.IpNotAllowed => "آذرس IP امکان ورود ندارد",
+            ErrorCode.IpNotAllowed => "آدرس IP درخواست کننده مجاز به ورود نمی باشد",
             ErrorCode.IpNotRange => "آدرس IP مجاز نمی باشد",
             ErrorCode.InvalidIpAddress => "آدرس IP نامعتبر می باشد",
 

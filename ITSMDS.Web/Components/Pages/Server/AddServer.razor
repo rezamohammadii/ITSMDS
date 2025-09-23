@@ -1,0 +1,190 @@
+﻿@page "/server/create"
+@using ITSMDS.Domain.Enums
+@using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.Services
+@using ITSMDS.Web.ViewModel
+@inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
+@* @inject ServerApiClient serverApi *@
+@inject ISweetAlertService SweetAlert
+
+<EditForm Model="@server" OnValidSubmit="HandleValidSubmit" Class="space-y-6">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
+        <div class="d-flex flex-column">
+            <h1 class="h4 fw-bold text-dark text-gradient">
+                <Icon Name="IconName.Server" Class="me-2 text-primary" /> افزودن سرور جدید
+            </h1>
+            <p class="text-muted mt-1">ایجاد یک سرور جدید در سیستم</p>
+        </div>
+
+        <Button Color="ButtonColor.Warning" Class="me-auto" @onclick="NavigateToServers">
+            <Icon Name="IconName.ArrowRight" /> بازگشت
+        </Button>
+    </div>
+
+    <!-- اطلاعات پایه -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Server" Class="text-primary me-1" /> نام سرور *
+            </label>
+            <InputText class="form-control" @bind-Value="server.ServerName" placeholder="مثال: سرور دیتابیس" />
+            <ValidationMessage For="@(() => server.ServerName)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Ethernet" Class="text-success me-1" /> آدرس IP *
+            </label>
+            <InputText class="form-control text-start" @bind-Value="server.IpAddress" placeholder="192.168.1.100" />
+            <ValidationMessage For="@(() => server.IpAddress)" />
+        </div>
+    </div>
+
+    <!-- مشخصات سخت‌افزاری -->
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Cpu" Class="text-danger me-1" /> پردازنده (CPU) *
+            </label>
+            <InputText class="form-control" @bind-Value="server.CPU" placeholder="Intel Xeon E5" />
+            <ValidationMessage For="@(() => server.CPU)" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">
+                <Icon Name="IconName.Memory" Class="text-info me-1" /> رم (GB) *
+            </label>
+            <InputNumber class="form-control" @bind-Value="server.RAM" placeholder="64" />
+            <ValidationMessage For="@(() => server.RAM)" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">
+                <Icon Name="IconName.DeviceHdd" Class="text-warning me-1" /> حجم ذخیره (GB) *
+            </label>
+            <InputNumber class="form-control" @bind-Value="server.StorageSize" placeholder="1000" />
+            <ValidationMessage For="@(() => server.StorageSize)" />
+        </div>
+    </div>
+
+    <!-- انتخاب نوع هارد -->
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌سازی
+            </label>
+            <select class="form-select" aria-label="Default select example">
+                <option selected>Open this select menu</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+            <ValidationMessage For="@(() => server.StorageType)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Motherboard" Class="text-dark me-1" /> مدل مادربورد
+            </label>
+            <InputText class="form-control" @bind-Value="server.MainBoardModel" placeholder="Supermicro X11" />
+            <ValidationMessage For="@(() => server.MainBoardModel)" />
+        </div>
+    </div>
+
+    <!-- سیستم عامل و موقعیت -->
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Windows" Class="text-primary me-1" /> سیستم عامل
+            </label>
+            <InputText class="form-control" @bind-Value="server.OS" placeholder="Windows Server 2019" />
+            <ValidationMessage For="@(() => server.OS)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.PinMap" Class="text-danger me-1" /> موقعیت
+            </label>
+            <InputText class="form-control" @bind-Value="server.Location" placeholder="DataCenter A - Rack 12" />
+            <ValidationMessage For="@(() => server.Location)" />
+        </div>
+    </div>
+
+
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.Server" Class="text-primary me-1" /> مسئول
+            </label>
+            <InputText class="form-control" @bind-Value="server.ServerManager" placeholder="مثال: نام  تیم یا شخص پذیرنده" />
+            <ValidationMessage For="@(() => server.ServerName)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">
+                توضیخات
+            </label>
+            <TextAreaInput @bind-Value="@server.Description" Rows="5" TextAlignment="Alignment.End" Class="form-control" />
+
+        </div>
+    </div>
+
+    <!-- فعال بودن -->
+    <div class="col-md-6">
+
+        <div class="form-check form-switch mt-3">
+            <InputCheckbox class="form-check-input" @bind-Value="server.IsEnable" />
+            <label class="form-check-label">فعال باشد</label>
+        </div>
+    </div>
+
+    <!-- دکمه‌ها -->
+    <div class="d-flex gap-3 pt-4 border-top">
+        <Button Color="ButtonColor.Success" Type="ButtonType.Submit" Disabled="@isSubmitting">
+            <Icon Name="IconName.Save" Class="me-1" /> ذخیره سرور
+        </Button>
+
+        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="HandleReset" Disabled="@isSubmitting">
+            <Icon Name="IconName.ArrowCounterclockwise" Class="me-1" /> بازنشانی
+        </Button>
+    </div>
+</EditForm>
+
+@code {
+    private ServerViewModelIn server = new();
+    private bool isSubmitting = false;
+
+    private async void HandleValidSubmit()
+    {
+        // try
+        // {
+        //     isSubmitting = true;
+        //    var res = await serverApi.CreateServerAsync(server);
+
+        //     if (!res.Success)
+        //     {
+        //         await SweetAlert.ShowErrorAsync(res.Message);
+        //         return;
+        //     }
+
+        //     await SweetAlert.ShowSuccessAsync(res.Message);
+        //     NavigationManager.NavigateTo("/servers");
+        // }
+        // catch (Exception ex)
+        // {
+        //     await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
+        // }
+        // finally
+        // {
+        //     isSubmitting = false;
+        //}
+    }
+
+    private void HandleReset() => server = new();
+    private void NavigateToServers() => NavigationManager.NavigateTo("/servers");
+}

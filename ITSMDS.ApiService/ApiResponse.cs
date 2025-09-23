@@ -21,13 +21,13 @@ public class ApiResponse<T>
         };
     }
 
-    public static ApiResponse<T> Fail(ErrorCode errorCode = default , string message = "مشکلی پیش آمده بعدا تلاش کنید")
+    public static ApiResponse<T> Fail(ErrorCode errorCode = default , string? message = "مشکلی پیش آمده بعدا تلاش کنید")
     {
         return new ApiResponse<T>
         {
             Success = false,
             Code = (int)errorCode,
-            Message = string.IsNullOrEmpty(message) ? errorCode.GetMessage() : message,
+            Message = string.IsNullOrEmpty(message) ? errorCode.GetMessage() : message ,
             Data = default
         };
     }

@@ -4,43 +4,63 @@
 @using Microsoft.AspNetCore.Mvc.RazorPages
 @inject NavigationManager NavigationManager
 @inject RoleApiClient roleApi
+@inject ISweetAlertService SweetAlert
 
 <PageTitle>مدیریت نقش ها</PageTitle>
 
-<h3 class="mb-4">لیست نقش ها</h3>
+<h3 class="mb-4 text-gradient">لیست نقش ها</h3>
 <h6 class="mb-4">مدیریت نقش ها و مجوز های سیستم</h6>
 
-<button class="btn btn-success mb-3" @onclick="OnAddUser">
-    <Icon Name="IconName.ShieldPlus" /> افزودن نقش
-</button>
+@if (PermissionService.HasPermission(PermissionName.ROLE_CREATE))
+{
+    <button class="btn btn-success mb-3" @onclick="OnAddUser" >
+        <Icon Name="IconName.ShieldPlus" /> افزودن نقش
+    </button>
+}
+else
+{
+    <button class="btn btn-success mb-3" @onclick="OnAddUser" disabled>
+        <Icon Name="IconName.ShieldPlus" /> افزودن نقش
+    </button>
+}
 
-<Grid TItem="RoleDto"
-    Class="table table-hover table-bordered table-striped" 
+<div class="input-group mb-3">
+    <InputText class="form-control" @bind-Value="searchTerm"
+               @oninput="OnSearchChanged" placeholder="نام، نام خانوادگی، ایمیل..." />
+    <span class="input-group-text">🔍 جستجو</span>
+</div>
+<Grid @ref="userGrid" TItem="RoleDto"
     DataProvider="RoleDataProvider"
-    AllowPaging="true"
-    PageSize="10"
-    PageSizeSelectorVisible="true"
-    ItemsPerPageText="تعداد نمایش"
-    PageSizeSelectorItems="@(new int[] { 5,10,20 })"
-    Responsive="true">
+      AllowPaging="true"
+      AutoHidePaging="true"
+      Class="table table-hover table-bordered table-striped"
+      PageSize="10"
+      PageSizeSelectorVisible="true"
+      ItemsPerPageText="تعداد نمایش"
+      PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+      Responsive="true">
 
     <GridColumns>
         <GridColumn TItem="RoleDto" HeaderText="نام نقش" HeaderTextAlignment="Alignment.Center">
             @context.RoleName
         </GridColumn>
         <GridColumn TItem="RoleDto" HeaderText="مجوز ها">
+            @if (context.Permissions.Count == 0)
+            {
+                <Badge Class="m-2" Color="BadgeColor.Warning">مجوزی وجود ندارد</Badge>
+            }
             @foreach (var item in context.Permissions)
             {
-                <Badge Class="m-2" Color="BadgeColor.Primary" VisuallyHiddenText="Visually hidden text for Primary">@item.Name</Badge>
+                <Badge Class="m-2" Color="BadgeColor.Primary" >@item.Name</Badge>
             }
         </GridColumn>
-        <GridColumn TItem="RoleDto" HeaderText="تعداد کاربران نقش" HeaderTextAlignment="Alignment.Center">
+        <GridColumn TItem="RoleDto" HeaderText="تعداد کاربران نقش" HeaderTextAlignment="Alignment.Center" >
             @context.UserCount
         </GridColumn>
         <GridColumn TItem="RoleDto" HeaderText="آخرین بروزرسانی" HeaderTextAlignment="Alignment.Center">
             @context.UpdateTime
         </GridColumn> 
-        <GridColumn TItem="RoleDto" HeaderText="فعال" HeaderTextAlignment="Alignment.Center">
+        <GridColumn TItem="RoleDto" HeaderText="فعال" HeaderTextAlignment="Alignment.Center" >
              @if (context.IsActive)
             {
                 <Icon Name="IconName.PersonCheck" Size="IconSize.x5" Style="color : green" />
@@ -51,8 +71,18 @@
         </GridColumn>
         <GridColumn TItem="RoleDto" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
             <div class="d-flex justify-content-center gap-2">
-                <Button Color="ButtonColor.Warning"> <Icon Name="IconName.FileEarmarkMedical" /> ویرایش </Button>
-                <Button Color="ButtonColor.Danger"> <Icon Name="IconName.Trash" /> حذف </Button>
+                @* <Button Color="ButtonColor.Warning"> <Icon Name="IconName.FileEarmarkMedical" /> ویرایش </Button> *@
+               
+                @if (PermissionService.HasPermission(PermissionName.ROLE_DELETE))
+                {
+                    <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteRole(context.RoleId)"> 
+                        <Icon Name="IconName.Trash" /> حذف 
+                        </Button>
+                }
+                else
+                {
+                    <Badge Class="m-2" Color="BadgeColor.Danger">دسترسی به این بخش امکان پذیر نیست</Badge>
+                }
             </div>
         </GridColumn>
     </GridColumns>
@@ -60,22 +90,91 @@
 </Grid>
 
 @code {
+
+    @inject PermissionService PermissionService
+    @inject ISweetAlertService SweetAlert
+
     private PageResultDto<RoleDto>? roleList ;
+
+    private string searchTerm = string.Empty;
+    private Grid<RoleDto>? userGrid;
+    private bool HashAddRole { get; set; } = false;
+    private bool HashDeleteRole { get; set; } = false;
+
     private async Task<GridDataProviderResult<RoleDto>> RoleDataProvider(GridDataProviderRequest<RoleDto> request)
     {
+        if (PermissionService == null)
+        {
+            await PermissionService.InitializeAsync();
+
+        }
 
         if (roleList is null)
         {
-            var res = await roleApi.RoleListAsync(request.PageNumber, request.PageSize);
+            var res = await roleApi.RoleListAsync(1, 10);
             roleList = res.Data;
         }
-        
+       
+        var roleFilter = roleList.Items;
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var searchLower = searchTerm.ToLower();
+            roleFilter = roleFilter.Where(role =>
+                (role.RoleName != null && role.RoleName.ToLower().Contains(searchLower))).ToList();
+        }
 
-        
-        return await Task.FromResult(request.ApplyTo(roleList.Items));
+
+        return await Task.FromResult(request.ApplyTo(roleFilter));
+    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await PermissionService.InitializeAsync();
+    // }
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        if (userGrid != null)
+        {
+            await userGrid.RefreshDataAsync();
+        }
+        StateHasChanged();
     }
     private void OnAddUser()
     {
         NavigationManager.NavigateTo("/role/create");
+
     }
+
+    private async Task OnDeleteRole(int roleId)
+    {
+       var confirmed = await SweetAlert.ShowConfirmAsync( "آیا مطمئن هستید نقش حذف شود؟"); 
+        if (confirmed)
+        {
+            var result = await roleApi.DeleteRoleAsync(roleId);
+            if (result.Success)
+            {
+                await SweetAlert.ShowSuccessAsync(result.Message);
+                // بارگذاری مجدد داده‌ها
+                var res = await roleApi.RoleListAsync();
+
+                if (res.Success)
+                {
+                    roleList = res.Data;
+                    if (userGrid != null)
+                    {
+                        await userGrid.RefreshDataAsync();
+                    }
+                }
+                else
+                {
+                    await SweetAlert.ShowErrorAsync(res.Message);
+                }
+            }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(result.Message);
+            }
+        }
+    }
+
 }

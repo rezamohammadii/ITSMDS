@@ -2,7 +2,7 @@
 
 namespace ITSMDS.Web.ViewModel
 {
-    public class RegisterModel
+    public class RegisterViewModel
     {
 
         [Required(ErrorMessage = "لطفا نام کاربری را وارد کنید")]
