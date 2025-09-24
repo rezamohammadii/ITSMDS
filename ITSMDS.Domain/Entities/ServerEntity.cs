@@ -17,7 +17,7 @@ public class ServerEntity : Entity<long>, IAggregateRoot
     public string IpAddress { get; private set; }
     public string Location { get; private set; }
     public bool IsDeleted { get; private set; }
-    public bool IsEnable { get; private set; }
+    public ServerStatus Status { get; private set; }
 
     public long? DepartmentId { get; private set; }
     public virtual Department? Department { get; private set; }
@@ -34,11 +34,11 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         string mainBoardModel,
         int storageSize,
         StorageType storageType,
+        ServerStatus status,
         string os,
         DateTimeOffset startDate,
         string ipAddress,
-        string location,
-        bool isEnable = true)
+        string location)
     {
         Validate(serverName, ram, storageSize, ipAddress, location);
 
@@ -52,7 +52,7 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         StartDate = startDate;
         IpAddress = ipAddress;
         Location = location;
-        IsEnable = isEnable;
+        Status = status;
         IsDeleted = false;
     }
 
@@ -82,7 +82,8 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         ServerName = serverName;
     }
 
-    public void UpdateHardwareSpecs(int ram, string cpu, string mainBoardModel, int storageSize, StorageType storageType)
+    public void UpdateHardwareSpecs(int ram, string cpu, string mainBoardModel, int storageSize, 
+        StorageType storageType, ServerStatus status)
     {
         if (ram <= 0)
             throw new DomainException("RAM must be greater than 0");
@@ -95,6 +96,7 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         MainBoardModel = mainBoardModel;
         StorageSize = storageSize;
         StorageType = storageType;
+        Status = status;
     }
 
     public void UpdateSoftware(string os)
@@ -114,20 +116,9 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         Location = location;
     }
 
-    public void Enable()
-    {
-        IsEnable = true;
-    }
-
-    public void Disable()
-    {
-        IsEnable = false;
-    }
-
     public void MarkAsDeleted()
     {
         IsDeleted = true;
-        IsEnable = false;
     }
 
     public void Restore()

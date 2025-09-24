@@ -74,9 +74,10 @@ public static class DataSeederDb
                     serverName: "SRV-development",
                     ram: 256,
                     cpu: "Intel Xeon Platinum 8280 Processor",
-                    mainBoardModel: "Asus",
+                    mainBoardModel: "Asus", 
                     storageSize: 1000,
                     storageType: Domain.Enums.StorageType.SSD,
+                    status: Domain.Enums.ServerStatus.Active,
                     os: "linux ubuntu 22.04",
                     startDate: DateTimeOffset.Parse("2025/01/01"),
                     ipAddress: "127.0.0.1",
@@ -90,6 +91,7 @@ public static class DataSeederDb
             }
 
             // Seed Ports
+
             if (!dbContext.Ports.Any())
             {
                 var listPort = new List<Port>

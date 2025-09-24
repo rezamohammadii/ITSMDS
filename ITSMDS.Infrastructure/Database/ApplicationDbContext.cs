@@ -47,11 +47,11 @@ public class ApplicationDbContext : DbContext
             entity.Property(x => x.StorageSize).HasColumnName("storage_size").HasComment("base on GB");
             entity.Property(x => x.CPU).HasMaxLength(50).HasColumnName("cpu_size").HasComment("base on GB");
             entity.Property(x => x.StorageType).HasColumnName("storage_type");
+            entity.Property(x => x.Status).HasColumnName("status");
             entity.Property(x => x.StartDate).HasColumnName("start_date");
             entity.Property(x => x.MainBoardModel).HasMaxLength(50).HasColumnName("mainboard_model");
             entity.Property(x => x.OS).HasMaxLength(50).HasColumnName("os_name");
             entity.Property(x => x.DepartmentId).HasColumnName("department_id");
-            entity.Property(x => x.IsEnable).HasColumnName("is_enable").HasDefaultValue(true);
             entity.Property(x => x.IsDeleted).HasColumnName("is_de;eted").HasDefaultValue(false);
         });
 

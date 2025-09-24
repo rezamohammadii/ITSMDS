@@ -5,7 +5,7 @@
 @using ITSMDS.Web.ViewModel
 @inject IConfiguration Configuration
 @inject NavigationManager NavigationManager
-@* @inject ServerApiClient serverApi *@
+@inject ServerApiClient serverApi
 @inject ISweetAlertService SweetAlert
 
 <EditForm Model="@server" OnValidSubmit="HandleValidSubmit" Class="space-y-6">
@@ -77,18 +77,18 @@
             <label class="form-label">
                 <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌سازی
             </label>
-            <select class="form-select" aria-label="Default select example">
-                <option selected>Open this select menu</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-            </select>
+            <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.StorageType">
+                <option selected>نوع حافظه را مشخص کنید</option>
+                <option value="@StorageType.HDD">HDD</option>
+                <option value="@StorageType.SSD">SSD</option>
+                <option value="@StorageType.NVME">NVME</option>
+            </InputSelect>
             <ValidationMessage For="@(() => server.StorageType)" />
         </div>
 
         <div class="col-md-6">
             <label class="form-label">
-                <Icon Name="IconName.Motherboard" Class="text-dark me-1" /> مدل مادربورد
+                <Icon Name="IconName.Motherboard" Class="text-dark me-1" /> مدل سرور
             </label>
             <InputText class="form-control" @bind-Value="server.MainBoardModel" placeholder="Supermicro X11" />
             <ValidationMessage For="@(() => server.MainBoardModel)" />
@@ -136,11 +136,19 @@
 
     <!-- فعال بودن -->
     <div class="col-md-6">
+        <label class="form-label">
+            <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌سازی
+        </label>
+        <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.Status">
+            <option selected>نوع حافظه را مشخص کنید</option>
+            <option value="@ServerStatus.Unknown">نا مشسخص</option>
+            <option value="@ServerStatus.Updating">در حال بروزرسانی</option>
+            <option value="@ServerStatus.Active">فعال</option>
+            <option value="@ServerStatus.DeActive">غیر فعال</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => server.StorageType)" />
 
-        <div class="form-check form-switch mt-3">
-            <InputCheckbox class="form-check-input" @bind-Value="server.IsEnable" />
-            <label class="form-check-label">فعال باشد</label>
-        </div>
+     
     </div>
 
     <!-- دکمه‌ها -->
@@ -161,28 +169,28 @@
 
     private async void HandleValidSubmit()
     {
-        // try
-        // {
-        //     isSubmitting = true;
-        //    var res = await serverApi.CreateServerAsync(server);
+        try
+        {
+            isSubmitting = true;
+           var res = await serverApi.CreateServerAsync(server);
 
-        //     if (!res.Success)
-        //     {
-        //         await SweetAlert.ShowErrorAsync(res.Message);
-        //         return;
-        //     }
+            if (!res.Success)
+            {
+                await SweetAlert.ShowErrorAsync(res.Message);
+                return;
+            }
 
-        //     await SweetAlert.ShowSuccessAsync(res.Message);
-        //     NavigationManager.NavigateTo("/servers");
-        // }
-        // catch (Exception ex)
-        // {
-        //     await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
-        // }
-        // finally
-        // {
-        //     isSubmitting = false;
-        //}
+            await SweetAlert.ShowSuccessAsync(res.Message);
+            NavigationManager.NavigateTo("/servers");
+        }
+        catch (Exception ex)
+        {
+            await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 
     private void HandleReset() => server = new();

@@ -1,0 +1,36 @@
+﻿<Card Class="border-0 shadow-sm rounded-3 h-100">
+    <CardHeader Class="bg-transparent border-0">
+        <h5 class="card-title mb-0">بروزرسانی‌ها</h5>
+    </CardHeader>
+    <CardBody>
+        <div class="updates-timeline">
+            @foreach (var update in Updates)
+            {
+                <div class="update-item position-relative pb-3">
+                    <div class="update-indicator @update.StatusColor"></div>
+                    <div class="update-content ms-4">
+                        <div class="update-header d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="update-title mb-0">@update.Title</h6>
+                            <span class="text-muted small">@update.Date.ToString("yyyy/MM/dd")</span>
+                        </div>
+                        <p class="update-desc text-muted small mb-2">@update.Description</p>
+                        <div class="update-meta d-flex">
+                            <Badge Color="BadgeColor.Light" Class="badge-sm me-2">
+                                <Icon Name="IconName.Clock" Class="me-1" Size="IconSize.x1"></Icon>
+                                @update.Duration
+                            </Badge>
+                            <Badge Color="BadgeColor.Light" Class="badge-sm">
+                                <Icon Name="IconName.Person" Class="me-1" Size="IconSize.x1"></Icon>
+                                @update.User
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public List<ServerUpdate> Updates { get; set; } = new();
+}

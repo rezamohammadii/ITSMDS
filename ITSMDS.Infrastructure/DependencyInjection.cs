@@ -42,9 +42,11 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+        builder.Services.AddScoped<IServerRepository, ServerRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IRoleService, RoleService>();
+        builder.Services.AddScoped<IServerService, ServerService>();
 
         builder.Services.AddHealthChecks()
             .AddSqlServer(cs!, name: "sqlserver");

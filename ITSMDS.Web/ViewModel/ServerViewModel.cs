@@ -5,17 +5,18 @@ namespace ITSMDS.Web.ViewModel;
 
 public class ServerViewModel
 {
-    public string ServerName { get; private set; }
-    public int RAM { get; private set; }
-    public string CPU { get; private set; }
-    public string MainBoardModel { get; private set; }
-    public int StorageSize { get; private set; }
-    public int StorageType { get; private set; }
-    public string OS { get; private set; }
-    public string IpAddress { get; private set; }
-    public string Location { get; private set; }
-    public bool IsEnable { get; private set; }
-    public long? DepartmentId { get; private set; }
+    public string ServerName { get;  set; }
+    public int RAM { get;  set; }
+    public string CPU { get;  set; }
+    public string MainBoardModel { get;  set; }
+    public int StorageSize { get;  set; }
+    public int StorageType { get;  set; }
+    public string OS { get;  set; }
+    public string IpAddress { get;  set; }
+    public string Location { get;  set; }
+    public int Status { get;  set; }
+    public string? ServerManager { get;  set; }
+    public string? CreateDate { get;  set; }
 }
 
 
@@ -72,10 +73,20 @@ public class ServerViewModelIn
     public string? Description { get; set; }
 
     [Display(Name = "وضعیت فعال بودن")]
-    public bool IsEnable { get; set; } = true;
+    public int Status { get; set; }
 
     [Display(Name = "مسئول سرور")]
     [Required(ErrorMessage = "نام مسئول الزامی است")]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "نام مسئول  باید بین 2 تا 50 کاراکتر باشد")]
     public string? ServerManager { get; set; }
+}
+
+public class ServerUpdate
+{
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public DateTimeOffset Date { get; set; }
+    public string Duration { get; set; } = "";
+    public string User { get; set; } = "";
+    public string StatusColor { get; set; } = "bg-primary"; // رنگ شاخص بروزرسانی
 }

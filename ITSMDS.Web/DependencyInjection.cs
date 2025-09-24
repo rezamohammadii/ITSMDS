@@ -30,6 +30,12 @@ public static class DependencyInjection
             client.BaseAddress = new(baseAddress);
         });
 
+        services.AddHttpClient<ServerApiClient>(client =>
+        {
+
+            client.BaseAddress = new(baseAddress);
+        });
+
         return services;
     }
 

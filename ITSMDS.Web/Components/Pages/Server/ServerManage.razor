@@ -1,7 +1,13 @@
 ﻿@page "/servers"
 @using System.Linq
 @using System.Linq.Expressions
+@using ITSMDS.Domain.Enums
+@using ITSMDS.Web.Components.Pages.Server.Component
 @inject NavigationManager NavigationManager
+@inject ISweetAlertService SweetAlert
+@inject ServerApiClient ServerApi
+@inject IJSRuntime JSRuntime
+
 <PageTitle>مدیریت سرورها</PageTitle>
 
 <div class="container-fluid px-4">
@@ -50,7 +56,7 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="text-secondary mb-1">کل سرورها</div>
-                            <div class="fw-bold fs-3 text-success">@FilteredServers.Count()</div>
+                            <div class="fw-bold fs-3 text-success">20</div>
                             <div class="text-success small mt-1">
                                 <Icon Name="IconName.ArrowUp" Class="me-1"></Icon>
                                 <span>22% افزایش</span>
@@ -72,10 +78,11 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="text-secondary mb-1">سرورهای فعال</div>
-                            <div class="fw-bold fs-3 text-info">@FilteredServers.Count(s => s.Status == "فعال")</div>
+                            @* <div class="fw-bold fs-3 text-info">@FilteredServers.Count(s => s.Status == "فعال")</div> *@
+                            <div class="fw-bold fs-3 text-info">فعال</div>
                             <div class="text-success small mt-1">
                                 <Icon Name="IconName.Activity" Class="me-1"></Icon>
-                                <span>@((FilteredServers.Count(s => s.Status == "فعال") * 100 / Math.Max(1, FilteredServers.Count())) + "% فعال")</span>
+                                @* <span>@((ALL_SERVERS_DATA.Count(s => s.IsEnable) * 100 / Math.Max(1, ALL_SERVERS_DATA.Count())) + "% فعال")</span> *@
                             </div>
                         </div>
                         <div class="col-4 text-end">
@@ -94,7 +101,8 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="text-secondary mb-1">هزینه ماهانه</div>
-                            <div class="fw-bold fs-3 text-warning">@(FilteredServers.Sum(s => s.CostValue).ToString("F2")) دالر</div>
+                            @* <div class="fw-bold fs-3 text-warning">@(FilteredServers.Sum(s => s.CostValue).ToString("F2")) دالر</div> *@
+                            <div class="fw-bold fs-3 text-warning">20 دالر</div>
                             <div class="text-danger small mt-1">
                                 <Icon Name="IconName.ArrowDown" Class="me-1"></Icon>
                                 <span>5% کاهش</span>
@@ -113,434 +121,260 @@
 
     <div class="row">
         <!-- لیست سرورها -->
-        <div class="col-lg-8 mb-4">
+        <div class="col-lg-12 mb-4">
             <Card Class="border-0 shadow-sm rounded-3 h-100">
                 <CardHeader Class="bg-transparent border-0 pb-0">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title mb-0">لیست سرورها</h5>
-                        <div class="d-flex">
-                            <Dropdown>
-                                <DropdownToggle Color="ButtonColor.Light" Size="ButtonSize.Small">
-                                    <Icon Name="IconName.Filter" Class="me-1"></Icon>
-                                    فیلتر
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem @onclick="() => ApplyFilterAll()">همه سرورها</DropdownItem>
-                                    <DropdownItem @onclick="() => ApplyFilterActive()">سرورهای فعال</DropdownItem>
-                                    <DropdownItem @onclick="() => ApplyFilterInactive()">سرورهای غیرفعال</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
+                        <div class="input-group mb-3">
+                            <InputText class="form-control" @bind-Value="SearchTerm"
+                                       @oninput="OnSearchChanged" placeholder="نام سرور ..." />
+                            <span class="input-group-text">🔍 جستجو</span>
                         </div>
                     </div>
                     
-                    <!-- جستجو و صفحه‌بندی -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <Icon Name="IconName.Search"></Icon>
-                                </span>
-                                <input type="text" class="form-control" placeholder="جستجو در تمام فیلدها..." @bind="SearchTerm" @bind:event="oninput" />
-                                @if (!string.IsNullOrEmpty(SearchTerm))
-                                {
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
-                                        <Icon Name="IconName.X"></Icon>
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" @bind="PageSize">
-                                <option value="5">5 مورد در صفحه</option>
-                                <option value="10" selected>10 مورد در صفحه</option>
-                                <option value="20">20 مورد در صفحه</option>
-                                <option value="50">50 مورد در صفحه</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-flex justify-content-end">
-                            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" @onclick="ClearSearch">
-                                <Icon Name="IconName.XCircle" Class="me-1"></Icon>
-                                پاک کردن
-                            </Button>
-                        </div>
-                    </div>
                 </CardHeader>
                 <CardBody>
-                    @if (FilteredServers.Any())
-                    {
-                        <div class="table-responsive">
-                            <Table Class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" style="width: 25%">
-                                            <span>نام سرور</span>
-                                            <button class="btn btn-sm btn-link p-0 ms-1" @onclick="SortByName">
-                                                <Icon Name="@(SortField == "Name" && SortDirection == "asc" ? IconName.ArrowUp : IconName.ArrowDown)" Size="IconSize.x2"></Icon>
-                                            </button>
-                                        </th>
-                                        <th scope="col" style="width: 15%">
-                                            <span>تعداد سرویس</span>
-                                            <button class="btn btn-sm btn-link p-0 ms-1" @onclick="SortByServices">
-                                                <Icon Name="@(SortField == "Services" && SortDirection == "asc" ? IconName.ArrowUp : IconName.ArrowDown)" Size="IconSize.x2"></Icon>
-                                            </button>
-                                        </th>
-                                        <th scope="col" style="width: 25%">مشخصات</th>
-                                        <th scope="col" style="width: 15%">
-                                            <span>هزینه</span>
-                                            <button class="btn btn-sm btn-link p-0 ms-1" @onclick="SortByCost">
-                                                <Icon Name="@(SortField == "Cost" && SortDirection == "asc" ? IconName.ArrowUp : IconName.ArrowDown)" Size="IconSize.x2"></Icon>
-                                            </button>
-                                        </th>
-                                        <th scope="col" style="width: 10%">وضعیت</th>
-                                        <th scope="col" style="width: 10%">عملیات</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var server in PagedServers)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon-server bg-primary-subtle text-primary rounded-2 p-2 me-3">
-                                                        <Icon Name="IconName.Globe2"></Icon>
-                                                    </div>
-                                                    <div>
-                                                        <div class="fw-bold">@server.Name</div>
-                                                        <div class="text-muted small">@server.Code</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>@server.ServicesCount سرویس</td>
-                                            <td>@server.Specifications</td>
-                                            <td class="fw-bold">@server.Cost</td>
-                                            <td>
-                                                <Badge Color="@(server.Status == "فعال" ? BadgeColor.Success : BadgeColor.Warning)" Class="badge-sm">
-                                                    <Icon Name="IconName.CircleFill" Class="me-1" Size="IconSize.x2"></Icon>
-                                                    @server.Status
-                                                </Badge>
-                                            </td>
-                                            <td>
-                                                <Button Color="ButtonColor.Light" Size="ButtonSize.Small" Class="me-1">
-                                                    <Icon Name="IconName.Gear"></Icon>
-                                                </Button>
-                                                <Button Color="ButtonColor.Light" Size="ButtonSize.Small">
-                                                    <Icon Name="IconName.ThreeDotsVertical"></Icon>
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </Table>
-                        </div>
 
-                        <!-- صفحه‌بندی -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="text-muted">
-                                نمایش @((CurrentPage - 1) * PageSize + 1) تا @(Math.Min(CurrentPage * PageSize, FilteredServers.Count())) از @FilteredServers.Count() نتیجه
-                            </div>
-                            <nav>
-                                <ul class="pagination mb-0">
-                                    <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
-                                        <button class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" aria-label="قبلی">
-                                            <span aria-hidden="true">&raquo;</span>
-                                        </button>
-                                    </li>
-                                    
-                                    @for (int i = 1; i <= TotalPages; i++)
-                                    {
-                                        <li class="page-item @(i == CurrentPage ? "active" : "")">
-                                            <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
-                                        </li>
-                                    }
-                                    
-                                    <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
-                                        <button class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" aria-label="بعدی">
-                                            <span aria-hidden="true">&laquo;</span>
-                                        </button>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <Icon Name="IconName.Search" Size="IconSize.x4" Class="text-muted mb-3"></Icon>
-                            <p class="text-muted">هیچ سروری یافت نشد.</p>
-                            @if (!string.IsNullOrEmpty(SearchTerm))
+                    <Grid @ref="ServerGrid" TItem="ServerViewModel"
+                          DataProvider="ServerDataProvider"
+                          AllowPaging="true"
+                          AutoHidePaging="true"
+                          Class="table table-hover table-bordered table-striped"
+                          PageSize="10"
+                          PageSizeSelectorVisible="true"
+                          ItemsPerPageText="تعداد نمایش"
+                          PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+                          Responsive="true">
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="نام سرور" HeaderTextAlignment="Alignment.Center">
+                            @context.ServerName
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="آدرس سرور" HeaderTextAlignment="Alignment.Center">
+                            @context.IpAddress
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="پردازنده" HeaderTextAlignment="Alignment.Center">
+                            @context.CPU
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="سیستم عامل" HeaderTextAlignment="Alignment.Center">
+                            @context.OS
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="مقدار رم GB" HeaderTextAlignment="Alignment.Center">
+                            @context.RAM
+                        </GridColumn>
+
+                      @*   <GridColumn TItem="ServerViewModel" HeaderText="تاریخ ایجاد" HeaderTextAlignment="Alignment.Center">
+                            @context.CreateDate
+                        </GridColumn> *@
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="GB حجم حافظه" HeaderTextAlignment="Alignment.Center">
+                            @context.StorageSize
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="نوع حافظه" HeaderTextAlignment="Alignment.Center">
+                            @switch (@context.StorageType)
                             {
-                                <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="ClearSearch">
-                                    پاک کردن جستجو
-                                </Button>
+                                case (int)StorageType.HDD:
+                                    @: <span> HDD </span>
+                                    break;
+                                case (int)StorageType.SSD:
+                                    @: <span> SDD </span>
+                                    break;
+                                case (int)StorageType.NVME:
+                                    @: <span> NVME </span>
+                                    break;
                             }
-                        </div>
-                    }
+                            
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="مدل سرور" HeaderTextAlignment="Alignment.Center">
+                            @context.MainBoardModel
+                        </GridColumn>
+
+                      @*   <GridColumn TItem="ServerViewModel" HeaderText="مسئول سرور" HeaderTextAlignment="Alignment.Center">
+                            @context.ServerManager
+                        </GridColumn> *@
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="وضعیت" HeaderTextAlignment="Alignment.Center">
+                            @switch (context.Status)
+                            {
+                                case (int)ServerStatus.Unknown:
+                                    <Badge Class="m-1" Color="BadgeColor.Dark">نام مشخص</Badge>
+                                    break;
+                                case (int)ServerStatus.Updating:
+                                    <Badge Class="m-1" Color="BadgeColor.Warning">در حال به روز رسانی</Badge>
+                                    break;
+                                case (int)ServerStatus.Active:
+                                    <Badge Class="m-1" Color="BadgeColor.Success">فعال</Badge>
+                                    break;
+                                case (int)ServerStatus.DeActive:
+                                    <Badge Class="m-1" Color="BadgeColor.Danger">غیر فعال</Badge>
+                                    break;
+                            }
+
+                        </GridColumn>
+
+                        <GridColumn TItem="ServerViewModel" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <Button Color="ButtonColor.Secondary" @onclick="() => ShowUserDetails(context)">
+                                    <Icon Name="IconName.FileEarmarkMedical" /> مشاهده
+                                </Button>
+                                <Button Color="ButtonColor.Warning" @onclick="() => OnEditUser(context.RAM)">
+                                    <Icon Name="IconName.FileEarmarkMedical" /> ویرایش
+                                </Button>
+                                <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteUser(context.RAM)">
+                                    <Icon Name="IconName.Trash" /> حذف
+                                </Button>
+                            </div>
+                        </GridColumn>
+                        <Modal @ref="Modal" Size="ModalSize.Large" />
+                    </Grid>
+
                 </CardBody>
             </Card>
         </div>
 
-        <!-- بروزرسانی‌ها -->
-        <div class="col-lg-4 mb-4">
-            <Card Class="border-0 shadow-sm rounded-3 h-100">
-                <CardHeader Class="bg-transparent border-0">
-                    <h5 class="card-title mb-0">آزمون بروزرسانی</h5>
-                </CardHeader>
-                <CardBody>
-                    <div class="updates-timeline">
-                        @for (int i = 0; i < 5; i++)
-                        {
-                            <div class="update-item position-relative pb-3">
-                                <div class="update-indicator bg-primary"></div>
-                                <div class="update-content ms-4">
-                                    <div class="update-header d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="update-title mb-0">آزمون بروزرسانی سرور</h6>
-                                        <span class="text-muted small">2024/12/24</span>
-                                    </div>
-                                    <p class="update-desc text-muted small mb-2">بروزرسانی امنیتی و بهبود عملکرد سیستم</p>
-                                    <div class="update-meta d-flex">
-                                        <Badge Color="BadgeColor.Light" Class="badge-sm me-2">
-                                            <Icon Name="IconName.Clock" Class="me-1" Size="IconSize.x1"></Icon>
-                                            ۲ ساعت
-                                        </Badge>
-                                        <Badge Color="BadgeColor.Light" Class="badge-sm">
-                                            <Icon Name="IconName.Person" Class="me-1" Size="IconSize.x1"></Icon>
-                                            مدیر سیستم
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
     </div>
 </div>
 
 @code {
-    private List<Server> Servers = new();
-    private IEnumerable<Server> FilteredServers = new List<Server>();
-    private IEnumerable<Server> PagedServers = new List<Server>();
-
+    private List<ServerViewModel>? ALL_SERVERS_DATA;
+    private Grid<ServerViewModel>? ServerGrid;
+    private Modal Modal = default!;
     private string SearchTerm = "";
-    private string SortField = "Name";
-    private string SortDirection = "asc";
-    private string CurrentFilter = "all";
+    private bool isDataLoaded = false;
 
-    private int CurrentPage = 1;
-    private int PageSize = 10;
-    private int TotalPages = 1;
+
+
+    private async Task<GridDataProviderResult<ServerViewModel>> ServerDataProvider(GridDataProviderRequest<ServerViewModel> request)
+    {
+        // اگر داده‌ها هنوز لود نشده، لیست خالی برگردان
+        if (!isDataLoaded)
+            return await Task.FromResult(request.ApplyTo(new List<ServerViewModel>()));
+
+        var filteredServers = FilterServers();
+        return await Task.FromResult(request.ApplyTo(filteredServers));
+    }
+
+    private List<ServerViewModel> FilterServers()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+            return ALL_SERVERS_DATA;
+
+        var searchLower = SearchTerm.ToLower();
+        return ALL_SERVERS_DATA.Where(srv =>
+            (srv.ServerName?.ToLower().Contains(searchLower) == true) ||
+            (srv.RAM.ToString().ToLower().Contains(searchLower)) ||
+            (srv.CPU?.ToLower().Contains(searchLower) == true) ||
+            (srv.OS?.ToLower().Contains(searchLower) == true) ||
+            (srv.MainBoardModel?.ToLower().Contains(searchLower) == true) ||
+            (srv.ServerManager?.Contains(SearchTerm) == true) ||
+            (srv.IpAddress?.Contains(SearchTerm) == true)
+        ).ToList();
+    }
 
     private void HandleClick()
     {
         NavigationManager.NavigateTo("/server/create");
     }
-    protected override void OnInitialized()
+    private async Task OnSearchChanged(ChangeEventArgs e)
     {
-        // داده‌های نمونه
-        Servers = new List<Server>
+        SearchTerm = e.Value?.ToString() ?? string.Empty;
+        if (ServerGrid != null)
         {
-            new Server { 
-                Name = "سرور وب اصلی", 
-                Code = "Web-01",
-                ServicesCount = 5, 
-                Specifications = "CPU: 4 cores, RAM: 8GB", 
-                Cost = "68.32 دالر",
-                CostValue = 68.32m,
-                Status = "فعال" 
-            },
-            new Server { 
-                Name = "سرور پایگاه داده", 
-                Code = "DB-01",
-                ServicesCount = 6, 
-                Specifications = "CPU: 8 cores, RAM: 16GB", 
-                Cost = "68.64 دالر",
-                CostValue = 68.64m,
-                Status = "فعال" 
-            },
-            new Server { 
-                Name = "سرور پشتیبان", 
-                Code = "BK-01",
-                ServicesCount = 2, 
-                Specifications = "Intel Core i7-12700K, 16GB RAM", 
-                Cost = "3MM",
-                CostValue = 3000000m,
-                Status = "در حال بروزرسانی" 
-            },
-            new Server { 
-                Name = "سرور توسعه", 
-                Code = "DEV-01",
-                ServicesCount = 3, 
-                Specifications = "CPU: 2 cores, RAM: 4GB", 
-                Cost = "35.50 دالر",
-                CostValue = 35.50m,
-                Status = "فعال" 
-            },
-            new Server { 
-                Name = "سرور تست", 
-                Code = "TEST-01",
-                ServicesCount = 4, 
-                Specifications = "CPU: 4 cores, RAM: 8GB", 
-                Cost = "42.75 دالر",
-                CostValue = 42.75m,
-                Status = "غیرفعال" 
-            },
-            new Server { 
-                Name = "سرور ایمیل", 
-                Code = "MAIL-01",
-                ServicesCount = 3, 
-                Specifications = "CPU: 4 cores, RAM: 8GB", 
-                Cost = "55.20 دالر",
-                CostValue = 55.20m,
-                Status = "فعال" 
-            },
-            new Server { 
-                Name = "سرور فایل", 
-                Code = "FILE-01",
-                ServicesCount = 2, 
-                Specifications = "CPU: 2 cores, RAM: 4GB, HDD: 2TB", 
-                Cost = "48.90 دالر",
-                CostValue = 48.90m,
-                Status = "فعال" 
-            },
-            new Server { 
-                Name = "سرور داکر", 
-                Code = "DOCKER-01",
-                ServicesCount = 8, 
-                Specifications = "CPU: 8 cores, RAM: 32GB", 
-                Cost = "125.40 دالر",
-                CostValue = 125.40m,
-                Status = "فعال" 
+            await ServerGrid.RefreshDataAsync();
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadServers();
+    }
+    private async Task LoadServers()
+    {
+        try
+        {
+            var res = await ServerApi.GetServerListAsync();
+
+            if (res.Success && res.Data != null)
+            {
+                ALL_SERVERS_DATA = res.Data;
+                isDataLoaded = true;
+
+                // پس از بارگذاری داده‌ها، Grid را refresh کن
+                await InvokeAsync(StateHasChanged);
+                await RefreshGridAsync();
             }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(res.Message ?? "خطا در دریافت داده‌ها");
+            }
+        }
+        catch (Exception ex)
+        {
+            await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
+        }
+    }
+    private async Task RefreshGridAsync()
+    {
+        if (ServerGrid != null)
+        {
+            await ServerGrid.RefreshDataAsync();
+        }
+    }
+    private void OnAddUser()
+    {
+        NavigationManager.NavigateTo("/user/create");
+    }
+
+    private async Task ShowUserDetails(ServerViewModel server)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Server"] = server   
         };
-
-        FilterServers();
+        await Modal.ShowAsync<ServerDetailModal>(title: "اطلاعات کاربر", parameters: parameters);
     }
 
-    private void FilterServers()
-    {
-        // ابتدا بر اساس فیلتر اعمال شده
-        IEnumerable<Server> result = CurrentFilter switch
-        {
-            "active" => Servers.Where(s => s.Status == "فعال"),
-            "inactive" => Servers.Where(s => s.Status != "فعال"),
-            _ => Servers
-        };
 
-        // سپس بر اساس جستجو فیلتر کنید
-        if (!string.IsNullOrWhiteSpace(SearchTerm))
+    private void OnEditUser(int personalCode)
+    {
+        NavigationManager.NavigateTo($"/user/edit/{personalCode}");
+    }
+    private async Task OnDeleteUser(int personalCode)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", new object[] { "آیا از حذف کاربر مطمئن هستید؟" });
+        if (confirmed)
         {
-            var term = SearchTerm.ToLower();
-            result = result.Where(s =>
-                s.Name.ToLower().Contains(term) ||
-                s.Code.ToLower().Contains(term) ||
-                s.ServicesCount.ToString().Contains(term) ||
-                s.Specifications.ToLower().Contains(term) ||
-                s.Cost.ToLower().Contains(term) ||
-                s.Status.ToLower().Contains(term)
-            );
+            var result = await ServerApi.DeleteServerAsync(personalCode);
+            if (result.Success)
+            {
+                await SweetAlert.ShowSuccessAsync(result.Message);
+
+                var res = await ServerApi.GetServerListAsync();
+
+                if (res.Success)
+                {
+                    ALL_SERVERS_DATA = res.Data; // به روز رسانی لیست کامل
+                    if (ServerGrid != null)
+                    {
+                        await ServerGrid.RefreshDataAsync();
+                    }
+                }
+                else
+                {
+                    await SweetAlert.ShowErrorAsync(res.Message);
+                }
+            }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(result.Message);
+            }
         }
-
-        // مرتب‌سازی
-        FilteredServers = SortDirection == "asc" 
-            ? result.OrderBy(GetSortProperty) 
-            : result.OrderByDescending(GetSortProperty);
-
-        // محاسبه صفحه‌بندی
-        TotalPages = (int)Math.Ceiling(FilteredServers.Count() / (double)PageSize);
-        
-        // اگر صفحه جاری از تعداد صفحات بیشتر شد، به آخرین صفحه برو
-        if (CurrentPage > TotalPages && TotalPages > 0)
-        {
-            CurrentPage = TotalPages;
-        }
-        
-        // گرفتن رکوردهای صفحه جاری
-        PagedServers = FilteredServers.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-    }
-
-    private object GetSortProperty(Server server)
-    {
-        return SortField switch
-        {
-            "Name" => server.Name,
-            "Services" => server.ServicesCount,
-            "Cost" => server.CostValue,
-            _ => server.Name
-        };
-    }
-
-    private void ChangePage(int page)
-    {
-        CurrentPage = page;
-        FilterServers();
-    }
-
-    private void ClearSearch()
-    {
-        SearchTerm = "";
-        CurrentPage = 1;
-        FilterServers();
-    }
-
-    private void ApplyFilter(string filter)
-    {
-        CurrentFilter = filter;
-        CurrentPage = 1;
-        FilterServers();
-    }
-    private void ApplyFilterAll()
-    {
-        ApplyFilter("all");
-    }
-
-    private void ApplyFilterActive()
-    {
-        ApplyFilter("active");
-    }
-
-    private void ApplyFilterInactive()
-    {
-        ApplyFilter("inactive");
-    }
-    private void SortByName()
-    {
-        SortBy("Name");
-    }
-
-    private void SortByServices()
-    {
-        SortBy("Services");
-    }
-
-    private void SortByCost()
-    {
-        SortBy("Cost");
-    }
-
-    private void SortBy(string field)
-    {
-        if (SortField == field)
-        {
-            SortDirection = SortDirection == "asc" ? "desc" : "asc";
-        }
-        else
-        {
-            SortField = field;
-            SortDirection = "asc";
-        }
-
-        CurrentPage = 1;
-        FilterServers();
-    }
-    private class Server
-    {
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public int ServicesCount { get; set; }
-        public string Specifications { get; set; }
-        public string Cost { get; set; }
-        public decimal CostValue { get; set; }
-        public string Status { get; set; }
     }
 }
