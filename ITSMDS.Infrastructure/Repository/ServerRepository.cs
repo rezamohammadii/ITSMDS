@@ -1,6 +1,7 @@
 ﻿using ITSMDS.Application.Abstractions;
 using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
+using ITSMDS.Domain.Enums;
 using ITSMDS.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -50,5 +51,10 @@ public class ServerRepository : IServerRepository
     public async ValueTask<Department?> GetDepartmentByIdAsync(long id, CancellationToken ct = default)
     {
         return await _db.Departments.FirstOrDefaultAsync(d => d.Id == id, ct);
+    }
+
+    public IQueryable<ServerEntity> ServerEntityQuery(CancellationToken ct = default)
+    {
+        return _db.Servers.Where(x => !x.IsDeleted && x.Status != ServerEnum.ServerStatus.DeActive).AsQueryable();
     }
 }

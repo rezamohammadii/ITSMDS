@@ -34,7 +34,7 @@ namespace ITSMDS.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
-                        .HasDefaultValue("6e7e6582-970f-40be-9e68-89c1627a42c4")
+                        .HasDefaultValue("a45a795c-2235-4fad-bcdc-11153e7f3eed")
                         .HasColumnName("department_id");
 
                     b.Property<string>("LocalLocation")
@@ -69,7 +69,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Utc).AddTicks(7312))
+                        .HasDefaultValue(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Utc).AddTicks(5567))
                         .HasColumnName("create_date");
 
                     b.Property<string>("Description")
@@ -86,7 +86,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTime>("ModifiedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Utc).AddTicks(7653))
+                        .HasDefaultValue(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Utc).AddTicks(5952))
                         .HasColumnName("modidied_time");
 
                     b.Property<string>("Name")
@@ -100,57 +100,6 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("ITSMDS.Domain.Entities.Port", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("description");
-
-                    b.Property<int>("PortNumber")
-                        .HasMaxLength(6)
-                        .HasColumnType("int")
-                        .HasColumnName("port_number");
-
-                    b.Property<string>("Protocol")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasColumnName("protocol");
-
-                    b.Property<int>("RiskLevel")
-                        .HasMaxLength(1)
-                        .HasColumnType("int")
-                        .HasColumnName("risk_level");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Ports");
-                });
-
-            modelBuilder.Entity("ITSMDS.Domain.Entities.PortService", b =>
-                {
-                    b.Property<long>("PortId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ServiceId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("PortId", "ServiceId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("PortServices");
-                });
-
             modelBuilder.Entity("ITSMDS.Domain.Entities.Role", b =>
                 {
                     b.Property<long>("Id")
@@ -162,7 +111,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Utc).AddTicks(6257))
+                        .HasDefaultValue(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Utc).AddTicks(4577))
                         .HasColumnName("create_date");
 
                     b.Property<string>("Description")
@@ -179,7 +128,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTime>("ModifiedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Utc).AddTicks(6695))
+                        .HasDefaultValue(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Utc).AddTicks(4955))
                         .HasColumnName("modidied_time");
 
                     b.Property<string>("Name")
@@ -230,6 +179,9 @@ namespace ITSMDS.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("department_id");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("IpAddress")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -265,6 +217,10 @@ namespace ITSMDS.Infrastructure.Migrations
                         .HasColumnName("ram_size")
                         .HasComment("base on GB");
 
+                    b.Property<string>("ServerManager")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ServerName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -288,6 +244,9 @@ namespace ITSMDS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("storage_type");
 
+                    b.Property<int>("UseageType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
@@ -303,16 +262,37 @@ namespace ITSMDS.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTimeOffset>("CreateTime")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<int>("CriticalityScore")
                         .HasMaxLength(2)
                         .HasColumnType("int")
                         .HasColumnName("criticality_score");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocumentFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExcutionPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("service_name");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
 
                     b.Property<long>("ServerId")
                         .HasColumnType("bigint");
@@ -340,7 +320,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Unspecified).AddTicks(2987), new TimeSpan(0, 0, 0, 0, 0)))
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Unspecified).AddTicks(1711), new TimeSpan(0, 0, 0, 0, 0)))
                         .HasColumnName("create_date");
 
                     b.Property<string>("Email")
@@ -360,7 +340,7 @@ namespace ITSMDS.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
-                        .HasDefaultValue("046f2b54-80bd-4249-a533-f6a2ebaf0fbb")
+                        .HasDefaultValue("5e8eba28-e298-42f8-b9dd-fd9d057e84ae")
                         .HasColumnName("hash_Id");
 
                     b.Property<string>("IpAddress")
@@ -391,7 +371,7 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("ModifiedTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2025, 9, 24, 12, 21, 25, 152, DateTimeKind.Unspecified).AddTicks(3435), new TimeSpan(0, 0, 0, 0, 0)))
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2025, 9, 30, 14, 24, 38, 663, DateTimeKind.Unspecified).AddTicks(2199), new TimeSpan(0, 0, 0, 0, 0)))
                         .HasColumnName("modidied_time");
 
                     b.Property<string>("Password")
@@ -445,25 +425,6 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles");
-                });
-
-            modelBuilder.Entity("ITSMDS.Domain.Entities.PortService", b =>
-                {
-                    b.HasOne("ITSMDS.Domain.Entities.Port", "Port")
-                        .WithMany("PortServices")
-                        .HasForeignKey("PortId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ITSMDS.Domain.Entities.ServiceEntity", "Service")
-                        .WithMany("PortServices")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Port");
-
-                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("ITSMDS.Domain.Entities.RolePermission", b =>
@@ -534,11 +495,6 @@ namespace ITSMDS.Infrastructure.Migrations
                     b.Navigation("RolePermissions");
                 });
 
-            modelBuilder.Entity("ITSMDS.Domain.Entities.Port", b =>
-                {
-                    b.Navigation("PortServices");
-                });
-
             modelBuilder.Entity("ITSMDS.Domain.Entities.Role", b =>
                 {
                     b.Navigation("RolePermissions");
@@ -549,11 +505,6 @@ namespace ITSMDS.Infrastructure.Migrations
             modelBuilder.Entity("ITSMDS.Domain.Entities.ServerEntity", b =>
                 {
                     b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("ITSMDS.Domain.Entities.ServiceEntity", b =>
-                {
-                    b.Navigation("PortServices");
                 });
 
             modelBuilder.Entity("ITSMDS.Domain.Entities.User", b =>

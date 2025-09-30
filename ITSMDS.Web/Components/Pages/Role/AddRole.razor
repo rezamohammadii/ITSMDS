@@ -8,7 +8,8 @@
 
 <PageTitle>اضافه کردن نقش </PageTitle>
 
-
+@if (PermissionService.HasPermission(PermissionName.SERVICE_CREATE))
+{
 <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
     
     <div class="d-flex flex-column">
@@ -133,12 +134,17 @@
             </Button>
         </EditForm>
     </CardBody>
-</Card>
-
+    </Card>
+}
+else
+{
+    <p>شما دسترسی به این صفحه را ندارید</p>
+}
 
 @code {
     private RoleDtoIn? roleDtoIn = new RoleDtoIn();
     private string? enteredText = "sample text";
+    @inject PermissionService PermissionService
     @inject ISweetAlertService SweetAlert
 
     private async Task HandleValidSubmit()
@@ -165,6 +171,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await PermissionService.InitializeAsync();
         var res = await userApi.GetPermissionListAsync();
         ExistingPermissions = res.Data;
     }

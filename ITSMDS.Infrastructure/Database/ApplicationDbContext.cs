@@ -26,8 +26,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Department> Departments { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<Role> Roles { get; set; }
-    public DbSet<Port> Ports { get; set; }
-    public DbSet<PortService> PortServices{ get; set; }
+    //public DbSet<Port> Ports { get; set; }
+    //public DbSet<PortService> PortServices{ get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     #endregion
@@ -95,14 +95,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(x => x.DepartmentIdentifire).HasMaxLength(255).HasDefaultValue(Guid.NewGuid().ToString()).HasColumnName("department_id");
         });
 
-        modelBuilder.Entity<Port>(entity =>
-        {
-            entity.Property(x => x.PortNumber).HasMaxLength(6).HasColumnName("port_number").IsRequired();
-            entity.Property(x => x.RiskLevel).HasMaxLength(1).HasColumnName("risk_level");
-            entity.Property(x => x.Description).HasMaxLength(255).HasColumnName("description");
-            entity.Property(x => x.Protocol).HasMaxLength(10).HasColumnName("protocol");
+        //modelBuilder.Entity<Port>(entity =>
+        //{
+        //    entity.Property(x => x.PortNumber).HasMaxLength(6).HasColumnName("port_number").IsRequired();
+        //    entity.Property(x => x.RiskLevel).HasMaxLength(1).HasColumnName("risk_level");
+        //    entity.Property(x => x.Description).HasMaxLength(255).HasColumnName("description");
+        //    entity.Property(x => x.Protocol).HasMaxLength(10).HasColumnName("protocol");
 
-        });
+        //});
 
 
         modelBuilder.Entity<Role>(entity =>
@@ -178,18 +178,18 @@ public class ApplicationDbContext : DbContext
 
         // Relation between Port and Service table (many to many)
 
-        modelBuilder.Entity<PortService>()
-      .HasKey(ur => new { ur.PortId, ur.ServiceId });
+      //  modelBuilder.Entity<PortService>()
+      //.HasKey(ur => new { ur.PortId, ur.ServiceId });
 
-        modelBuilder.Entity<PortService>()
-            .HasOne(ur => ur.Port)
-            .WithMany(u => u.PortServices)
-            .HasForeignKey(ur => ur.PortId);
+      //  modelBuilder.Entity<PortService>()
+      //      .HasOne(ur => ur.Port)
+      //      .WithMany(u => u.PortServices)
+      //      .HasForeignKey(ur => ur.PortId);
 
-        modelBuilder.Entity<PortService>()
-            .HasOne(ur => ur.Service)
-            .WithMany(r => r.PortServices)
-            .HasForeignKey(ur => ur.ServiceId);
+      //  modelBuilder.Entity<PortService>()
+      //      .HasOne(ur => ur.Service)
+      //      .WithMany(r => r.PortServices)
+      //      .HasForeignKey(ur => ur.ServiceId);
 
         #endregion
     }

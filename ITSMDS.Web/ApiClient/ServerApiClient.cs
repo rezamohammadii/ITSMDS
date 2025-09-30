@@ -67,7 +67,7 @@ public class ServerApiClient
         }
     }
 
-    public async Task<(bool Success, string Message, ServerViewModel? Data)> CreateServerAsync(ServerViewModelIn request, CancellationToken ct = default)
+    public async Task<(bool Success, string Message)> CreateServerAsync(ServerViewModelIn request, CancellationToken ct = default)
     {
         try
         {
@@ -78,41 +78,41 @@ public class ServerApiClient
             var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(contentResponse))
-                return (false, "پاسخی از سرور دریافت نشد.", null);
+                return (false, "پاسخی از سرور دریافت نشد.");
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<ServerViewModel>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
-                return (false, "خطا در پردازش پاسخ سرور.", null);
+                return (false, "خطا در پردازش پاسخ سرور.");
 
-            return (apiResponse.Success, apiResponse.Message, apiResponse.Data);
+            return (apiResponse.Success, apiResponse.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in CreateServerAsync");
-            return (false, "مشکلی در ارتباط با سرور پیش آمده.", null);
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.");
         }
     }
 
-    public async Task<(bool Success, string Message, ServerViewModel? Data)> EditServerAsync(ServerViewModelIn request, CancellationToken ct = default)
+    public async Task<(bool Success, string Message, ServerViewModel? Data)> EditServerAsync(ServerViewModel request, CancellationToken ct = default)
     {
         try
         {
             var jsonString = JsonSerializer.Serialize(request);
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PutAsync("/api/server/edit", content, ct);
+            var response = await _httpClient.PutAsync($"/api/server/update/{request.Id}", content, ct);
             var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(contentResponse))
                 return (false, "پاسخی از سرور دریافت نشد.", null);
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<ServerViewModel>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<bool>>(contentResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.", null);
 
-            return (apiResponse.Success, apiResponse.Message, apiResponse.Data);
+            return (apiResponse.Success, apiResponse.Message, null);
         }
         catch (Exception ex)
         {
@@ -142,6 +142,30 @@ public class ServerApiClient
         {
             _logger.LogError(ex, "Error in DeleteServerAsync for server {Id}", id);
             return (false, "مشکلی در ارتباط با سرور پیش آمده.");
+        }
+    }
+
+    public async Task<(bool Success, string Message, ServerWidget? Data)> GetServerWidgetAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/server/widget", ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
+
+            if (string.IsNullOrEmpty(content))
+                return (false, "پاسخی از سرور دریافت نشد.", null);
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<ServerWidget>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (apiResponse == null)
+                return (false, "خطا در پردازش پاسخ سرور.", null);
+
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetServerWidgetAsync ");
+            return (false, "مشکلی در ارتباط با سرور پیش آمده.", null);
         }
     }
 }

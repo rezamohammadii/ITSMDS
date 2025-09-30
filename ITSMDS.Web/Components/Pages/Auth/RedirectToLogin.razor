@@ -1,8 +1,15 @@
 ﻿@inject NavigationManager Navigation
+@implements IDisposable
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Navigation.NavigateTo("/login");
+        if (firstRender)
+        {
+            await Task.Delay(1);
+            Navigation.NavigateTo("/login", true);
+        }
     }
+
+    public void Dispose() { }
 }

@@ -1,78 +1,189 @@
-﻿
-<div class="d-flex align-items-center">
-    <Icon Name="IconName.PersonCircle" Class="text-primary me-3" Size="IconSize.x4"></Icon>
+﻿<div class="d-flex align-items-center">
+    <Icon Name="IconName.Server" Class="text-primary me-3" Size="IconSize.x4"></Icon>
     <div>
-        <h5 class="mb-0">اطلاعات کاربر</h5>
-        <small class="text-muted">جزئیات کامل پروفایل کاربر</small>
+        <h5 class="mb-0">اطلاعات سرور</h5>
+        <small class="text-muted">جزئیات کامل مشخصات سرور</small>
     </div>
 </div>
 
-
-@if (User != null)
+@if (Server != null)
 {
-    <div class="user-details">
-        <!-- اطلاعات اصلی کاربر -->
+    <div class="server-details">
+        <!-- اطلاعات اصلی سرور -->
         <div class="row mb-4">
             <div class="col-md-6 mb-3">
                 <div class="detail-item">
                     <div class="detail-icon bg-primary-subtle">
-                        <Icon Name="IconName.Person" Class="text-primary"></Icon>
+                        <Icon Name="IconName.Server" Class="text-primary"></Icon>
                     </div>
                     <div class="detail-content">
-                        <div class="detail-label">نام کامل</div>
-                        <div class="detail-value">@($"{User.FirstName} {User.LastName}")</div>
+                        <div class="detail-label">نام سرور</div>
+                        <div class="detail-value">@Server.ServerName</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="detail-item">
                     <div class="detail-icon bg-success-subtle">
-                        <Icon Name="IconName.PersonBadge" Class="text-success"></Icon>
+                        <Icon Name="IconName.Memory" Class="text-success"></Icon>
                     </div>
                     <div class="detail-content">
-                        <div class="detail-label">نام کاربری</div>
-                        <div class="detail-value">@User.UserName</div>
+                        <div class="detail-label">حافظه RAM</div>
+                        <div class="detail-value">@Server.RAM GB</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- اطلاعات تماس -->
+        <!-- مشخصات سخت‌افزاری -->
         <div class="row mb-4">
             <div class="col-md-6 mb-3">
                 <div class="detail-item">
                     <div class="detail-icon bg-info-subtle">
-                        <Icon Name="IconName.Envelope" Class="text-info"></Icon>
+                        <Icon Name="IconName.Cpu" Class="text-info"></Icon>
                     </div>
                     <div class="detail-content">
-                        <div class="detail-label">ایمیل</div>
-                        <div class="detail-value">@User.Email</div>
+                        <div class="detail-label">پردازنده (CPU)</div>
+                        <div class="detail-value">@Server.CPU</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="detail-item">
                     <div class="detail-icon bg-warning-subtle">
-                        <Icon Name="IconName.Telephone" Class="text-warning"></Icon>
+                        <Icon Name="IconName.Motherboard" Class="text-warning"></Icon>
                     </div>
                     <div class="detail-content">
-                        <div class="detail-label">تلفن</div>
-                        <div class="detail-value">@(string.IsNullOrEmpty(User.PhoneNumber) ? "ثبت نشده" : User.PhoneNumber)</div>
+                        <div class="detail-label">مدل مادربرد</div>
+                        <div class="detail-value">@Server.MainBoardModel</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- اطلاعات سیستمی -->
+        <!-- اطلاعات ذخیره‌سازی -->
         <div class="row mb-4">
             <div class="col-md-6 mb-3">
                 <div class="detail-item">
                     <div class="detail-icon bg-secondary-subtle">
-                        <Icon Name="IconName.Globe" Class="text-secondary"></Icon>
+                        <Icon Name="IconName.Hdd" Class="text-secondary"></Icon>
                     </div>
                     <div class="detail-content">
-                        <div class="detail-label">آی‌پی آدرس</div>
-                        <div class="detail-value">@User.IpAddress</div>
+                        <div class="detail-label">ظرفیت ذخیره‌سازی</div>
+                        <div class="detail-value">@Server.StorageSize GB</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon bg-dark-subtle">
+                        <Icon Name="IconName.HddStack" Class="text-dark"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">نوع ذخیره‌سازی</div>
+                        <div class="detail-value">
+                            @switch (Server.StorageType)
+                            {
+                                case 0:
+                                    <span class="badge bg-secondary">HDD</span>
+                                    break;
+                                case 1:
+                                    <span class="badge bg-info">SSD</span>
+                                    break;
+                                case 2:
+                                    <span class="badge bg-primary">NVMe</span>
+                                    break;
+                                default:
+                                    <span class="text-muted">نامشخص</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعات شبکه و سیستم عامل -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon bg-primary-subtle">
+                        <Icon Name="IconName.Windows" Class="text-primary"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">سیستم عامل</div>
+                        <div class="detail-value">@Server.OS</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon bg-success-subtle">
+                        <Icon Name="IconName.Globe" Class="text-success"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">آدرس IP</div>
+                        <div class="detail-value">@Server.IpAddress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعات موقعیت و مدیریت -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon bg-info-subtle">
+                        <Icon Name="IconName.GeoAlt" Class="text-info"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">موقعیت فیزیکی</div>
+                        <div class="detail-value">@Server.Location</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon bg-warning-subtle">
+                        <Icon Name="IconName.Person" Class="text-warning"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">مدیر سرور</div>
+                        <div class="detail-value">@(string.IsNullOrEmpty(Server.ServerManager) ? "ثبت نشده" : Server.ServerManager)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- وضعیت سرور و تاریخ ایجاد -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="detail-item">
+                    <div class="detail-icon @GetStatusColor(Server.Status)">
+                        <Icon Name="@GetStatusIcon(Server.Status)" Class="@GetStatusTextColor(Server.Status)"></Icon>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">وضعیت سرور</div>
+                        <div class="detail-value">
+                            @switch (Server.Status)
+                            {
+                                case 0:
+                                    <span class="badge bg-danger">غیرفعال</span>
+                                    break;
+                                case 1:
+                                    <span class="badge bg-success">فعال</span>
+                                    break;
+                                case 2:
+                                    <span class="badge bg-warning">در حال تعمیر</span>
+                                    break;
+                                case 3:
+                                    <span class="badge bg-secondary">آفلاین</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-dark">نامشخص</span>
+                                    break;
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -83,73 +194,40 @@
                     </div>
                     <div class="detail-content">
                         <div class="detail-label">تاریخ ایجاد</div>
-                        <div class="detail-value">@((User.CreateDate == null) ? "" : User.CreateDate.ToString())</div>
+                        <div class="detail-value">@(string.IsNullOrEmpty(Server.CreateDate) ? "ثبت نشده" : Server.CreateDate)</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- تیم و نقش‌ها -->
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
-                <div class="detail-item">
-                    <div class="detail-icon bg-primary-subtle">
-                        <Icon Name="IconName.People" Class="text-primary"></Icon>
-                    </div>
-                    <div class="detail-content">
-                        <div class="detail-label">تیم</div>
-                        <div class="detail-value">@(string.IsNullOrEmpty(User.TeamName) ? "ثبت نشده" : User.TeamName)</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="detail-item">
-                    <div class="detail-icon bg-success-subtle">
-                        <Icon Name="IconName.Shield" Class="text-success"></Icon>
-                    </div>
-                    <div class="detail-content">
-                        <div class="detail-label">نقش‌ها</div>
-                        <div class="detail-value">
-                            @if (User.RoleName is IEnumerable<string> roles && roles.Any())
-                            {
-                                @foreach (var role in roles)
-                                {
-                                    <span class="badge bg-primary me-1">@role</span>
-                                }
-                            }
-                            else
-                            {
-                                <span class="text-muted">هیچ نقشی تعریف نشده</span>
-                            }
-                        </div>
+        <!-- دکمه‌های اقدام -->
+        @if (ShowActions)
+        {
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        @if (PermissionService.HasPermission(PermissionName.SERVER_EDIT))
+                        {
+                            <button class="btn btn-primary" @onclick="HandleEdit">
+                                <Icon Name="IconName.Pencil" Class="me-2"></Icon>
+                                ویرایش سرور
+                            </button>
+                        }
+                        @if (PermissionService.HasPermission(PermissionName.SERVER_DELETE))
+                        {
+                            <button class="btn btn-outline-danger" @onclick="HandleDelete">
+                                <Icon Name="IconName.Trash" Class="me-2"></Icon>
+                                حذف سرور
+                            </button>
+                        }
+                        <button class="btn btn-outline-secondary" @onclick="HandleBack">
+                            <Icon Name="IconName.ArrowLeft" Class="me-2"></Icon>
+                            بازگشت
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- وضعیت کاربر -->
-        <div class="row">
-            <div class="col-12">
-                <div class="detail-item">
-                    <div class="detail-icon @(User.IsActive ? "bg-success-subtle" : "bg-danger-subtle")">
-                        <Icon Name="@(User.IsActive? IconName.CheckCircle: IconName.XCircle)" Class="@(User.IsActive ? "text-success" : "text-danger")"></Icon>
-                    </div>
-                    <div class="detail-content">
-                        <div class="detail-label">وضعیت حساب</div>
-                        <div class="detail-value">
-                            @if (User.IsActive)
-                            {
-                                <span class="badge bg-success">فعال</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">غیرفعال</span>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        }
     </div>
 }
 else
@@ -157,20 +235,94 @@ else
     <div class="text-center py-4">
         <Icon Name="IconName.ExclamationTriangle" Size="IconSize.x4" Class="text-warning mb-3"></Icon>
         <p class="text-muted">هیچ اطلاعاتی برای نمایش وجود ندارد.</p>
-        <!-- debugging aid -->
-        <pre class="small text-muted">Debug: User == null</pre>
+        <pre class="small text-muted">Debug: Server == null</pre>
     </div>
 }
 
-
-
 @code {
-    private Modal userModal;
+    [Parameter] public ServerViewModel Server { get; set; }
+    [Parameter] public bool ShowActions { get; set; } = true;
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnBack { get; set; }
 
-    [Parameter] public UserViewModel User { get; set; }
+    [Inject] private PermissionService PermissionService { get; set; }
+    [Inject] private ISweetAlertService SweetAlert { get; set; }
+    [Inject] private NavigationManager NavigationManager { get; set; }
+    [Inject] IJSRuntime JSRuntime { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        await PermissionService.InitializeAsync();
+    }
+
+    private async Task HandleEdit()
+    {
+        if (OnEdit.HasDelegate)
+        {
+            await OnEdit.InvokeAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"/server/edit/{Server.Id}");
+        }
+    }
+
+    private async Task HandleDelete()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", new object[] { "آیا از حذف سرور مطمئن هستید؟" });
+
+        if (confirmed)
+        {
+            if (OnDelete.HasDelegate)
+            {
+                await OnDelete.InvokeAsync();
+            }
+        }
+    }
+
+    private async Task HandleBack()
+    {
+        if (OnBack.HasDelegate)
+        {
+            await OnBack.InvokeAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/servers");
+        }
+    }
+
+    private string GetStatusColor(int status)
+    {
+        return status switch
+        {
+            1 => "bg-success-subtle",
+            2 => "bg-warning-subtle",
+            3 => "bg-secondary-subtle",
+            _ => "bg-danger-subtle"
+        };
+    }
+
+    private string GetStatusTextColor(int status)
+    {
+        return status switch
+        {
+            1 => "text-success",
+            2 => "text-warning",
+            3 => "text-secondary",
+            _ => "text-danger"
+        };
+    }
+
+    private IconName GetStatusIcon(int status)
+    {
+        return status switch
+        {
+            1 => IconName.CheckCircle,
+            2 => IconName.Tools,
+            3 => IconName.Power,
+            _ => IconName.XCircle
+        };
     }
 }

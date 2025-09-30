@@ -76,12 +76,15 @@ public static class DataSeederDb
                     cpu: "Intel Xeon Platinum 8280 Processor",
                     mainBoardModel: "Asus", 
                     storageSize: 1000,
-                    storageType: Domain.Enums.StorageType.SSD,
-                    status: Domain.Enums.ServerStatus.Active,
+                    storageType: ServerEnum.StorageType.SSD,
+                    status: ServerEnum.ServerStatus.Active,
                     os: "linux ubuntu 22.04",
                     startDate: DateTimeOffset.Parse("2025/01/01"),
                     ipAddress: "127.0.0.1",
-                    location: "Tehran"
+                    location: "Tehran",
+                    serverManager : "Admin Team",
+                    description : "Server Admin",
+                    useageType: ServerEnum.ServerUseageType.Develop
                 );
 
                 newServer.AssignToDepartment(getDepartment);
@@ -92,36 +95,37 @@ public static class DataSeederDb
 
             // Seed Ports
 
-            if (!dbContext.Ports.Any())
-            {
-                var listPort = new List<Port>
-            {
-                new Port(80, "Http", "tcp", RiskLevel.Medium),
-                new Port(443, "Https", "tcp", RiskLevel.Low)
-            };
+            //if (!dbContext.Ports.Any())
+            //{
+            //    var listPort = new List<Port>
+            //{
+            //    new Port(80, "Http", "tcp", RiskLevel.Medium),
+            //    new Port(443, "Https", "tcp", RiskLevel.Low)
+            //};
 
-                dbContext.Ports.AddRange(listPort);
-                dbContext.SaveChanges();
-                _logger.LogInformation("Ports {Ports} created successfully.", string.Join(",", listPort.Select(p => p.PortNumber)));
-            }
+            //    dbContext.Ports.AddRange(listPort);
+            //    dbContext.SaveChanges();
+            //    _logger.LogInformation("Ports {Ports} created successfully.", string.Join(",", listPort.Select(p => p.PortNumber)));
+            //}
 
             // Seed Services
             if (!dbContext.Services.Any())
             {
                 var getServer = dbContext.Servers.First(x => x.ServerName == "SRV-development");
-                var getPorts = dbContext.Ports.Where(x => x.Protocol == "tcp").ToList();
+                //var getPorts = dbContext.Ports.Where(x => x.Protocol == "tcp").ToList();
 
                 var newService = new ServiceEntity(
                     name: "Service nginx",
                     version: "1.3.4",
-                    criticalityScore: 5,
-                    serverId: getServer.Id
+                    criticalityScore: ServiceEnum.CriticalityScore.VeryHigh,
+                    serverId: getServer.Id,
+                    port: 80
                 );
 
-                foreach (var port in getPorts)
-                {
-                    newService.AddPortService(new PortService(port, newService));
-                }
+                //foreach (var port in getPorts)
+                //{
+                //    newService.AddPortService(new PortService(port, newService));
+                //}
 
                 dbContext.Services.Add(newService);
                 dbContext.SaveChanges();
@@ -150,6 +154,17 @@ public static class DataSeederDb
                     var newPermission = new Permission(permissionName, permissionComment);
                     dbContext.Permissions.Add(newPermission);
                     _logger.LogInformation("Permission {PermissionName} created successfully.", permissionName);
+                }
+                dbContext.SaveChanges();
+            }
+            if (!dbContext.RolePermissions.Any())
+            {
+                var role = dbContext.Roles.First();
+                var listPermission = dbContext.Permissions.ToList();
+                foreach (var permission in listPermission)
+                {
+
+                    dbContext.RolePermissions.Add(new RolePermission(role, permission));
                 }
                 dbContext.SaveChanges();
             }

@@ -226,7 +226,7 @@ public class UserService : IUserService
     #endregion
 
     #region Auth
-    public async Task<LoginResponseDTO> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default)
+    public async Task<(string, LoginResponseDTO?)> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default)
     {
         
         try
@@ -245,7 +245,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("User not found: {Username}", username);
-                throw new InvalidOperationException("User not found.");
+                return ("کاربری یافت نشد", null);
             }
             var hashPass = HashGenerator.GenerateHashSHA512(pass);
 
@@ -253,7 +253,7 @@ public class UserService : IUserService
             if (user.Password != hashPass)
             {
                 _logger.LogWarning("Password not matched");
-                throw new InvalidDataException("Password is incorrect");
+                return ("رمز عبور نادرست می باشد", null);
             }
 
             var roleQuery = _roleRepository.GetRoleQueryAsync();
@@ -273,7 +273,7 @@ public class UserService : IUserService
                 Username = user.UserName
             };
 
-            return (loginResponse);
+            return ("عملیات با موفقیت انجام شد", loginResponse);
         }
         catch (Exception ex)
         {

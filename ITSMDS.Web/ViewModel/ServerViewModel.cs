@@ -14,14 +14,19 @@ public class ServerViewModel
     public string OS { get;  set; }
     public string IpAddress { get;  set; }
     public string Location { get;  set; }
+    public string? Description { get; set; }
     public int Status { get;  set; }
     public string? ServerManager { get;  set; }
     public string? CreateDate { get;  set; }
+    public int Id { get; set; }
+
 }
 
 
 public class ServerViewModelIn
 {
+    public int Id { get; set; }
+
     [Display(Name = "نام سرور")]
     [Required(ErrorMessage = "نام سرور الزامی است")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "نام سرور باید بین 2 تا 100 کاراکتر باشد")]
@@ -74,6 +79,9 @@ public class ServerViewModelIn
 
     [Display(Name = "وضعیت فعال بودن")]
     public int Status { get; set; }
+
+    [Display(Name = "نوع استفاده سرور")]
+    public int ServerUseage { get; set; }
 
     [Display(Name = "مسئول سرور")]
     [Required(ErrorMessage = "نام مسئول الزامی است")]

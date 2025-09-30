@@ -1,12 +1,12 @@
 ﻿@page "/servers"
 @using System.Linq
 @using System.Linq.Expressions
+@using ITSMDS.Domain.DTOs
 @using ITSMDS.Domain.Enums
 @using ITSMDS.Web.Components.Pages.Server.Component
 @inject NavigationManager NavigationManager
-@inject ISweetAlertService SweetAlert
 @inject ServerApiClient ServerApi
-@inject IJSRuntime JSRuntime
+
 
 <PageTitle>مدیریت سرورها</PageTitle>
 
@@ -15,7 +15,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1 text-gradient">مدیریت سرورها</h1>
-            <p class="text-muted mb-0">مراقبت و مدیریت سرورهای سیستم</p>
+            <p class="text-muted mb-0"> مدیریت سرورهای شرکت گسترش</p>
         </div>
         <div>
             <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" Type="ButtonType.Link" @onclick="HandleClick">
@@ -25,99 +25,106 @@
             </Button>
         </div>
     </div>
+    @if (SERVER_WIDGET_DATA != null)
+    {
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">تعداد کل سرورهای فعال</div>
+                                <div class="fw-bold fs-3 text-primary">@SERVER_WIDGET_DATA.ServerActiveCount</div>
+                                <div class="text-primary small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>@SERVER_WIDGET_DATA.ServerUpPercentSalary % نسب به کل</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-start">
+                                <div class="icon-statistic bg-primary-subtle">
+                                    <Icon Name="IconName.Server" Class="text-primary" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
 
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">تعداد کل سرور های عملیاتی</div>
+                                <div class="fw-bold fs-3 text-success">@SERVER_WIDGET_DATA.ServerOperationalCount</div>
+                                <div class="text-success small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>@SERVER_WIDGET_DATA.ServerOperationalPercentSalary % نسب به کل</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-success-subtle">
+                                    <Icon Name="IconName.HddStack" Class="text-success" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">تعداد کل سرورهای تستی</div>
+                                <div class="fw-bold fs-3 text-info">@SERVER_WIDGET_DATA.ServerTestCount</div>
+                                <div class="text-info small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>@SERVER_WIDGET_DATA.ServerTestPercentSalary % نسب به کل </span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-info-subtle">
+                                    <Icon Name="IconName.Tools" Class="text-info" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">تعداد کل سرور های توسعه</div>
+                                <div class="fw-bold fs-3 text-warning">@SERVER_WIDGET_DATA.ServerDevelopCount</div>
+                                <div class="text-warning small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>@SERVER_WIDGET_DATA.ServerDevelopPercentSalary % نسب به کل</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-warning-subtle">
+                                    <Icon Name="IconName.PcDisplayHorizontal" Class="text-warning" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-4">
+            <span class="text-muted">در حال بارگذاری اطلاعات سرورها...</span>
+        </div>
+    }
     <!-- کارت‌های آماری -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
-                <CardBody Class="p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="text-secondary mb-1">سرورهای آلفن</div>
-                            <div class="fw-bold fs-3 text-primary">2</div>
-                            <div class="text-success small mt-1">
-                                <Icon Name="IconName.ArrowUp" Class="me-1"></Icon>
-                                <span>14% افزایش</span>
-                            </div>
-                        </div>
-                        <div class="col-4 text-start">
-                            <div class="icon-statistic bg-primary-subtle">
-                                <Icon Name="IconName.Server" Class="text-primary" Size="IconSize.x4"></Icon>
-                            </div>
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
-                <CardBody Class="p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="text-secondary mb-1">کل سرورها</div>
-                            <div class="fw-bold fs-3 text-success">20</div>
-                            <div class="text-success small mt-1">
-                                <Icon Name="IconName.ArrowUp" Class="me-1"></Icon>
-                                <span>22% افزایش</span>
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon-statistic bg-success-subtle">
-                                <Icon Name="IconName.HddStack" Class="text-success" Size="IconSize.x4"></Icon>
-                            </div>
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
-                <CardBody Class="p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="text-secondary mb-1">سرورهای فعال</div>
-                            @* <div class="fw-bold fs-3 text-info">@FilteredServers.Count(s => s.Status == "فعال")</div> *@
-                            <div class="fw-bold fs-3 text-info">فعال</div>
-                            <div class="text-success small mt-1">
-                                <Icon Name="IconName.Activity" Class="me-1"></Icon>
-                                @* <span>@((ALL_SERVERS_DATA.Count(s => s.IsEnable) * 100 / Math.Max(1, ALL_SERVERS_DATA.Count())) + "% فعال")</span> *@
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon-statistic bg-info-subtle">
-                                <Icon Name="IconName.PlayCircle" Class="text-info" Size="IconSize.x4"></Icon>
-                            </div>
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
-                <CardBody Class="p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="text-secondary mb-1">هزینه ماهانه</div>
-                            @* <div class="fw-bold fs-3 text-warning">@(FilteredServers.Sum(s => s.CostValue).ToString("F2")) دالر</div> *@
-                            <div class="fw-bold fs-3 text-warning">20 دالر</div>
-                            <div class="text-danger small mt-1">
-                                <Icon Name="IconName.ArrowDown" Class="me-1"></Icon>
-                                <span>5% کاهش</span>
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon-statistic bg-warning-subtle">
-                                <Icon Name="IconName.CurrencyDollar" Class="text-warning" Size="IconSize.x4"></Icon>
-                            </div>
-                        </div>
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
-    </div>
+   
 
     <div class="row">
         <!-- لیست سرورها -->
@@ -167,9 +174,9 @@
                             @context.RAM
                         </GridColumn>
 
-                      @*   <GridColumn TItem="ServerViewModel" HeaderText="تاریخ ایجاد" HeaderTextAlignment="Alignment.Center">
+                        <GridColumn TItem="ServerViewModel" HeaderText="تاریخ ایجاد" HeaderTextAlignment="Alignment.Center">
                             @context.CreateDate
-                        </GridColumn> *@
+                        </GridColumn>
 
                         <GridColumn TItem="ServerViewModel" HeaderText="GB حجم حافظه" HeaderTextAlignment="Alignment.Center">
                             @context.StorageSize
@@ -178,13 +185,13 @@
                         <GridColumn TItem="ServerViewModel" HeaderText="نوع حافظه" HeaderTextAlignment="Alignment.Center">
                             @switch (@context.StorageType)
                             {
-                                case (int)StorageType.HDD:
+                                case (int)ServerEnum.StorageType.HDD:
                                     @: <span> HDD </span>
                                     break;
-                                case (int)StorageType.SSD:
+                                case (int)ServerEnum.StorageType.SSD:
                                     @: <span> SDD </span>
                                     break;
-                                case (int)StorageType.NVME:
+                                case (int)ServerEnum.StorageType.NVME:
                                     @: <span> NVME </span>
                                     break;
                             }
@@ -202,16 +209,16 @@
                         <GridColumn TItem="ServerViewModel" HeaderText="وضعیت" HeaderTextAlignment="Alignment.Center">
                             @switch (context.Status)
                             {
-                                case (int)ServerStatus.Unknown:
+                                case (int)ServerEnum.ServerStatus.Unknown:
                                     <Badge Class="m-1" Color="BadgeColor.Dark">نام مشخص</Badge>
                                     break;
-                                case (int)ServerStatus.Updating:
+                                case (int)ServerEnum.ServerStatus.Updating:
                                     <Badge Class="m-1" Color="BadgeColor.Warning">در حال به روز رسانی</Badge>
                                     break;
-                                case (int)ServerStatus.Active:
+                                case (int)ServerEnum.ServerStatus.Active:
                                     <Badge Class="m-1" Color="BadgeColor.Success">فعال</Badge>
                                     break;
-                                case (int)ServerStatus.DeActive:
+                                case (int)ServerEnum.ServerStatus.DeActive:
                                     <Badge Class="m-1" Color="BadgeColor.Danger">غیر فعال</Badge>
                                     break;
                             }
@@ -221,13 +228,13 @@
                         <GridColumn TItem="ServerViewModel" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
                             <div class="d-flex justify-content-center gap-2">
                                 <Button Color="ButtonColor.Secondary" @onclick="() => ShowUserDetails(context)">
-                                    <Icon Name="IconName.FileEarmarkMedical" /> مشاهده
+                                    <Icon Name="IconName.Eye" Size="@IconSize.x6" />
                                 </Button>
-                                <Button Color="ButtonColor.Warning" @onclick="() => OnEditUser(context.RAM)">
-                                    <Icon Name="IconName.FileEarmarkMedical" /> ویرایش
+                                <Button Color="ButtonColor.Warning" @onclick="() => OnEditUser(context.Id)">
+                                    <Icon Name="IconName.PencilSquare" Size="@IconSize.x6" /> 
                                 </Button>
-                                <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteUser(context.RAM)">
-                                    <Icon Name="IconName.Trash" /> حذف
+                                <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteUser(context.Id)">
+                                    <Icon Name="IconName.Trash" Size="@IconSize.x6" />
                                 </Button>
                             </div>
                         </GridColumn>
@@ -240,14 +247,33 @@
 
     </div>
 </div>
+<script>
+    window.showDeleteConfirmation = function (message) {
+        return Swal.fire({
+            title: 'تأیید حذف',
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، حذف شود',
+            cancelButtonText: 'انصراف',
+            reverseButtons: true
+        }).then(result => {
+            return result.isConfirmed;
+        });
+    };
+</script>
 
 @code {
+    @inject ISweetAlertService SweetAlert
+
+    @inject IJSRuntime JSRuntime
+
     private List<ServerViewModel>? ALL_SERVERS_DATA;
     private Grid<ServerViewModel>? ServerGrid;
     private Modal Modal = default!;
     private string SearchTerm = "";
     private bool isDataLoaded = false;
-
+    private ServerWidget? SERVER_WIDGET_DATA;
 
 
     private async Task<GridDataProviderResult<ServerViewModel>> ServerDataProvider(GridDataProviderRequest<ServerViewModel> request)
@@ -300,10 +326,11 @@
         try
         {
             var res = await ServerApi.GetServerListAsync();
-
+            var resWidget = await ServerApi.GetServerWidgetAsync();
             if (res.Success && res.Data != null)
             {
                 ALL_SERVERS_DATA = res.Data;
+                SERVER_WIDGET_DATA = resWidget.Data;
                 isDataLoaded = true;
 
                 // پس از بارگذاری داده‌ها، Grid را refresh کن
@@ -338,20 +365,20 @@
         {
             ["Server"] = server   
         };
-        await Modal.ShowAsync<ServerDetailModal>(title: "اطلاعات کاربر", parameters: parameters);
+        await Modal.ShowAsync<ServerDetailModal>(title: "اطلاعات سرور", parameters: parameters);
     }
 
 
-    private void OnEditUser(int personalCode)
+    private void OnEditUser(int id)
     {
-        NavigationManager.NavigateTo($"/user/edit/{personalCode}");
+        NavigationManager.NavigateTo($"/server/edit/{id}");
     }
-    private async Task OnDeleteUser(int personalCode)
+    private async Task OnDeleteUser(int id)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", new object[] { "آیا از حذف کاربر مطمئن هستید؟" });
+        var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", new object[] { "آیا از حذف سرور مطمئن هستید؟" });
         if (confirmed)
         {
-            var result = await ServerApi.DeleteServerAsync(personalCode);
+            var result = await ServerApi.DeleteServerAsync(id);
             if (result.Success)
             {
                 await SweetAlert.ShowSuccessAsync(result.Message);

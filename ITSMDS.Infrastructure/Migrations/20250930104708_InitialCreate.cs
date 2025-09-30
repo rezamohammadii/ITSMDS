@@ -19,8 +19,8 @@ namespace ITSMDS.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     service_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     owner_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    local_location = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),
-                    department_id = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true, defaultValue: "5c8fc74c-d720-48f3-9f6f-c28d020273db")
+                    local_location = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    department_id = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true, defaultValue: "588a024b-fdac-453c-b714-90924326f9eb")
                 },
                 constraints: table =>
                 {
@@ -34,7 +34,11 @@ namespace ITSMDS.Infrastructure.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     permission_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    descripption = table.Column<string>(type: "nvarchar(max)", maxLength: -1, nullable: true)
+                    descripption = table.Column<string>(type: "nvarchar(max)", maxLength: -1, nullable: true),
+                    create_date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Utc).AddTicks(8268)),
+                    modidied_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Utc).AddTicks(8623)),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,7 +68,11 @@ namespace ITSMDS.Infrastructure.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     role_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    descripption = table.Column<string>(type: "nvarchar(max)", maxLength: -1, nullable: true)
+                    descripption = table.Column<string>(type: "nvarchar(max)", maxLength: -1, nullable: true),
+                    create_date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Utc).AddTicks(7295)),
+                    modidied_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Utc).AddTicks(7688)),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,17 +85,19 @@ namespace ITSMDS.Infrastructure.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    hash_Id = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false, defaultValue: "614a7877-77ba-40a2-a155-a805605100e2"),
                     first_name = table.Column<string>(type: "nvarchar(155)", maxLength: 155, nullable: false),
                     last_name = table.Column<string>(type: "nvarchar(155)", maxLength: 155, nullable: false),
                     email_address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     LoginAttempt = table.Column<int>(type: "int", nullable: false),
-                    personali_code = table.Column<int>(type: "int", maxLength: 7, nullable: false),
-                    phone_number = table.Column<int>(type: "int", maxLength: 10, nullable: false),
-                    create_date = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2025, 8, 23, 7, 40, 22, 176, DateTimeKind.Unspecified).AddTicks(8195), new TimeSpan(0, 0, 0, 0, 0))),
-                    ModifiedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    personali_code = table.Column<int>(type: "int", nullable: false),
+                    phone_number = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    create_date = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Unspecified).AddTicks(4165), new TimeSpan(0, 0, 0, 0, 0))),
+                    modidied_time = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2025, 9, 30, 10, 47, 8, 73, DateTimeKind.Unspecified).AddTicks(4597), new TimeSpan(0, 0, 0, 0, 0))),
                     user_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    password = table.Column<string>(type: "nvarchar(max)", maxLength: -1, nullable: false),
                     team_name = table.Column<string>(type: "nvarchar(155)", maxLength: 155, nullable: false),
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     is_active = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     is_deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
@@ -112,8 +122,11 @@ namespace ITSMDS.Infrastructure.Migrations
                     start_date = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     ip_address = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     physical_location = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    ServerManager = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     is_deeted = table.Column<bool>(name: "is_de;eted", type: "bit", nullable: false, defaultValue: false),
-                    is_enable = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    UseageType = table.Column<int>(type: "int", nullable: false),
                     department_id = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
@@ -184,8 +197,14 @@ namespace ITSMDS.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     service_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     version = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocumentFilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     criticality_score = table.Column<int>(type: "int", maxLength: 2, nullable: false),
-                    ServerId = table.Column<long>(type: "bigint", nullable: false)
+                    Port = table.Column<int>(type: "int", nullable: false),
+                    ServerId = table.Column<long>(type: "bigint", nullable: false),
+                    CreateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -202,13 +221,14 @@ namespace ITSMDS.Infrastructure.Migrations
                 name: "PortServices",
                 columns: table => new
                 {
-                    PortId = table.Column<long>(type: "bigint", nullable: false),
-                    ServiceId = table.Column<long>(type: "bigint", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PortId = table.Column<long>(type: "bigint", nullable: false),
+                    ServiceId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PortServices", x => new { x.PortId, x.ServiceId });
+                    table.PrimaryKey("PK_PortServices", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PortServices_Ports_PortId",
                         column: x => x.PortId,
@@ -222,6 +242,11 @@ namespace ITSMDS.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PortServices_PortId",
+                table: "PortServices",
+                column: "PortId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PortServices_ServiceId",
@@ -247,6 +272,11 @@ namespace ITSMDS.Infrastructure.Migrations
                 name: "IX_UserRoles_RoleId",
                 table: "UserRoles",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_ActiveDeleted",
+                table: "Users",
+                columns: new[] { "is_active", "is_deleted" });
         }
 
         /// <inheritdoc />

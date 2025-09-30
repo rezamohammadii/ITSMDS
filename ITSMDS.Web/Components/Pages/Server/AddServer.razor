@@ -75,15 +75,14 @@
     <div class="row g-4 mt-1">
         <div class="col-md-6">
             <label class="form-label">
-                <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌سازی
+                <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌ سازی حافظه
             </label>
             <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.StorageType">
                 <option selected>نوع حافظه را مشخص کنید</option>
-                <option value="@StorageType.HDD">HDD</option>
-                <option value="@StorageType.SSD">SSD</option>
-                <option value="@StorageType.NVME">NVME</option>
+                <option value="1">HDD</option>
+                <option value="2">SSD</option>
+                <option value="3">NVME</option>
             </InputSelect>
-            <ValidationMessage For="@(() => server.StorageType)" />
         </div>
 
         <div class="col-md-6">
@@ -127,31 +126,42 @@
 
         <div class="col-md-6">
             <label class="form-label">
-                توضیخات
+                توضیحات
             </label>
-            <TextAreaInput @bind-Value="@server.Description" Rows="5" TextAlignment="Alignment.End" Class="form-control" />
+            <TextAreaInput @bind-Value="@server.Description" Rows="2" TextAlignment="Alignment.End" Class="form-control" />
 
         </div>
     </div>
 
-    <!-- فعال بودن -->
-    <div class="col-md-6">
-        <label class="form-label">
-            <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> نوع ذخیره‌سازی
-        </label>
-        <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.Status">
-            <option selected>نوع حافظه را مشخص کنید</option>
-            <option value="@ServerStatus.Unknown">نا مشسخص</option>
-            <option value="@ServerStatus.Updating">در حال بروزرسانی</option>
-            <option value="@ServerStatus.Active">فعال</option>
-            <option value="@ServerStatus.DeActive">غیر فعال</option>
-        </InputSelect>
-        <ValidationMessage For="@(() => server.StorageType)" />
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.DeviceSsd" Class="text-secondary me-1" /> وضعیت ‌سرور
+            </label>
+            <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.Status">
+                <option selected>نوع حافظه را مشخص کنید</option>
+                <option value="0">نا مشخص</option>
+                <option value="1">در حال بروزرسانی</option>
+                <option value="2">فعال</option>
+                <option value="3">غیر فعال</option>
+            </InputSelect>
 
-     
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">
+                <Icon Name="IconName.ViewStacked" Class="text-secondary me-1" /> نوع استفاده سرور
+            </label>
+            <InputSelect class="form-select" aria-label="Default select example" @bind-Value="server.ServerUseage">
+                <option selected>نوع استفاده از سرور را مشخص کنید</option>
+                <option value="1">عملیاتی</option>
+                <option value="2">توسعه</option>
+                <option value="3">تستی</option>
+            </InputSelect>
+
+        </div>
     </div>
 
-    <!-- دکمه‌ها -->
     <div class="d-flex gap-3 pt-4 border-top">
         <Button Color="ButtonColor.Success" Type="ButtonType.Submit" Disabled="@isSubmitting">
             <Icon Name="IconName.Save" Class="me-1" /> ذخیره سرور
@@ -172,7 +182,7 @@
         try
         {
             isSubmitting = true;
-           var res = await serverApi.CreateServerAsync(server);
+            var res = await serverApi.CreateServerAsync(server);
 
             if (!res.Success)
             {

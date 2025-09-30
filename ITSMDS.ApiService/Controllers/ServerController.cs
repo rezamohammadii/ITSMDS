@@ -20,7 +20,7 @@ namespace ITSMDS.ApiService.Controllers
         }
 
         /// <summary>
-        /// ایجاد سرور جدید
+        /// Create new server
         /// </summary>
         [HttpPost("create")]
         public async Task<IActionResult> CreateServerAsync(CreateServerRequest request, CancellationToken ct)
@@ -48,7 +48,7 @@ namespace ITSMDS.ApiService.Controllers
         }
 
         /// <summary>
-        /// دریافت اطلاعات یک سرور بر اساس Id
+        /// Get server with by Id
         /// </summary>
         [HttpGet("{id:long}")]
         public async Task<IActionResult> GetServerByIdAsync(long id, CancellationToken ct)
@@ -64,7 +64,7 @@ namespace ITSMDS.ApiService.Controllers
                     return NotFound(ApiResponse<object>.Fail(ErrorCode.NotFound, "سرور یافت نشد"));
                 }
 
-                return Ok(ApiResponse<object>.Ok(server));
+                return Ok(ApiResponse<ServerDto>.Ok(server));
             }
             catch (Exception ex)
             {
@@ -74,7 +74,7 @@ namespace ITSMDS.ApiService.Controllers
         }
 
         /// <summary>
-        /// دریافت لیست همه سرورها
+        /// Get list servers
         /// </summary>
         [HttpGet("list")]
         public async Task<IActionResult> GetServersAsync(CancellationToken ct)
@@ -94,7 +94,7 @@ namespace ITSMDS.ApiService.Controllers
         }
 
         /// <summary>
-        /// ویرایش اطلاعات سرور
+        /// Edit server information
         /// </summary>
         [HttpPut("update/{id:long}")]
         public async Task<IActionResult> UpdateServerAsync(long id, UpdateServerRequest request, CancellationToken ct)
@@ -122,7 +122,7 @@ namespace ITSMDS.ApiService.Controllers
         }
 
         /// <summary>
-        /// حذف سرور
+        /// Delete Server
         /// </summary>
         [HttpDelete("delete/{id:long}")]
         public async Task<IActionResult> DeleteServerAsync(long id, CancellationToken ct)
@@ -145,6 +145,26 @@ namespace ITSMDS.ApiService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception in DeleteServerAsync");
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
+            }
+        }
+        /// <summary>
+        /// Get Widget Data 
+        /// </summary>
+        [HttpGet("widget")]
+        public async Task<IActionResult> GetWidgetDataAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("GetWidgetDataAsync called ");
+
+                var result = await _serverService.GetServerWidgetAsync(ct);
+                
+                return Ok(ApiResponse<ServerWidget>.Ok(result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in GetWidgetDataAsync");
                 return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }

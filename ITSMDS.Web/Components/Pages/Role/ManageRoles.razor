@@ -8,6 +8,9 @@
 
 <PageTitle>مدیریت نقش ها</PageTitle>
 
+
+@if (PermissionService.HasPermission(PermissionName.SERVICE_READ))
+{
 <h3 class="mb-4 text-gradient">لیست نقش ها</h3>
 <h6 class="mb-4">مدیریت نقش ها و مجوز های سیستم</h6>
 
@@ -87,8 +90,12 @@ else
         </GridColumn>
     </GridColumns>
 
-</Grid>
-
+    </Grid>
+}
+else
+{
+    <p>شما دسترسی به این صفحه را ندارید</p>
+}
 @code {
 
     @inject PermissionService PermissionService

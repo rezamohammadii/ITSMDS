@@ -1,0 +1,139 @@
+﻿@page "/service/create"
+@using ITSMDS.Domain.DTOs
+@using ITSMDS.Web.ApiClient
+@using ITSMDS.Web.Services
+@using ITSMDS.Domain.Enums
+@inject NavigationManager NavigationManager
+@inject ServiceApiClient serviceApi
+@inject ISweetAlertService SweetAlert
+
+<EditForm Model="@service" OnValidSubmit="HandleValidSubmit" Class="space-y-6">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- عنوان و برگشت -->
+    <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap mb-5">
+        <div class="d-flex flex-column">
+            <h1 class="h4 fw-bold text-dark text-gradient">
+                <Icon Name="IconName.Server" Class="me-2 text-primary" /> افزودن سرویس جدید
+            </h1>
+            <p class="text-muted mt-1">ایجاد یک سرویس جدید در سیستم</p>
+        </div>
+
+        <Button Color="ButtonColor.Warning" Class="me-auto" @onclick="NavigateToServices">
+            <Icon Name="IconName.ArrowRight" /> بازگشت
+        </Button>
+    </div>
+
+    <!-- اطلاعات سرویس -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">نام سرویس *</label>
+            <InputText class="form-control" @bind-Value="service.ServerName" placeholder="مثال: سرویس پرداخت" />
+            <ValidationMessage For="@(() => service.ServerName)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">نسخه</label>
+            <InputText class="form-control" @bind-Value="service.Version" placeholder="مثال: v1.0.0" />
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-12">
+            <label class="form-label">توضیحات</label>
+            <TextAreaInput @bind-Value="@service.Description" Rows="3" Class="form-control" />
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">مسیر فایل مستندات</label>
+            <InputText class="form-control" @bind-Value="service.DocumentFilePath" placeholder="/docs/service.docx" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">مسیر اجرا</label>
+            <InputText class="form-control" @bind-Value="service.ExcutionPath" placeholder="/opt/service/run.sh" />
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-4">
+            <label class="form-label">امتیاز بحرانی بودن</label>
+            <InputSelect class="form-select" @bind-Value="service.CriticalityScore">
+                @foreach (var item in Enum.GetValues(typeof(ServiceEnum.CriticalityScore)))
+                {
+                    <option value="@item">@item</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">پورت</label>
+            <InputNumber class="form-control" @bind-Value="service.Port" placeholder="مثال: 8080" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">شناسه سرور</label>
+            <InputNumber class="form-control" @bind-Value="service.ServerId" placeholder="ID سرور مربوطه" />
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">زمان ایجاد</label>
+            <InputText class="form-control" @bind-Value="service.CreateTime" placeholder="2025-09-30" />
+        </div>
+
+        <div class="col-md-6 d-flex align-items-center mt-4">
+            <InputCheckbox class="form-check-input me-2" @bind-Value="service.IsActive" />
+            <label class="form-check-label">فعال است</label>
+        </div>
+    </div>
+
+    <!-- دکمه‌ها -->
+    <div class="d-flex gap-3 pt-4 border-top">
+        <Button Color="ButtonColor.Success" Type="ButtonType.Submit" Disabled="@isSubmitting">
+            <Icon Name="IconName.Save" Class="me-1" /> ذخیره سرویس
+        </Button>
+
+        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="HandleReset" Disabled="@isSubmitting">
+            <Icon Name="IconName.ArrowCounterclockwise" Class="me-1" /> بازنشانی
+        </Button>
+    </div>
+</EditForm>
+
+@code {
+    private ServiceViewModel service = new();
+    private bool isSubmitting = false;
+
+    private async void HandleValidSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            var res = await serviceApi.CreateServiceAsync(service);
+
+            if (!res.Success)
+            {
+                await SweetAlert.ShowErrorAsync(res.Message);
+                return;
+            }
+
+            await SweetAlert.ShowSuccessAsync(res.Message);
+            NavigationManager.NavigateTo("/services");
+        }
+        catch (Exception ex)
+        {
+            await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void HandleReset() => service = new();
+    private void NavigateToServices() => NavigationManager.NavigateTo("/services");
+}

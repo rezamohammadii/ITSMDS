@@ -1,0 +1,195 @@
+﻿@page "/server/edit/{Id}"
+
+@inject ServerApiClient serverApi
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
+
+<h4 class="mb-4 text-gradient">ویرایش سرور</h4>
+
+@if (PermissionService.HasPermission(PermissionName.SERVER_EDIT))
+{
+    @if (server == null)
+    {
+        <p>در حال بارگذاری اطلاعات...</p>
+    }
+    else
+    {
+        <EditForm Model="server" OnValidSubmit="HandleValidSubmit" class="row g-3" FormName="EditServer">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- اطلاعات اصلی -->
+            <div class="col-md-6">
+                <label class="form-label">نام سرور</label>
+                <InputText class="form-control" @bind-Value="server.ServerName" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">RAM (GB)</label>
+                <InputNumber class="form-control" @bind-Value="server.RAM" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">پردازنده (CPU)</label>
+                <InputText class="form-control" @bind-Value="server.CPU" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">مدل مادربرد</label>
+                <InputText class="form-control" @bind-Value="server.MainBoardModel" />
+            </div>
+
+            <!-- اطلاعات ذخیره‌سازی -->
+            <div class="col-md-6">
+                <label class="form-label">ظرفیت ذخیره‌سازی (GB)</label>
+                <InputNumber class="form-control" @bind-Value="server.StorageSize" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">نوع ذخیره‌سازی</label>
+                <InputSelect class="form-control" @bind-Value="server.StorageType">
+                    <option value="1">HDD</option>
+                    <option value="2">SSD</option>
+                    <option value="3">NVMe</option>
+                </InputSelect>
+            </div>
+
+            <!-- اطلاعات سیستم و شبکه -->
+            <div class="col-md-6">
+                <label class="form-label">سیستم عامل</label>
+                <InputText class="form-control" @bind-Value="server.OS" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">آدرس IP</label>
+                <InputText class="form-control" @bind-Value="server.IpAddress" />
+            </div>
+
+            <!-- اطلاعات موقعیت و مدیریت -->
+            <div class="col-md-6">
+                <label class="form-label">موقعیت فیزیکی</label>
+                <InputText class="form-control" @bind-Value="server.Location" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">مدیر سرور</label>
+                <InputText class="form-control" @bind-Value="server.ServerManager" />
+            </div>
+
+            <!-- وضعیت سرور -->
+            <div class="col-md-6">
+                <label class="form-label">وضعیت سرور</label>
+                <InputSelect class="form-control" @bind-Value="server.Status">
+                    <option value="0">غیرفعال</option>
+                    <option value="1">فعال</option>
+                    <option value="2">در حال تعمیر</option>
+                    <option value="3">آفلاین</option>
+                </InputSelect>
+            </div>
+
+            <!-- تاریخ ایجاد (فقط نمایش) -->
+            <div class="col-md-6">
+                <label class="form-label">
+                    توضیحات
+                </label>
+                <TextAreaInput @bind-Value="@server.Description" Rows="2" TextAlignment="Alignment.End" Class="form-control" />
+            </div>
+
+            <!-- دکمه‌های اقدام -->
+            <div class="d-flex gap-3 pt-4 border-top">
+                <button type="submit" class="btn btn-success">
+                    💾 ذخیره تغییرات
+                </button>
+
+                <button type="button" class="btn btn-outline-secondary" @onclick="HandleReset">
+                    🔄 بازنشانی
+                </button>
+
+                <button type="button" class="btn btn-outline-danger" @onclick="HandleCancel">
+                    ❌ انصراف
+                </button>
+            </div>
+        </EditForm>
+    }
+}
+else
+{
+    <p>شما دسترسی به این صفحه را ندارید</p>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    @inject AuthenticationStateProvider AuthStateProvider;
+    @inject PermissionService PermissionService
+    @inject ISweetAlertService SweetAlert
+
+    private ServerViewModel? server;
+    private ServerViewModel? serverOld;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await PermissionService.InitializeAsync();
+
+        if (Id is not null)
+        {
+            var res = await serverApi.GetServerAsync(int.Parse(Id));
+
+            if (res.Success)
+            {
+                server = res.Data;
+                serverOld = res.Data; // ذخیره نسخه اصلی برای بازنشانی
+            }
+            else
+            {
+                await SweetAlert.ShowErrorAsync(res.Message);
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await serverApi.EditServerAsync(server!);
+        if (result.Success)
+        {
+            await SweetAlert.ShowSuccessAsync(result.Message);
+            NavigationManager.NavigateTo("/servers");
+        }
+        else
+        {
+            await SweetAlert.ShowErrorAsync(result.Message);
+        }
+    }
+
+    private void HandleReset()
+    {
+        // بازنشانی به مقادیر اصلی
+        if (serverOld != null)
+        {
+            server = new ServerViewModel
+            {
+                Id = serverOld.Id,
+                ServerName = serverOld.ServerName,
+                RAM = serverOld.RAM,
+                CPU = serverOld.CPU,
+                MainBoardModel = serverOld.MainBoardModel,
+                StorageSize = serverOld.StorageSize,
+                StorageType = serverOld.StorageType,
+                OS = serverOld.OS,
+                IpAddress = serverOld.IpAddress,
+                Location = serverOld.Location,
+                Status = serverOld.Status,
+                ServerManager = serverOld.ServerManager,
+                CreateDate = serverOld.CreateDate
+            };
+        }
+        StateHasChanged();
+    }
+
+    private void HandleCancel()
+    {
+        NavigationManager.NavigateTo("/servers");
+    }
+}

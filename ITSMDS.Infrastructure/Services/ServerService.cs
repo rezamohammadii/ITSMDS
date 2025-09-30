@@ -4,6 +4,8 @@ using ITSMDS.Application.Abstractions;
 using ITSMDS.Application.Services;
 using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
+using ITSMDS.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace ITSMDS.Infrastructure.Services;
@@ -30,7 +32,6 @@ public class ServerService : IServerService
         {
             _logger.LogInformation("CreateAsync called for server: {ServerName}", request.ServerName);
 
-            // بررسی اینکه سرور با همان IP یا نام وجود نداشته باشد
             if (await _repo.ExistsAsync(request.ServerName, request.IpAddress, ct))
             {
                 _logger.LogWarning("Server already exists with Name: {ServerName} or IP: {IP}", request.ServerName, request.IpAddress);
@@ -48,12 +49,14 @@ public class ServerService : IServerService
                 request.OS,
                 DateTimeOffset.UtcNow,
                 request.IpAddress,
-                request.Location
+                request.Location,
+                request.ServerManager,
+                request.Description,
+                request.ServerUseage
             );
 
             if (request.DepartmentId.HasValue)
             {
-                // می‌تونی department رو ریپازیتوری بگیری و assign کنی
                 var department = await _repo.GetDepartmentByIdAsync(request.DepartmentId.Value, ct);
                 if (department != null)
                     server.AssignToDepartment(department);
@@ -72,9 +75,10 @@ public class ServerService : IServerService
         }
     }
 
-    public async Task<ServerEntity?> GetByIdAsync(long id, CancellationToken ct = default)
+    public async Task<ServerDto?> GetByIdAsync(long id, CancellationToken ct = default)
     {
-        return await _repo.GetByIdAsync(id, ct);
+        var serverData = await _repo.GetByIdAsync(id, ct);
+        return _mapper.Map<ServerDto>(serverData);
     }
 
     public async Task<List<ServerDto>> GetAllAsync(CancellationToken ct = default)
@@ -146,5 +150,44 @@ public class ServerService : IServerService
     }
 
     #endregion
+    public async Task<ServerWidget> GetServerWidgetAsync(CancellationToken ct = default)
+    {
+        var serverQuery = _repo.ServerEntityQuery();
+
+        var totalServers = await serverQuery.CountAsync(ct);
+
+        var activeCount = await serverQuery
+            .Where(x => x.Status == ServerEnum.ServerStatus.Active)
+            .CountAsync(ct);
+
+        var operationalCount = await serverQuery
+            .Where(x => x.UseageType == ServerEnum.ServerUseageType.Operational)
+            .CountAsync(ct);
+
+        var testCount = await serverQuery
+            .Where(x => x.UseageType == ServerEnum.ServerUseageType.UAT)
+            .CountAsync(ct);
+
+        var developCount = await serverQuery
+          .Where(x => x.UseageType == ServerEnum.ServerUseageType.Develop)
+          .CountAsync(ct);
+
+        var widget = new ServerWidget
+        {
+            ServerActiveCount = activeCount,
+            ServerOperationalCount = operationalCount,
+            ServerTestCount = testCount,
+            ServerDevelopCount = developCount,
+            // درصدها بر اساس کل سرورها
+            ServerUpPercentSalary = totalServers > 0 ? (activeCount * 100) / totalServers : 0,
+            ServerOperationalPercentSalary = totalServers > 0 ? (operationalCount * 100) / totalServers : 0,
+            ServerTestPercentSalary = totalServers > 0 ? (testCount * 100) / totalServers : 0,
+            ServerDevelopPercentSalary = totalServers > 0 ? (developCount * 100) / totalServers : 0,
+        };
+
+        return widget;
+
+    }
+
 }
 

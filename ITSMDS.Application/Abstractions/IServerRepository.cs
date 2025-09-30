@@ -10,4 +10,6 @@ public interface IServerRepository
     ValueTask<List<ServerEntity>> GetAllAsync(CancellationToken ct = default);
     ValueTask<bool> ExistsAsync(string serverName, string ipAddress, CancellationToken ct = default);
     ValueTask<Department?> GetDepartmentByIdAsync(long id, CancellationToken ct = default);
+
+    IQueryable<ServerEntity> ServerEntityQuery(CancellationToken ct = default);
 }

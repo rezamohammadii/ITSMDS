@@ -21,6 +21,6 @@ public interface IUserService
 
 
     #region Auth
-    Task<LoginResponseDTO> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default);
+    Task<(string, LoginResponseDTO)> LoginAsync(int personalCode, string? username, string pass, CancellationToken ct = default);
     #endregion
 }

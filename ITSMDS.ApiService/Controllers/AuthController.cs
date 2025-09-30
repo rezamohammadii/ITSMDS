@@ -27,21 +27,21 @@ namespace ITSMDS.ApiService.Controllers
         {
             var user = await _userService.LoginAsync(loginDto.PersonalCode, loginDto.Username, loginDto.Password, cancellationToken);
 
-            if (user is null)
+            if (user.Item2 is null)
             {
-                return Unauthorized(ApiResponse<object>.Fail(ErrorCode.InvalidCredentials));
+                return Unauthorized(ApiResponse<object>.Fail(ErrorCode.InvalidCredentials, user.Item1));
             }
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(JWT_KEY);
 
             StringBuilder roleBuilder = new StringBuilder();
-            foreach (var role in user.RoleNames)
+            foreach (var role in user.Item2.RoleNames)
             {
                 roleBuilder.Append(role + "|");
             }
 
             StringBuilder permissionName = new StringBuilder();
-            foreach (var permission in user.PermissionNames)
+            foreach (var permission in user.Item2.PermissionNames)
             {
                 permissionName.Append(permission + "|");
             }
@@ -50,8 +50,8 @@ namespace ITSMDS.ApiService.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                      new Claim(ClaimTypes.Name, user.Username ?? ""),
-                      new Claim(ClaimTypes.NameIdentifier, user.PersonalCode.ToString() ?? ""),
+                      new Claim(ClaimTypes.Name, user.Item2.Username ?? ""),
+                      new Claim(ClaimTypes.NameIdentifier, user.Item2.PersonalCode.ToString() ?? ""),
                       new Claim(ClaimTypes.Role, roleBuilder.ToString()),
                       new Claim("Permissions", permissionName.ToString())
 
@@ -65,8 +65,8 @@ namespace ITSMDS.ApiService.Controllers
 
             var token = tokenHandler.CreateToken(tokenDecriptor);
             var jwt = tokenHandler.WriteToken(token);
-            user.Token= jwt;
-            return Ok(ApiResponse<object>.Ok(user, ErrorCode.LoginSuccessfully.GetMessage()));
+            user.Item2.Token= jwt;
+            return Ok(ApiResponse<LoginResponseDTO>.Ok(user.Item2, ErrorCode.LoginSuccessfully.GetMessage()));
 
         }
 

@@ -11,13 +11,16 @@ public class ServerEntity : Entity<long>, IAggregateRoot
     public string CPU { get; private set; }
     public string MainBoardModel { get; private set; }
     public int StorageSize { get; private set; }
-    public StorageType StorageType { get; private set; }
+    public ServerEnum.StorageType StorageType { get; private set; }
     public string OS { get; private set; }
     public DateTimeOffset StartDate { get; private set; }
     public string IpAddress { get; private set; }
     public string Location { get; private set; }
+    public string ServerManager { get; private set; }
+    public string? Description { get; private set; }
     public bool IsDeleted { get; private set; }
-    public ServerStatus Status { get; private set; }
+    public ServerEnum.ServerStatus Status { get; private set; }
+    public ServerEnum.ServerUseageType UseageType { get; private set; }
 
     public long? DepartmentId { get; private set; }
     public virtual Department? Department { get; private set; }
@@ -33,12 +36,15 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         string cpu,
         string mainBoardModel,
         int storageSize,
-        StorageType storageType,
-        ServerStatus status,
+        ServerEnum.StorageType storageType,
+        ServerEnum.ServerStatus status,
         string os,
         DateTimeOffset startDate,
         string ipAddress,
-        string location)
+        string location,
+        string serverManager,
+        string description,
+        ServerEnum.ServerUseageType useageType)
     {
         Validate(serverName, ram, storageSize, ipAddress, location);
 
@@ -52,8 +58,11 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         StartDate = startDate;
         IpAddress = ipAddress;
         Location = location;
+        ServerManager = serverManager;
         Status = status;
         IsDeleted = false;
+        UseageType = useageType;
+        Description = description;
     }
 
     private static void Validate(string serverName, int ram, int storageSize, string ipAddress, string location)
@@ -82,8 +91,8 @@ public class ServerEntity : Entity<long>, IAggregateRoot
         ServerName = serverName;
     }
 
-    public void UpdateHardwareSpecs(int ram, string cpu, string mainBoardModel, int storageSize, 
-        StorageType storageType, ServerStatus status)
+    public void UpdateHardwareSpecs(int ram, string cpu, string mainBoardModel, int storageSize,
+        ServerEnum.StorageType storageType, ServerEnum.ServerStatus status)
     {
         if (ram <= 0)
             throw new DomainException("RAM must be greater than 0");

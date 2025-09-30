@@ -148,6 +148,5 @@ namespace ITSMDS.ApiService.Controllers
                 return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }
-
     }
 }

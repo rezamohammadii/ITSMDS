@@ -1,0 +1,288 @@
+﻿@page "/services"
+@using ITSMDS.Pages.Services
+@inherits ServiceManagementBase
+
+<PageTitle>مدیریت سرویس‌ها</PageTitle>
+
+<div class="container-fluid px-4">
+    <!-- هدر صفحه -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gradient">مدیریت سرویس‌ها</h1>
+            <p class="text-muted mb-0">مدیریت و مراقبت سرویس‌های سیستم</p>
+        </div>
+        <div>
+            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" Type="ButtonType.Link" @onclick="AddNewService">
+                <Icon Name="IconName.PlusCircle" Class="me-1"></Icon>
+                افزودن سرویس جدید
+            </Button>
+        </div>
+    </div>
+
+    <!-- کارت‌های آماری -->
+    @if (ServiceWidgetData != null)
+    {
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">حداکثر</div>
+                                <div class="fw-bold fs-3 text-primary">@ServiceWidgetData.ServiceAllCount</div>
+                                <div class="text-primary small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>سرویس فعال</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-start">
+                                <div class="icon-statistic bg-primary-subtle">
+                                    <Icon Name="IconName.Server" Class="text-primary" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">حساسیت</div>
+                                <div class="fw-bold fs-3 text-success">@ServiceWidgetData.ServiceActiveCount</div>
+                                <div class="text-success small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>سرویس با حساسیت بالا</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-success-subtle">
+                                    <Icon Name="IconName.ExclamationTriangle" Class="text-success" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">خدمات</div>
+                                <div class="fw-bold fs-3 text-info">@ServiceWidgetData.ServiceHasDocumentCount</div>
+                                <div class="text-info small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>سرویس در حال اجرا</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-info-subtle">
+                                    <Icon Name="IconName.PlayCircle" Class="text-info" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <Card Class="card-statistic border-0 shadow-sm rounded-3 overflow-hidden">
+                    <CardBody Class="p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="text-secondary mb-1">کار خودپرداز</div>
+                                <div class="fw-bold fs-3 text-warning">@ServiceWidgetData.ServiceDeActiveCount</div>
+                                <div class="text-warning small mt-1">
+                                    <Icon Name="IconName.Activity" Class="me-1"></Icon>
+                                    <span>سرویس خودکار</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon-statistic bg-warning-subtle">
+                                    <Icon Name="IconName.Gear" Class="text-warning" Size="IconSize.x4"></Icon>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <!-- توزیع سرویس‌ها -->
+        <div class="col-lg-4 mb-4">
+            <Card Class="border-0 shadow-sm rounded-3 h-100">
+                <CardHeader Class="bg-transparent border-0 pb-0">
+                    <h5 class="card-title mb-0">توزیع سرویس‌ها بر روی سرورها</h5>
+                </CardHeader>
+                <CardBody>
+                    @if (ServerDistribution != null && ServerDistribution.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var server in ServerDistribution)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <h6 class="mb-1">@server.ServerName</h6>
+                                        <small class="text-muted">@server.ServiceCount سرویس</small>
+                                    </div>
+                                    <Badge Color="GetDistributionBadgeColor(server.ServiceCount)" Class="fs-6">
+                                        @server.ServiceCount
+                                    </Badge>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <Icon Name="IconName.Server" Size="IconSize.x3" Class="mb-2"></Icon>
+                            <p>هیچ سروری یافت نشد</p>
+                        </div>
+                    }
+                </CardBody>
+            </Card>
+        </div>
+
+        <!-- لیست سرویس‌ها -->
+        <div class="col-lg-8 mb-4">
+            <Card Class="border-0 shadow-sm rounded-3 h-100">
+                <CardHeader Class="bg-transparent border-0 pb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">لیست سرویس‌ها</h5>
+                        <div class="input-group" style="width: 300px;">
+                            <InputText class="form-control" @bind-Value="SearchTerm"
+                                       @oninput="OnSearchChanged" placeholder="جستجوی سرویس..." />
+                            <span class="input-group-text">🔍</span>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardBody>
+                    <Grid @ref="ServiceGrid" TItem="ServiceViewModel"
+                          DataProvider="ServiceDataProvider"
+                          AllowPaging="true"
+                          AutoHidePaging="true"
+                          Class="table table-hover table-bordered table-striped"
+                          PageSize="5"
+                          PageSizeSelectorVisible="true"
+                          ItemsPerPageText="تعداد نمایش"
+                          PageSizeSelectorItems="@(new int[] { 5, 10, 20 })"
+                          Responsive="true">
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="نام سرویس" HeaderTextAlignment="Alignment.Center">
+                            <div class="d-flex align-items-center">
+                                <Icon Name="IconName.Cpu" Class="me-2 text-primary"></Icon>
+                                @context.ServerName
+                            </div>
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="نسخه" HeaderTextAlignment="Alignment.Center">
+                            @context.Version
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="میزان حساسیت" HeaderTextAlignment="Alignment.Center">
+                            <Badge Color="GetCriticalityBadgeColor(context.CriticalityScore)" Class="m-1">
+                                @GetCriticalityText(context.CriticalityScore)
+                            </Badge>
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="سرور" HeaderTextAlignment="Alignment.Center">
+                            @context.ServerName
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="وضعیت" HeaderTextAlignment="Alignment.Center">
+                            @if (context.IsActive)
+                            {
+                                <Badge Class="m-1" Color="BadgeColor.Success">
+                                    <Icon Name="IconName.CheckCircle" Class="me-1"></Icon>
+                                    فعال
+                                </Badge>
+                            }
+                            else
+                            {
+                                <Badge Class="m-1" Color="BadgeColor.Danger">
+                                    <Icon Name="IconName.XCircle" Class="me-1"></Icon>
+                                    غیرفعال
+                                </Badge>
+                            }
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="عملیات" HeaderTextAlignment="Alignment.Center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small"
+                                        @onclick="() => ShowServiceDetails(context)">
+                                    <Icon Name="IconName.Eye" Size="@IconSize.x6" />
+                                </Button>
+                                <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
+                                        @onclick="() => EditService(context.ServerId)">
+                                    <Icon Name="IconName.PencilSquare" Size="@IconSize.x6" />
+                                </Button>
+                                <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
+                                        @onclick="() => DeleteService(context.ServerId)">
+                                    <Icon Name="IconName.Trash" Size="@IconSize.x6" />
+                                </Button>
+                            </div>
+                        </GridColumn>
+                    </Grid>
+                </CardBody>
+            </Card>
+        </div>
+    </div>
+
+    <!-- نمودار توزیع سرویس‌ها -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <Card Class="border-0 shadow-sm rounded-3">
+                <CardHeader Class="bg-transparent border-0">
+                    <h5 class="card-title mb-0">آمار سرویس‌ها بر اساس حساسیت</h5>
+                </CardHeader>
+                <CardBody>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-danger bg-opacity-10">
+                                <div class="fw-bold fs-4 text-danger">@(ServiceWidgetCriticalData?.VeryHighServiceCount ?? 0)</div>
+                                <div class="text-muted">حساسیت بالا</div>
+                                <small>90-100%</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-warning bg-opacity-10">
+                                <div class="fw-bold fs-4 text-warning">@(ServiceWidgetCriticalData?.HighServiceCount ?? 0)</div>
+                                <div class="text-muted">حساسیت متوسط</div>
+                                <small>50-89%</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-info bg-opacity-10">
+                                <div class="fw-bold fs-4 text-info">@(ServiceWidgetCriticalData?.NormalServiceCount ?? 0)</div>
+                                <div class="text-muted">حساسیت پایین</div>
+                                <small>30-49%</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-success bg-opacity-10">
+                                <div class="fw-bold fs-4 text-success">@(ServiceWidgetCriticalData?.LowServiceCount ?? 0)</div>
+                                <div class="text-muted">حساسیت بسیار پایین</div>
+                                <small>0-29%</small>
+                            </div>
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    </div>
+</div>
+
+<Modal @ref="ServiceModal" Size="ModalSize.Large" />
+
+@code {
+    private Grid<ServiceViewModel>? ServiceGrid;
+    private Modal ServiceModal = default!;
+    private string SearchTerm = "";
+    private bool isDataLoaded = false;
+}
