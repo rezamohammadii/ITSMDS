@@ -6,9 +6,10 @@ namespace ITSMDS.Web.ViewModel
 {
     public class ServiceViewModel
     {
+        public int Id { get; set; }
         [Required(ErrorMessage = "نام سرویس الزامی است")]
         [MaxLength(100, ErrorMessage = "نام سرویس نمی‌تواند بیشتر از 100 کاراکتر باشد")]
-        public string ServerName { get; set; }
+        public string ServiceName { get; set; }
 
         [MaxLength(50, ErrorMessage = "نسخه نمی‌تواند بیشتر از 50 کاراکتر باشد")]
         public string? Version { get; set; }
@@ -29,7 +30,7 @@ namespace ITSMDS.Web.ViewModel
         public int Port { get; set; }
 
         [Required(ErrorMessage = "شناسه سرور الزامی است")]
-        public long ServerId { get; set; }
+        public string ServerName { get; set; }
 
         [Display(Name = "زمان ایجاد")]
         public string? CreateTime { get; set; }

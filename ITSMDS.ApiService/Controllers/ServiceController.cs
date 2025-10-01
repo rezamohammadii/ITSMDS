@@ -1,5 +1,8 @@
 ﻿using ITSMDS.Application.Services;
+using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
+using ITSMDS.Domain.Enums;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,14 +30,34 @@ namespace ITSMDS.ApiService.Controllers
             {
                 var result = await _serviceService.CreateAsync(service, ct);
                 if (result.Success)
-                    return Ok(new { Success = true, Message = result.Message, Data = result.Data });
+                    return Ok(ApiResponse<bool>.Ok(result.Item1, "سرویس با موفقیت ایجاد شد."));
 
-                return BadRequest(new { Success = false, Message = result.Message });
+
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError, result.Item2));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in CreateAsync");
-                return StatusCode(500, new { Success = false, Message = "Server error" });
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
+
+            }
+        }
+
+        [HttpGet("list")]
+        public async Task<IActionResult> GetServiceListAsync(CancellationToken ct)
+        {
+            try
+            {
+                _logger.LogInformation("GetServiceListAsync called");
+
+                var result = await _serviceService.GetServiceListAsync(ct);
+                return Ok(ApiResponse<List<ServiceDto>>.Ok(result));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetServiceListAsync ");
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }
 
@@ -45,14 +68,15 @@ namespace ITSMDS.ApiService.Controllers
             {
                 var result = await _serviceService.GetByIdAsync(id, ct);
                 if (result.Success)
-                    return Ok(new { Success = true, Message = result.Message, Data = result.Data });
+                    return Ok(ApiResponse<ServiceDto>.Ok(result.Data));
 
-                return NotFound(new { Success = false, Message = result.Message });
+                return NotFound(ApiResponse<object>.Fail(ErrorCode.NotFound, "سرویس یافت نشد"));
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in GetByIdAsync for id {Id}", id);
-                return StatusCode(500, new { Success = false, Message = "Server error" });
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }
 
@@ -63,14 +87,14 @@ namespace ITSMDS.ApiService.Controllers
             {
                 var result = await _serviceService.UpdateAsync(service, ct);
                 if (result.Success)
-                    return Ok(new { Success = true, Message = result.Message });
+                    return Ok(ApiResponse<bool>.Ok(result.Item1, result.Item2));
 
-                return BadRequest(new { Success = false, Message = result.Message });
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError, result.Item2));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in UpdateAsync");
-                return StatusCode(500, new { Success = false, Message = "Server error" });
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }
 
@@ -81,14 +105,14 @@ namespace ITSMDS.ApiService.Controllers
             {
                 var result = await _serviceService.DeleteAsync(id, ct);
                 if (result.Success)
-                    return Ok(new { Success = true, Message = result.Message });
+                    return Ok(ApiResponse<bool>.Ok(result.Item1, result.Item2));
 
-                return BadRequest(new { Success = false, Message = result.Message });
+                return BadRequest(ApiResponse<object>.Fail(ErrorCode.ValidationError, result.Item2));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in DeleteAsync for id {Id}", id);
-                return StatusCode(500, new { Success = false, Message = "Server error" });
+                return StatusCode(500, ApiResponse<object>.Fail(ErrorCode.ServerError));
             }
         }
 

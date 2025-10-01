@@ -89,5 +89,10 @@ public class ServiceRepository : IServiceRepository
             throw; 
         }
     }
+
+    public async ValueTask<List<ServiceEntity>> GetServiceListAsync(CancellationToken ct = default)
+    {
+        return await _dbContext.Services.Include(x => x.Server).Where(x => !x.IsDeleted).ToListAsync(ct);
+    }
 }
 

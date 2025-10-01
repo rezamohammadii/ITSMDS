@@ -18,6 +18,7 @@ public class ServerViewModel
     public int Status { get;  set; }
     public string? ServerManager { get;  set; }
     public string? CreateDate { get;  set; }
+    public List<ServiceViewModel> Services { get; set; }
     public int Id { get; set; }
 
 }

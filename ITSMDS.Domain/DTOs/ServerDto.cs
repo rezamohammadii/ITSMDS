@@ -39,6 +39,7 @@ public class ServerDto
     public string Location { get;  set; }
     public int Id { get;  set; }
     public bool IsEnable { get;  set; }
+    public List<ServiceDto> Services { get; set; }
 }
 
 public class UpdateServerRequest

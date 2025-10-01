@@ -10,7 +10,7 @@ namespace ITSMDS.Application.Abstractions;
 
 public interface IServiceRepository 
 {
-   // ValueTask<ServiceEntity?> GetWithPortsAsync(long id, CancellationToken ct = default);
+    ValueTask<List<ServiceEntity>> GetServiceListAsync( CancellationToken ct = default);
     ValueTask<IReadOnlyList<ServiceEntity>> GetByServerIdAsync(long serverId, CancellationToken ct = default);
     // CRUD
     ValueTask<ServiceEntity> CreateAsync(ServiceEntity service, CancellationToken ct = default);

@@ -176,8 +176,7 @@
 
                         <GridColumn TItem="ServiceViewModel" HeaderText="نام سرویس" HeaderTextAlignment="Alignment.Center">
                             <div class="d-flex align-items-center">
-                                <Icon Name="IconName.Cpu" Class="me-2 text-primary"></Icon>
-                                @context.ServerName
+                                @context.ServiceName
                             </div>
                         </GridColumn>
 
@@ -193,6 +192,14 @@
 
                         <GridColumn TItem="ServiceViewModel" HeaderText="سرور" HeaderTextAlignment="Alignment.Center">
                             @context.ServerName
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="مسیر نصب" HeaderTextAlignment="Alignment.Center">
+                            @context.ExcutionPath
+                        </GridColumn>
+
+                        <GridColumn TItem="ServiceViewModel" HeaderText="شماره پورت" HeaderTextAlignment="Alignment.Center">
+                            @context.Port
                         </GridColumn>
 
                         <GridColumn TItem="ServiceViewModel" HeaderText="وضعیت" HeaderTextAlignment="Alignment.Center">
@@ -219,11 +226,11 @@
                                     <Icon Name="IconName.Eye" Size="@IconSize.x6" />
                                 </Button>
                                 <Button Color="ButtonColor.Warning" Size="ButtonSize.Small"
-                                        @onclick="() => EditService(context.ServerId)">
+                                        @onclick="() => EditService(context.Id)">
                                     <Icon Name="IconName.PencilSquare" Size="@IconSize.x6" />
                                 </Button>
                                 <Button Color="ButtonColor.Danger" Size="ButtonSize.Small"
-                                        @onclick="() => DeleteService(context.ServerId)">
+                                        @onclick="() => DeleteService(context.Id)">
                                     <Icon Name="IconName.Trash" Size="@IconSize.x6" />
                                 </Button>
                             </div>
@@ -278,11 +285,5 @@
     </div>
 </div>
 
-<Modal @ref="ServiceModal" Size="ModalSize.Large" />
+@* <Modal @ref="ServiceModal" Size="ModalSize.Large" /> *@
 
-@code {
-    private Grid<ServiceViewModel>? ServiceGrid;
-    private Modal ServiceModal = default!;
-    private string SearchTerm = "";
-    private bool isDataLoaded = false;
-}

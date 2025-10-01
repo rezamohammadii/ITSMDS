@@ -16,7 +16,7 @@ public class ServiceMapper : Profile
 
         CreateMap<ServiceEntity, ServiceDto>()
          .ForMember(d => d.CreateTime, m => m.MapFrom(s => ConvertDate.ConvertToShamsi(s.CreateTime)))
-         .ForMember(d => d.ServerName, m => m.MapFrom(s => s.Name))
+         .ForMember(d => d.ServiceName, m => m.MapFrom(s => s.Name))
          .ReverseMap();
     }
 }

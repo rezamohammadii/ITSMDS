@@ -84,6 +84,7 @@ public class ServerService : IServerService
     public async Task<List<ServerDto>> GetAllAsync(CancellationToken ct = default)
     {
         var serverList = await _repo.GetAllAsync(ct);
+        
         var result = _mapper.Map<List<ServerDto>>(serverList);
         return result;
     }

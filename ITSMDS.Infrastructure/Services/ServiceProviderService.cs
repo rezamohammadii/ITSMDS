@@ -1,7 +1,9 @@
 ﻿
 
+using AutoMapper;
 using ITSMDS.Application.Abstractions;
 using ITSMDS.Application.Services;
+using ITSMDS.Domain.DTOs;
 using ITSMDS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -12,18 +14,20 @@ public class ServiceProviderService : IServiceProviderService
     private readonly IServiceRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ServiceProviderService> _logger;
+    private readonly IMapper _mapper;
 
     public ServiceProviderService(
         IServiceRepository repository,
         IUnitOfWork unitOfWork,
-        ILogger<ServiceProviderService> logger)
+        ILogger<ServiceProviderService> logger, IMapper mapper)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mapper = mapper;
     }
 
-    public async Task<(bool Success, string Message, ServiceEntity? Data)> CreateAsync(ServiceEntity service, CancellationToken ct = default)
+    public async Task<(bool Success, string Message)> CreateAsync(ServiceEntity service, CancellationToken ct = default)
     {
         try
         {
@@ -31,16 +35,16 @@ public class ServiceProviderService : IServiceProviderService
             await _unitOfWork.SaveChangesAsync(ct);
 
             _logger.LogInformation("Service created successfully: {ServiceId}", service.Id);
-            return (true, "Service created successfully", service);
+            return (true, "Service created successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating service {@Service}", service);
-            return (false, "Error creating service", null);
+            return (false, "Error creating service");
         }
     }
 
-    public async Task<(bool Success, string Message, ServiceEntity? Data)> GetByIdAsync(long id, CancellationToken ct = default)
+    public async Task<(bool Success, string Message, ServiceDto? Data)> GetByIdAsync(long id, CancellationToken ct = default)
     {
         try
         {
@@ -49,8 +53,8 @@ public class ServiceProviderService : IServiceProviderService
             {
                 return (false, "Service not found", null);
             }
-
-            return (true, "Service fetched successfully", service);
+            var result = _mapper.Map<ServiceDto>(service);
+            return (true, "Service fetched successfully", result);
         }
         catch (Exception ex)
         {
@@ -103,6 +107,34 @@ public class ServiceProviderService : IServiceProviderService
         {
             _logger.LogError(ex, "Error fetching services for server {ServerId}", serverId);
             throw;
+        }
+    }
+
+    public async Task<List<ServiceDto>> GetServiceListAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var service = await _repository.GetServiceListAsync(ct);
+            var result = _mapper.Map<List<ServiceDto>>(service);
+            result = result.Select(s => new ServiceDto
+            {
+                ServiceName = s.ServiceName,
+                CreateTime = s.CreateTime,
+                CriticalityScore = s.CriticalityScore,
+                Description = s.Description,
+                ServerName = service.Select(x => x.Server.ServerName).FirstOrDefault(),
+                DocumentFilePath = s.DocumentFilePath,
+                ExcutionPath = s.ExcutionPath,
+                Port = s.Port,
+                IsActive = s.IsActive,
+                Version = s.Version
+            }).ToList();
+            return (result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching services ");
+            return (null);
         }
     }
 

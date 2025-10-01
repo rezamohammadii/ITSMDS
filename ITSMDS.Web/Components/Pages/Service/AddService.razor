@@ -4,10 +4,11 @@
 @using ITSMDS.Web.Services
 @using ITSMDS.Domain.Enums
 @inject NavigationManager NavigationManager
-@inject ServiceApiClient serviceApi
+@inject ServiceApiClient ServiceApi
+@inject ServerApiClient ServerApi
 @inject ISweetAlertService SweetAlert
 
-<EditForm Model="@service" OnValidSubmit="HandleValidSubmit" Class="space-y-6">
+<EditForm Model="@SERVICE" OnValidSubmit="HandleValidSubmit" Class="space-y-6">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -29,39 +30,32 @@
     <div class="row g-4">
         <div class="col-md-6">
             <label class="form-label">نام سرویس *</label>
-            <InputText class="form-control" @bind-Value="service.ServerName" placeholder="مثال: سرویس پرداخت" />
-            <ValidationMessage For="@(() => service.ServerName)" />
+            <InputText class="form-control" @bind-Value="SERVICE.ServiceName" placeholder="مثال: سرویس پرداخت" />
+            <ValidationMessage For="@(() => SERVICE.ServiceName)" />
         </div>
-
         <div class="col-md-6">
-            <label class="form-label">نسخه</label>
-            <InputText class="form-control" @bind-Value="service.Version" placeholder="مثال: v1.0.0" />
+            <label class="form-label">مسیر اجرا</label>
+            <InputText class="form-control" @bind-Value="SERVICE.ExcutionPath" placeholder="/opt/service/run.sh" />
         </div>
+      
     </div>
 
-    <div class="row g-4 mt-1">
-        <div class="col-md-12">
-            <label class="form-label">توضیحات</label>
-            <TextAreaInput @bind-Value="@service.Description" Rows="3" Class="form-control" />
-        </div>
-    </div>
-
+ 
     <div class="row g-4 mt-1">
         <div class="col-md-6">
             <label class="form-label">مسیر فایل مستندات</label>
-            <InputText class="form-control" @bind-Value="service.DocumentFilePath" placeholder="/docs/service.docx" />
+            <InputText class="form-control" @bind-Value="SERVICE.DocumentFilePath" placeholder="/docs/service.docx" />
         </div>
-
         <div class="col-md-6">
-            <label class="form-label">مسیر اجرا</label>
-            <InputText class="form-control" @bind-Value="service.ExcutionPath" placeholder="/opt/service/run.sh" />
+            <label class="form-label">نسخه</label>
+            <InputText class="form-control" @bind-Value="SERVICE.Version" placeholder="مثال: v1.0.0" />
         </div>
     </div>
 
     <div class="row g-4 mt-1">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label">امتیاز بحرانی بودن</label>
-            <InputSelect class="form-select" @bind-Value="service.CriticalityScore">
+            <InputSelect class="form-select" @bind-Value="SERVICE.CriticalityScore">
                 @foreach (var item in Enum.GetValues(typeof(ServiceEnum.CriticalityScore)))
                 {
                     <option value="@item">@item</option>
@@ -69,26 +63,38 @@
             </InputSelect>
         </div>
 
-        <div class="col-md-4">
-            <label class="form-label">پورت</label>
-            <InputNumber class="form-control" @bind-Value="service.Port" placeholder="مثال: 8080" />
+        <div class="col-md-3">
+            <label class="form-label">انتخاب سرور</label>
+            <InputSelect class="form-select" @bind-Value="SERVICE.ServerName" DisplayName="نام سرور خود را انتخاب کنید">
+                @foreach (var server in ALL_SERVER)
+                {
+                    <option value="@server.ServerName">@server.ServerName</option>
+                }
+            </InputSelect>
         </div>
-
-        <div class="col-md-4">
-            <label class="form-label">شناسه سرور</label>
-            <InputNumber class="form-control" @bind-Value="service.ServerId" placeholder="ID سرور مربوطه" />
+        <div class="col-md-3">
+            <label class="form-label">پورت</label>
+            <InputNumber class="form-control" @bind-Value="SERVICE.Port" placeholder="مثال: 8080" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">زمان ایجاد</label>
+            <InputDate class="form-control" @bind-Value="CreateTime" placeholder="2025-09-30" />
         </div>
     </div>
 
     <div class="row g-4 mt-1">
-        <div class="col-md-6">
-            <label class="form-label">زمان ایجاد</label>
-            <InputText class="form-control" @bind-Value="service.CreateTime" placeholder="2025-09-30" />
-        </div>
+      
 
         <div class="col-md-6 d-flex align-items-center mt-4">
-            <InputCheckbox class="form-check-input me-2" @bind-Value="service.IsActive" />
+            <InputCheckbox class="form-check-input me-2" @bind-Value="SERVICE.IsActive" />
             <label class="form-check-label">فعال است</label>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-12">
+            <label class="form-label">توضیحات</label>
+            <TextAreaInput @bind-Value="@SERVICE.Description" Rows="3" Class="form-control" />
         </div>
     </div>
 
@@ -105,15 +111,26 @@
 </EditForm>
 
 @code {
-    private ServiceViewModel service = new();
+    private ServiceViewModel SERVICE = new();
+    private List<ServerViewModel> ALL_SERVER = new();
     private bool isSubmitting = false;
+    private DateOnly CreateTime = DateOnly.FromDateTime(DateTime.Now);
 
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        var serverData = await ServerApi.GetServerListAsync();
+        ALL_SERVER = serverData.Data;
+    }
     private async void HandleValidSubmit()
     {
         try
         {
+            
             isSubmitting = true;
-            var res = await serviceApi.CreateServiceAsync(service);
+            SERVICE.CreateTime = CreateTime.ToString();
+            var res = await ServiceApi.CreateServiceAsync(SERVICE);
 
             if (!res.Success)
             {
@@ -134,6 +151,6 @@
         }
     }
 
-    private void HandleReset() => service = new();
+    private void HandleReset() => SERVICE = new();
     private void NavigateToServices() => NavigationManager.NavigateTo("/services");
 }

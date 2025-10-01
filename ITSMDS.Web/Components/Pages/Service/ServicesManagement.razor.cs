@@ -19,14 +19,16 @@ namespace ITSMDS.Pages.Services
         [Inject] protected ISweetAlertService SweetAlert { get; set; } = default!;
         [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
         [Inject] ServiceApiClient ServiceApi { get; set; } = default!;
+        [Inject] ServerApiClient ServerApi { get; set; } = default!;
 
         protected List<ServiceViewModel>? AllServicesData { get; set; }
+        protected List<ServerViewModel>? AllServerData { get; set; }
         protected ServiceWidget? ServiceWidgetData { get; set; }
         protected ServiceWidgetCritical? ServiceWidgetCriticalData { get; set; }
         protected List<ServerDistribution>? ServerDistribution { get; set; }
         protected string SearchTerm { get; set; } = "";
         protected bool isDataLoaded = false;
-        protected Grid<ServiceViewModel>? ServiceGrid;
+        protected Grid<ServiceViewModel>? ServiceGrid { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -38,15 +40,36 @@ namespace ITSMDS.Pages.Services
 
             try
             {
+                var serverData = await ServerApi.GetServerListAsync();
                 var res = await ServiceApi.GetServicesAsync();
                 var resWidget = await ServiceApi.GetServiceWidgetAsync();
                 if (res.Success && res.Data != null)
                 {
                     AllServicesData = res.Data;
-                    ServiceWidgetData = resWidget.Data;
-                    isDataLoaded = true;
+                    ServiceWidgetData = new ServiceWidget
+                    {
+                        ServiceActiveCount  = AllServicesData.Where(x => x.IsActive).Count(),
+                        ServiceAllCount = AllServicesData.Count,
+                        ServiceDeActiveCount = AllServicesData.Where(x => !x.IsActive).Count(),
+                        ServiceHasDocumentCount = AllServicesData.Where(x => x.DocumentFilePath != null 
+                            || !string.IsNullOrEmpty(x.DocumentFilePath)).Count()
+                    };
+                    AllServerData = serverData.Data;
+                    
+                    ServiceWidgetCriticalData = new ServiceWidgetCritical
+                    {
+                        VeryHighServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.VeryHigh).Count(),
+                        HighServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.High).Count(),
+                        NormalServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.Normal).Count(),
+                        LowServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.Low).Count(),
+                    };
 
-                    // پس از بارگذاری داده‌ها، Grid را refresh کن
+                    ServerDistribution = AllServerData.Select(s => new ServerDistribution
+                    {
+                        ServerName = s.ServerName,
+                        ServiceCount = s.Services.Select(s => s.ServiceName).Count()
+                    }).ToList();
+                    isDataLoaded = true;
                     await InvokeAsync(StateHasChanged);
                     await RefreshGridAsync();
                 }
@@ -58,38 +81,6 @@ namespace ITSMDS.Pages.Services
             catch (Exception ex)
             {
                 await SweetAlert.ShowErrorAsync($"خطا: {ex.Message}");
-            }
-            try
-            {
-                // شبیه‌سازی بارگذاری داده‌ها
-                await Task.Delay(500);
-
-                // داده‌های نمونه
-                ServiceWidgetCriticalData = new ServiceWidgetCritical
-                {
-                    VeryHighServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.VeryHigh).Count(),
-                    HighServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.High).Count(),
-                    NormalServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.Normal).Count(),
-                    LowServiceCount = AllServicesData.Where(x => x.CriticalityScore == ServiceEnum.CriticalityScore.Low).Count(),                   
-                };
-
-                ServerDistribution = new List<ServerDistribution>
-                {
-                    new() { ServerName = "سرور پایگاه داده", ServiceCount = 35 },
-                    new() { ServerName = "سرور وب اصلی", ServiceCount = 28 },
-                    new() { ServerName = "سرور ایمیل", ServiceCount = 15 },
-                    new() { ServerName = "سرور فایل", ServiceCount = 12 },
-                    new() { ServerName = "سرور پشتیبان", ServiceCount = 8 }
-                };
-
-                AllServicesData = GenerateSampleServices();
-                isDataLoaded = true;
-
-                await InvokeAsync(StateHasChanged);
-            }
-            catch (Exception ex)
-            {
-                await SweetAlert.ShowErrorAsync($"خطا در بارگذاری داده‌ها: {ex.Message}");
             }
         }
         private async Task RefreshGridAsync()
@@ -115,9 +106,9 @@ namespace ITSMDS.Pages.Services
 
             var searchLower = SearchTerm.ToLower();
             return AllServicesData.Where(service =>
-                (service.ServerName?.ToLower().Contains(searchLower) == true) ||
+                (service.ServiceName?.ToLower().Contains(searchLower) == true) ||
                 (service.Version?.ToLower().Contains(searchLower) == true) ||
-                (service.ServerName?.ToLower().Contains(searchLower) == true) ||
+                (service.ServiceName?.ToLower().Contains(searchLower) == true) ||
                 (service.Description?.ToLower().Contains(searchLower) == true)
             ).ToList();
         }
@@ -134,12 +125,12 @@ namespace ITSMDS.Pages.Services
 
         protected void AddNewService()
         {
-            NavigationManager.NavigateTo("/services/create");
+            NavigationManager.NavigateTo("/service/create");
         }
 
         protected void EditService(long id)
         {
-            NavigationManager.NavigateTo($"/services/edit/{id}");
+            NavigationManager.NavigateTo($"/service/edit/{id}");
         }
 
         protected async Task DeleteService(long id)
@@ -149,7 +140,6 @@ namespace ITSMDS.Pages.Services
 
             if (confirmed)
             {
-                // منطق حذف سرویس
                 await SweetAlert.ShowSuccessAsync("سرویس با موفقیت حذف شد");
                 await LoadServicesData();
             }
@@ -158,7 +148,7 @@ namespace ITSMDS.Pages.Services
         protected async Task ShowServiceDetails(ServiceViewModel service)
         {
             // نمایش جزئیات سرویس در مودال
-            await SweetAlert.ShowInfoAsync($"جزئیات سرویس: {service.ServerName}", service.Description ?? "بدون توضیحات");
+            await SweetAlert.ShowInfoAsync($"جزئیات سرویس: {service.ServiceName}", service.Description ?? "بدون توضیحات");
         }
 
         protected BadgeColor GetCriticalityBadgeColor(ServiceEnum.CriticalityScore criticality)
@@ -193,30 +183,6 @@ namespace ITSMDS.Pages.Services
                 > 20 => BadgeColor.Warning,
                 > 10 => BadgeColor.Info,
                 _ => BadgeColor.Success
-            };
-        }
-
-        private List<ServiceViewModel> GenerateSampleServices()
-        {
-            return new List<ServiceViewModel>
-            {
-                new() {
-                    ServerId = 1,
-                    ServerName = "سرویس پایگاه داده",
-                    Version = "2.1.0",
-                    CriticalityScore = ServiceEnum.CriticalityScore.VeryHigh,
-                    IsActive = true,
-                    Description = "سرویس مدیریت پایگاه داده اصلی"
-                },
-                new() {
-                    ServerId = 2,
-                    ServerName = "وب سرویس",
-                    Version = "1.5.2",
-                    CriticalityScore = ServiceEnum.CriticalityScore.High,
-                    IsActive = true,
-                    Description = "سرویس ارائه API های وب"
-                },
-                // ... سایر سرویس‌های نمونه
             };
         }
     }

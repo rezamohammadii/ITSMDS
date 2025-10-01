@@ -24,19 +24,19 @@ public class ServiceApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync("/api/service", ct);
+            var response = await _httpClient.GetAsync("/api/service/list", ct);
             var content = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(content))
                 return (false, "پاسخی از سرور دریافت نشد.", []);
 
-            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<ServiceViewModel[]>>(content,
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseClient<List<ServiceViewModel?>>>(content,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (apiResponse == null)
                 return (false, "خطا در پردازش پاسخ سرور.", []);
 
-            return (apiResponse.Success, apiResponse.Message, []);
+            return (apiResponse.Success, apiResponse.Message, apiResponse.Data ?? []);
         }
         catch (Exception ex)
         {
@@ -77,7 +77,7 @@ public class ServiceApiClient
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("/api/service", content, ct);
+            var response = await _httpClient.PostAsync("/api/service/create", content, ct);
             var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(contentResponse))
@@ -105,7 +105,7 @@ public class ServiceApiClient
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PutAsync($"/api/service/{model.ServerId}", content, ct);
+            var response = await _httpClient.PutAsync($"/api/service/update/{model.ServerName}", content, ct);
             var contentResponse = await response.Content.ReadAsStringAsync(ct);
 
             if (string.IsNullOrEmpty(contentResponse))
@@ -121,7 +121,7 @@ public class ServiceApiClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in UpdateServiceAsync for id {Id}", model.ServerId);
+            _logger.LogError(ex, "Error in UpdateServiceAsync for id {Id}", model.ServerName);
             return (false, "مشکلی در ارتباط با سرور پیش آمده.", null);
         }
     }
